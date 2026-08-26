@@ -1,0 +1,1403 @@
+{
+  "source": "Kim MY, Etherton-Beer C, Kim CB, Yoon JL, Ga H, Kim HC, Song JS, Kim KI, Won CW. Development of a Consensus List of Potentially Inappropriate Medications for Korean Older Adults. Ann Geriatr Med Res 2018;22(3):121-129.",
+  "doi": "10.4235/agmr.2018.22.3.121",
+  "digitized": "2026-07",
+  "note": "2차 요약 경로로 추출. 용량 기준(>325 mg/day aspirin, >6 mg/day doxepin, CrCl<30)과 사유 문구는 원문 PDF로 재확인 필요. 임상 반영 전 약사·교수 검토 권장. kr/ing/cls/tags·match 필드는 엔진 반영을 위해 케어브리지가 추가한 매핑 계층이며 논문 원문에는 없다.",
+  "table1_regardless_of_condition": [
+    {
+      "drug": "Chlorpromazine",
+      "class": "1st-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "클로르프로마진",
+      "ing": "chlorpromazine",
+      "cls": "antipsy",
+      "cat": "항정신병약(1세대)",
+      "tags": [
+        "antipsychotic",
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Haloperidol",
+      "class": "1st-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "할로페리돌",
+      "ing": "haloperidol",
+      "cls": "antipsy",
+      "cat": "항정신병약(1세대)",
+      "tags": [
+        "antipsychotic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Risperidone",
+      "class": "2nd-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "리스페리돈",
+      "ing": "risperidone",
+      "cls": "antipsy",
+      "cat": "항정신병약(2세대)",
+      "tags": [
+        "antipsychotic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Olanzapine",
+      "class": "2nd-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "올란자핀",
+      "ing": "olanzapine",
+      "cls": "antipsy",
+      "cat": "항정신병약(2세대)",
+      "tags": [
+        "antipsychotic",
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Clozapine",
+      "class": "2nd-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "클로자핀",
+      "ing": "clozapine",
+      "cls": "antipsy",
+      "cat": "항정신병약(2세대)",
+      "tags": [
+        "antipsychotic",
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Quetiapine",
+      "class": "2nd-gen antipsychotic",
+      "reason": "치매 환자에서 사망·뇌졸중 위험 증가",
+      "kr": "쿠에티아핀",
+      "ing": "quetiapine",
+      "cls": "antipsy",
+      "cat": "항정신병약(2세대)",
+      "tags": [
+        "antipsychotic",
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Amitriptyline",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "아미트립틸린",
+      "ing": "amitriptyline",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Amoxapine",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "아목사핀",
+      "ing": "amoxapine",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Clomipramine",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "클로미프라민",
+      "ing": "clomipramine",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Doxepin (>6 mg/day)",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "독세핀",
+      "ing": "doxepin",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": ">6 mg/일"
+    },
+    {
+      "drug": "Nortriptyline",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "노르트립틸린",
+      "ing": "nortriptyline",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Imipramine",
+      "class": "TCA",
+      "reason": "강한 항콜린 작용, 진정, 기립성 저혈압",
+      "kr": "이미프라민",
+      "ing": "imipramine",
+      "cls": "anticholinergic",
+      "cat": "삼환계 항우울제(TCA)",
+      "tags": [
+        "anticholinergic",
+        "tca",
+        "antidepressant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Alprazolam",
+      "class": "benzodiazepine (short/intermediate)",
+      "reason": "의존·인지저하·섬망·낙상·골절·교통사고 위험",
+      "kr": "알프라졸람",
+      "ing": "alprazolam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(단·중시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Lorazepam",
+      "class": "benzodiazepine (short/intermediate)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "로라제팜",
+      "ing": "lorazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(단·중시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Temazepam",
+      "class": "benzodiazepine (short/intermediate)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "테마제팜",
+      "ing": "temazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(단·중시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Triazolam",
+      "class": "benzodiazepine (short/intermediate)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "트리아졸람",
+      "ing": "triazolam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(단·중시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Chlordiazepoxide",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "클로르디아제폭시드",
+      "ing": "chlordiazepoxide",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Clonazepam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "클로나제팜",
+      "ing": "clonazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Diazepam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "디아제팜",
+      "ing": "diazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Flurazepam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "플루라제팜",
+      "ing": "flurazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Bromazepam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "브로마제팜",
+      "ing": "bromazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Clobazam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "클로바잠",
+      "ing": "clobazam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine",
+        "anticonvulsant"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Flunitrazepam",
+      "class": "benzodiazepine (long-acting)",
+      "reason": "의존·인지저하·섬망·낙상·골절 위험",
+      "kr": "플루니트라제팜",
+      "ing": "flunitrazepam",
+      "cls": "sedative",
+      "cat": "벤조디아제핀(장시간형)",
+      "tags": [
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Zolpidem",
+      "class": "Z-drug",
+      "reason": "벤조디아제핀과 유사한 안전성 프로파일(낙상·섬망)",
+      "kr": "졸피뎀",
+      "ing": "zolpidem",
+      "cls": "zdrug",
+      "cat": "수면제(Z-drug)",
+      "tags": [
+        "zolpidem"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Benztropine",
+      "class": "anticholinergic antiparkinsonian",
+      "reason": "항콜린 부작용(혼돈·구갈·변비 등)",
+      "kr": "벤즈트로핀",
+      "ing": "benztropine",
+      "cls": "antipark",
+      "cat": "항파킨슨 항콜린제",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Trihexyphenidyl",
+      "class": "anticholinergic antiparkinsonian",
+      "reason": "항콜린 부작용",
+      "kr": "트리헥시페니딜",
+      "ing": "trihexyphenidyl",
+      "cls": "antipark",
+      "cat": "항파킨슨 항콜린제",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Chlorpheniramine",
+      "class": "1st-gen antihistamine",
+      "reason": "항콜린 부작용",
+      "kr": "클로르페니라민",
+      "ing": "chlorpheniramine",
+      "cls": "anticholinergic",
+      "cat": "1세대 항히스타민",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Dimenhydrinate",
+      "class": "1st-gen antihistamine",
+      "reason": "항콜린 부작용",
+      "kr": "디멘히드리네이트",
+      "ing": "dimenhydrinate",
+      "cls": "anticholinergic",
+      "cat": "1세대 항히스타민",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Diphenhydramine",
+      "class": "1st-gen antihistamine",
+      "reason": "항콜린 부작용",
+      "kr": "디펜히드라민",
+      "ing": "diphenhydramine",
+      "cls": "anticholinergic",
+      "cat": "1세대 항히스타민",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Hydroxyzine",
+      "class": "1st-gen antihistamine",
+      "reason": "항콜린 부작용",
+      "kr": "히드록시진",
+      "ing": "hydroxyzine",
+      "cls": "anticholinergic",
+      "cat": "1세대 항히스타민",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Triprolidine",
+      "class": "1st-gen antihistamine",
+      "reason": "항콜린 부작용",
+      "kr": "트리프롤리딘",
+      "ing": "triprolidine",
+      "cls": "anticholinergic",
+      "cat": "1세대 항히스타민",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Dronedarone",
+      "class": "antiarrhythmic",
+      "reason": "다른 항부정맥제보다 임상 결과 나쁨/부작용 많음",
+      "kr": "드로네다론",
+      "ing": "dronedarone",
+      "cls": "antiarr",
+      "cat": "부정맥약",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Amiodarone",
+      "class": "antiarrhythmic",
+      "reason": "다른 항부정맥제보다 부작용 많음(QT·갑상선·폐)",
+      "kr": "아미오다론",
+      "ing": "amiodarone",
+      "cls": "amiodarone",
+      "cat": "부정맥약",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Flecainide",
+      "class": "antiarrhythmic",
+      "reason": "다른 항부정맥제보다 부작용 많음",
+      "kr": "플레카이니드",
+      "ing": "flecainide",
+      "cls": "antiarr",
+      "cat": "부정맥약",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Digoxin",
+      "class": "cardiac glycoside",
+      "reason": "심방세동·심부전 노인에서 사망 위험 증가 가능",
+      "kr": "디곡신",
+      "ing": "digoxin",
+      "cls": "digoxin",
+      "cat": "강심제",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Ticlopidine",
+      "class": "antiplatelet",
+      "reason": "혈구 이상; 효능 근거 약함",
+      "kr": "티클로피딘",
+      "ing": "ticlopidine",
+      "cls": "antiplatelet",
+      "cat": "항혈소판제",
+      "tags": [
+        "ticlopidine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Metoclopramide",
+      "class": "prokinetic/dopamine antagonist",
+      "reason": "추체외로 증상(지연성 운동이상)",
+      "kr": "메토클로프라미드",
+      "ing": "metoclopramide",
+      "cls": "prokinetic",
+      "cat": "위장관 운동촉진제",
+      "tags": [
+        "metoclopramide"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Cimetidine",
+      "class": "H2 antagonist",
+      "reason": "혼돈·섬망 유발 가능",
+      "kr": "시메티딘",
+      "ing": "cimetidine",
+      "cls": "h2ra",
+      "cat": "위산억제제(H2 차단제)",
+      "tags": [
+        "h2ra"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Clidinium-chlordiazepoxide",
+      "class": "antispasmodic",
+      "reason": "항콜린 부작용; 효과 불확실",
+      "kr": "클리디늄·클로르디아제폭시드",
+      "ing": "clidinium",
+      "cls": "antispas",
+      "cat": "진경제(복합)",
+      "tags": [
+        "anticholinergic",
+        "benzodiazepine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Scopolamine",
+      "class": "antispasmodic",
+      "reason": "항콜린 부작용; 효과 불확실",
+      "kr": "스코폴라민",
+      "ing": "scopolamine",
+      "cls": "antispas",
+      "cat": "진경제",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Doxazosin",
+      "class": "peripheral alpha-1 blocker",
+      "reason": "기립성 저혈압 위험 높음",
+      "kr": "독사조신",
+      "ing": "doxazosin",
+      "cls": "alpha1",
+      "cat": "알파차단제(전립선·혈압)",
+      "tags": [
+        "alpha1"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Prazosin",
+      "class": "peripheral alpha-1 blocker",
+      "reason": "기립성 저혈압 위험 높음",
+      "kr": "프라조신",
+      "ing": "prazosin",
+      "cls": "alpha1",
+      "cat": "알파차단제(혈압)",
+      "tags": [
+        "alpha1"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Terazosin",
+      "class": "peripheral alpha-1 blocker",
+      "reason": "기립성 저혈압 위험 높음",
+      "kr": "테라조신",
+      "ing": "terazosin",
+      "cls": "alpha1",
+      "cat": "알파차단제(전립선·혈압)",
+      "tags": [
+        "alpha1"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Desmopressin",
+      "class": "vasopressin analog",
+      "reason": "저나트륨혈증 위험 높음",
+      "kr": "데스모프레신",
+      "ing": "desmopressin",
+      "cls": "vaso",
+      "cat": "항이뇨호르몬제",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Oxybutynin",
+      "class": "bladder antimuscarinic",
+      "reason": "항콜린 부작용",
+      "kr": "옥시부티닌",
+      "ing": "oxybutynin",
+      "cls": "bladderach",
+      "cat": "과민성 방광 치료제",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Estrogens ± progestins",
+      "class": "hormone",
+      "reason": "발암 가능성(유방·자궁); 심혈관·인지 보호 없음",
+      "kr": "에스트로겐(±프로게스틴)",
+      "ing": "estrogen",
+      "cls": "hormone",
+      "cat": "여성호르몬제",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Growth hormone",
+      "class": "hormone",
+      "reason": "부종·관절통·손목터널·여성형유방·공복혈당 상승",
+      "kr": "성장호르몬",
+      "ing": "somatropin",
+      "cls": "hormone",
+      "cat": "성장호르몬제",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Insulin, sliding scale",
+      "class": "insulin regimen",
+      "reason": "혈당 개선 없이 저혈당 위험 증가",
+      "kr": "인슐린(슬라이딩 스케일)",
+      "ing": "insulin_sliding",
+      "cls": "insulin",
+      "cat": "인슐린 요법",
+      "tags": [],
+      "dose": "슬라이딩 스케일 단독요법"
+    },
+    {
+      "drug": "Glibenclamide (glyburide)",
+      "class": "sulfonylurea",
+      "reason": "저혈당 위험 증가",
+      "kr": "글리벤클라미드",
+      "ing": "glibenclamide",
+      "cls": "su",
+      "cat": "당뇨약(설폰요소제)",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Pethidine (meperidine)",
+      "class": "opioid",
+      "reason": "다른 오피오이드보다 CNS 부작용 많음",
+      "kr": "페티딘",
+      "ing": "pethidine",
+      "cls": "opioid",
+      "cat": "진통제(오피오이드)",
+      "tags": [
+        "opioid",
+        "pethidine"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Pentazocine",
+      "class": "opioid",
+      "reason": "다른 오피오이드보다 CNS 부작용 많음",
+      "kr": "펜타조신",
+      "ing": "pentazocine",
+      "cls": "opioid",
+      "cat": "진통제(오피오이드)",
+      "tags": [
+        "opioid"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Aspirin (>325 mg/day)",
+      "class": "NSAID/antiplatelet",
+      "reason": "위장출혈·소화성궤양·신손상 위험",
+      "kr": "아스피린",
+      "ing": "aspirin",
+      "cls": "antiplatelet",
+      "cat": "항혈소판제",
+      "tags": [
+        "aspirin"
+      ],
+      "dose": ">325 mg/일"
+    },
+    {
+      "drug": "Diclofenac",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "디클로페낙",
+      "ing": "diclofenac",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Indomethacin",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상; CNS 부작용 많음",
+      "kr": "인도메타신",
+      "ing": "indomethacin",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Ibuprofen",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "이부프로펜",
+      "ing": "ibuprofen",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Dexibuprofen",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "덱시부프로펜",
+      "ing": "dexibuprofen",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Ketorolac",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험(주사제 포함)",
+      "kr": "케토롤락",
+      "ing": "ketorolac",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Mefenamic acid",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "메페남산",
+      "ing": "mefenamic",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Naproxen",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "나프록센",
+      "ing": "naproxen",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Piroxicam",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "피록시캄",
+      "ing": "piroxicam",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Sulindac",
+      "class": "NSAID",
+      "reason": "위장출혈·궤양·신손상 위험",
+      "kr": "설린닥",
+      "ing": "sulindac",
+      "cls": "nsaid",
+      "cat": "소염진통제(NSAID)",
+      "tags": [
+        "nsaid",
+        "nsaid_ns"
+      ],
+      "dose": null
+    },
+    {
+      "drug": "Methocarbamol",
+      "class": "skeletal muscle relaxant",
+      "reason": "진정 내약성 낮음; 골절 위험; 효과 불확실",
+      "kr": "메토카르바몰",
+      "ing": "methocarbamol",
+      "cls": "musclerelax",
+      "cat": "근이완제",
+      "tags": [],
+      "dose": null
+    },
+    {
+      "drug": "Orphenadrine",
+      "class": "skeletal muscle relaxant",
+      "reason": "진정 내약성 낮음; 골절 위험; 효과 불확실",
+      "kr": "오르페나드린",
+      "ing": "orphenadrine",
+      "cls": "musclerelax",
+      "cat": "근이완제",
+      "tags": [
+        "anticholinergic"
+      ],
+      "dose": null
+    }
+  ],
+  "table2_by_condition": [
+    {
+      "condition": "섬망·치매·인지장애",
+      "drugs": [
+        "Anticholinergics",
+        "Antipsychotics",
+        "Benzodiazepines",
+        "Zolpidem",
+        "H2 antagonists",
+        "Pethidine"
+      ],
+      "reason": "섬망·치매·인지장애 유발/악화",
+      "id": "dementia",
+      "label": "치매·인지장애",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "anticholinergic",
+          "kr": "항콜린제",
+          "token": "Anticholinergics"
+        },
+        {
+          "tag": "antipsychotic",
+          "kr": "항정신병약",
+          "token": "Antipsychotics"
+        },
+        {
+          "tag": "benzodiazepine",
+          "kr": "벤조디아제핀",
+          "token": "Benzodiazepines"
+        },
+        {
+          "ing": "zolpidem",
+          "kr": "졸피뎀",
+          "token": "Zolpidem"
+        },
+        {
+          "tag": "h2ra",
+          "kr": "H2 차단제",
+          "token": "H2 antagonists"
+        },
+        {
+          "ing": "pethidine",
+          "kr": "페티딘",
+          "token": "Pethidine"
+        }
+      ]
+    },
+    {
+      "condition": "낙상·골절·실신·기립성 저혈압 병력",
+      "drugs": [
+        "Anticholinergics",
+        "Anticonvulsants",
+        "Antipsychotics",
+        "Benzodiazepines",
+        "Zolpidem",
+        "Opioids",
+        "Peripheral alpha-1 blockers"
+      ],
+      "reason": "운동실조·정신운동 저하·실신·추가 낙상",
+      "id": "falls",
+      "label": "낙상·골절 병력",
+      "kind": "병력",
+      "match": [
+        {
+          "tag": "anticholinergic",
+          "kr": "항콜린제",
+          "token": "Anticholinergics"
+        },
+        {
+          "tag": "anticonvulsant",
+          "kr": "항경련제",
+          "token": "Anticonvulsants"
+        },
+        {
+          "tag": "antipsychotic",
+          "kr": "항정신병약",
+          "token": "Antipsychotics"
+        },
+        {
+          "tag": "benzodiazepine",
+          "kr": "벤조디아제핀",
+          "token": "Benzodiazepines"
+        },
+        {
+          "ing": "zolpidem",
+          "kr": "졸피뎀",
+          "token": "Zolpidem"
+        },
+        {
+          "cls": "opioid",
+          "kr": "오피오이드 진통제",
+          "token": "Opioids"
+        },
+        {
+          "cls": "alpha1",
+          "kr": "말초 알파-1 차단제",
+          "token": "Peripheral alpha-1 blockers"
+        }
+      ]
+    },
+    {
+      "condition": "불면",
+      "drugs": [
+        "Caffeine",
+        "Methylphenidate",
+        "Phenylephrine",
+        "Pseudoephedrine",
+        "Theophylline"
+      ],
+      "reason": "CNS 자극 작용",
+      "id": "insomnia",
+      "label": "불면",
+      "kind": "증상",
+      "match": [
+        {
+          "ing": "caffeine",
+          "kr": "카페인",
+          "token": "Caffeine"
+        },
+        {
+          "ing": "methylphenidate",
+          "kr": "메틸페니데이트",
+          "token": "Methylphenidate"
+        },
+        {
+          "ing": "phenylephrine",
+          "kr": "페닐레프린",
+          "token": "Phenylephrine"
+        },
+        {
+          "ing": "pseudoephedrine",
+          "kr": "슈도에페드린",
+          "token": "Pseudoephedrine"
+        },
+        {
+          "ing": "theophylline",
+          "kr": "테오필린",
+          "token": "Theophylline"
+        }
+      ]
+    },
+    {
+      "condition": "파킨슨병",
+      "drugs": [
+        "Antipsychotics",
+        "Metoclopramide"
+      ],
+      "reason": "파킨슨 증상 악화",
+      "id": "parkinson",
+      "label": "파킨슨병",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "antipsychotic",
+          "kr": "항정신병약",
+          "token": "Antipsychotics"
+        },
+        {
+          "ing": "metoclopramide",
+          "kr": "메토클로프라미드",
+          "token": "Metoclopramide"
+        }
+      ]
+    },
+    {
+      "condition": "심부전",
+      "drugs": [
+        "Verapamil",
+        "Diltiazem",
+        "NSAIDs",
+        "COX-2 inhibitors",
+        "Pioglitazone",
+        "TCAs"
+      ],
+      "reason": "심부전 악화 가능",
+      "id": "hf",
+      "label": "심부전",
+      "kind": "진단",
+      "match": [
+        {
+          "ing": "verapamil",
+          "kr": "베라파밀",
+          "token": "Verapamil"
+        },
+        {
+          "ing": "diltiazem",
+          "kr": "딜티아젬",
+          "token": "Diltiazem"
+        },
+        {
+          "tag": "nsaid",
+          "kr": "NSAID 소염진통제",
+          "token": "NSAIDs"
+        },
+        {
+          "cls": "cox2",
+          "kr": "COX-2 억제제",
+          "token": "COX-2 inhibitors"
+        },
+        {
+          "ing": "pioglitazone",
+          "kr": "피오글리타존",
+          "token": "Pioglitazone"
+        },
+        {
+          "tag": "tca",
+          "kr": "삼환계 항우울제",
+          "token": "TCAs"
+        }
+      ]
+    },
+    {
+      "condition": "부정맥",
+      "drugs": [
+        "TCAs"
+      ],
+      "reason": "부정맥 유발 작용",
+      "id": "arrhythmia",
+      "label": "부정맥",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "tca",
+          "kr": "삼환계 항우울제",
+          "token": "TCAs"
+        }
+      ]
+    },
+    {
+      "condition": "고혈압",
+      "drugs": [
+        "NSAIDs"
+      ],
+      "reason": "고혈압 악화 위험",
+      "id": "htn",
+      "label": "고혈압",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "nsaid",
+          "kr": "NSAID 소염진통제",
+          "token": "NSAIDs"
+        }
+      ]
+    },
+    {
+      "condition": "80세 이상 1차 예방",
+      "drugs": [
+        "Aspirin"
+      ],
+      "reason": "이 연령군에서 이익 대비 근거 부족",
+      "id": "age80_primary",
+      "label": "80세 이상(1차 예방 목적 복용)",
+      "kind": "연령",
+      "match": [
+        {
+          "ing": "aspirin",
+          "kr": "아스피린",
+          "token": "Aspirin"
+        }
+      ]
+    },
+    {
+      "condition": "뇌졸중 2차 예방",
+      "drugs": [
+        "Aspirin + clopidogrel 병용"
+      ],
+      "reason": "clopidogrel 단독 대비 추가 이익 근거 부족",
+      "id": "stroke_secondary",
+      "label": "뇌졸중 병력(2차 예방)",
+      "kind": "병력",
+      "match": [
+        {
+          "all": [
+            "aspirin",
+            "clopidogrel"
+          ],
+          "kr": "아스피린+클로피도그렐 병용",
+          "token": "Aspirin + clopidogrel 병용"
+        }
+      ]
+    },
+    {
+      "condition": "위/십이지장 궤양 병력",
+      "drugs": [
+        "Aspirin (>325 mg/day)",
+        "Non-COX-2-selective NSAIDs"
+      ],
+      "reason": "궤양 악화/신규 유발",
+      "id": "ulcer",
+      "label": "위·십이지장 궤양 병력",
+      "kind": "병력",
+      "match": [
+        {
+          "ing": "aspirin",
+          "kr": "아스피린(>325 mg/일)",
+          "dose": ">325 mg/일",
+          "token": "Aspirin (>325 mg/day)"
+        },
+        {
+          "tag": "nsaid_ns",
+          "kr": "비선택적 NSAID",
+          "token": "Non-COX-2-selective NSAIDs"
+        }
+      ]
+    },
+    {
+      "condition": "만성 변비",
+      "drugs": [
+        "Anticholinergics",
+        "Opioids"
+      ],
+      "reason": "변비 악화",
+      "id": "constipation",
+      "label": "만성 변비",
+      "kind": "증상",
+      "match": [
+        {
+          "tag": "anticholinergic",
+          "kr": "항콜린제",
+          "token": "Anticholinergics"
+        },
+        {
+          "cls": "opioid",
+          "kr": "오피오이드 진통제",
+          "token": "Opioids"
+        }
+      ]
+    },
+    {
+      "condition": "만성 콩팥병(CrCl<30)",
+      "drugs": [
+        "NSAIDs",
+        "COX-2 inhibitors"
+      ],
+      "reason": "급성 신손상·신기능 악화 위험",
+      "id": "ckd",
+      "label": "만성 콩팥병",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "nsaid",
+          "kr": "NSAID 소염진통제",
+          "token": "NSAIDs"
+        },
+        {
+          "cls": "cox2",
+          "kr": "COX-2 억제제",
+          "token": "COX-2 inhibitors"
+        }
+      ]
+    },
+    {
+      "condition": "하부요로증상/전립선비대",
+      "drugs": [
+        "Anticholinergics"
+      ],
+      "reason": "요류 감소·요저류",
+      "id": "bph",
+      "label": "전립선비대·배뇨장애",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "anticholinergic",
+          "kr": "항콜린제",
+          "token": "Anticholinergics"
+        }
+      ]
+    },
+    {
+      "condition": "SIADH·저나트륨혈증",
+      "drugs": [
+        "Diuretics",
+        "Antipsychotics",
+        "Antidepressants",
+        "carbamazepine",
+        "oxcarbazepine",
+        "carboplatin",
+        "cyclophosphamide",
+        "cisplatin",
+        "vincristine"
+      ],
+      "reason": "저나트륨혈증 악화",
+      "id": "hyponatremia",
+      "label": "저나트륨혈증",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "diuretic",
+          "kr": "이뇨제",
+          "token": "Diuretics"
+        },
+        {
+          "tag": "antipsychotic",
+          "kr": "항정신병약",
+          "token": "Antipsychotics"
+        },
+        {
+          "tag": "antidepressant",
+          "kr": "항우울제",
+          "token": "Antidepressants"
+        },
+        {
+          "ing": "carbamazepine",
+          "kr": "카르바마제핀",
+          "token": "carbamazepine"
+        },
+        {
+          "ing": "oxcarbazepine",
+          "kr": "옥스카르바제핀",
+          "token": "oxcarbazepine"
+        },
+        {
+          "ing": "carboplatin",
+          "kr": "카보플라틴",
+          "token": "carboplatin"
+        },
+        {
+          "ing": "cyclophosphamide",
+          "kr": "시클로포스파미드",
+          "token": "cyclophosphamide"
+        },
+        {
+          "ing": "cisplatin",
+          "kr": "시스플라틴",
+          "token": "cisplatin"
+        },
+        {
+          "ing": "vincristine",
+          "kr": "빈크리스틴",
+          "token": "vincristine"
+        }
+      ]
+    },
+    {
+      "condition": "만성폐쇄성폐질환",
+      "drugs": [
+        "Theophylline (단독요법)"
+      ],
+      "reason": "더 효과적인 흡입제 존재",
+      "id": "copd",
+      "label": "만성폐쇄성폐질환",
+      "kind": "진단",
+      "match": [
+        {
+          "ing": "theophylline",
+          "kr": "테오필린(단독요법)",
+          "note": "단독요법 여부는 사람이 확인",
+          "token": "Theophylline (단독요법)"
+        }
+      ]
+    },
+    {
+      "condition": "출혈 위험 상황",
+      "drugs": [
+        "Aspirin",
+        "Clopidogrel",
+        "Ticlopidine",
+        "NSAIDs",
+        "Warfarin",
+        "dabigatran",
+        "rivaroxaban",
+        "apixaban",
+        "edoxaban"
+      ],
+      "reason": "출혈 위험 증가",
+      "id": "bleeding",
+      "label": "출혈 위험 상황",
+      "kind": "상태",
+      "match": [
+        {
+          "ing": "aspirin",
+          "kr": "아스피린",
+          "token": "Aspirin"
+        },
+        {
+          "ing": "clopidogrel",
+          "kr": "클로피도그렐",
+          "token": "Clopidogrel"
+        },
+        {
+          "ing": "ticlopidine",
+          "kr": "티클로피딘",
+          "token": "Ticlopidine"
+        },
+        {
+          "tag": "nsaid",
+          "kr": "NSAID 소염진통제",
+          "token": "NSAIDs"
+        },
+        {
+          "ing": "warfarin",
+          "kr": "와파린",
+          "token": "Warfarin"
+        },
+        {
+          "ing": "dabigatran",
+          "kr": "다비가트란",
+          "token": "dabigatran"
+        },
+        {
+          "ing": "rivaroxaban",
+          "kr": "리바록사반",
+          "token": "rivaroxaban"
+        },
+        {
+          "ing": "apixaban",
+          "kr": "아픽사반",
+          "token": "apixaban"
+        },
+        {
+          "ing": "edoxaban",
+          "kr": "에독사반",
+          "token": "edoxaban"
+        }
+      ]
+    },
+    {
+      "condition": "당뇨",
+      "drugs": [
+        "Beta-blockers",
+        "Corticosteroids"
+      ],
+      "reason": "저혈당 증상 은폐 / 혈당 조절 악화",
+      "id": "dm",
+      "label": "당뇨",
+      "kind": "진단",
+      "match": [
+        {
+          "cls": "bb",
+          "kr": "베타차단제",
+          "token": "Beta-blockers"
+        },
+        {
+          "cls": "cortico",
+          "kr": "스테로이드(전신)",
+          "token": "Corticosteroids"
+        }
+      ]
+    },
+    {
+      "condition": "녹내장",
+      "drugs": [
+        "Anticholinergics"
+      ],
+      "reason": "급성 녹내장 악화 위험",
+      "id": "glaucoma",
+      "label": "녹내장",
+      "kind": "진단",
+      "match": [
+        {
+          "tag": "anticholinergic",
+          "kr": "항콜린제",
+          "token": "Anticholinergics"
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "table1_items": 63,
+    "table2_conditions": 18,
+    "table2_drug_condition_pairs": 59,
+    "table2_only_items": 39,
+    "unique_items": 102,
+    "definition": "고유 항목 = 표1 개별 약물 + 표2에만 등장하는 판정 대상(계열·약물·병용) 합집합"
+  },
+  "engine_applied": "2026-08"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "korean-pim",
+  "version": "0.1.0",
+  "description": "한국형 노인 부적절약물(PIM) 2018 판정 라이브러리 — 표1 63항목 + 표2 18개 조건, 고유 102항목. 결정론적 규칙 판정, 의존성 없음.",
+  "main": "src/index.js",
+  "files": ["src", "data", "DATA_NOTICE.md"],
+  "scripts": { "test": "node test/test.js" },
+  "keywords": ["pim", "polypharmacy", "geriatrics", "deprescribing", "medication-safety",
+    "노인부적절약물", "다제약물", "복약안전", "korea", "healthcare"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/dayeon603-pixel/korean-pim.git" },
+  "engines": { "node": ">=16" },
+  "dependencies": {}
+}
