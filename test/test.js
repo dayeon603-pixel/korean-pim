@@ -122,5 +122,27 @@ const VERIFIED = {
 Object.entries(VERIFIED).forEach(([ing, code]) =>
   check(`WHO 인덱스 대조: ${ing} = ${code}`, pim.checkIngredient(ing).atc === code));
 
+section('6. 기준 비교 모듈 (HIRA 2022 · Beers 2023)');
+const hira = require('../src/hira2022.js');
+const beers = require('../src/beers2023.js');
+check('HIRA 14계열 · 77성분', hira.CLASSES.length === 14 && hira.totalIngredients === 77);
+check('HIRA 국가 기준에 조건부 축 없음', hira.NATIONAL_CRITERIA.conditionBased === false);
+check('HIRA 후보 출처에 Korea PIM 63 포함', hira.CANDIDATE_SOURCES.koreaPim === 63);
+check('HIRA Korea PIM 후보 수 = Kim 표1 항목 수', hira.CANDIDATE_SOURCES.koreaPim === pim.coverage.table1);
+check('HIRA 청구 실측치 노출', hira.CLAIMS.pimUsers === 684538 && hira.CLAIMS.pimUserRate === 44.7);
+check('HIRA 계열 전부 매처 보유', hira.CLASSES.every((c) => c.match && (c.match.ing || c.match.cls || c.match.tag)));
+check('Beers 2023 Table 3 조건 9개', beers.conditionCount === 9 && beers.TABLE3.length === 9);
+check('Beers 전 조건에 대상 약물 존재', beers.TABLE3.every((c) => c.targets.length > 0));
+check('Beers 저작권 고지 유지', /American Geriatrics Society/.test(beers.copyright) && /전문이 아니다/.test(beers.copyright));
+check('Beers 출처에 DOI 명시', /10\.1111\/jgs\.18372/.test(beers.source));
+check('조건부 축 크기 순서: Kim 18 > Beers 9 > HIRA 0',
+  pim.coverage.table2Conditions === 18 && beers.conditionCount === 9 && hira.NATIONAL_CRITERIA.conditionBased === false);
+check('Beers 판정 동작: 심부전 + 베라파밀',
+  beers.check(['hf'], [{ ing: 'verapamil', cls: 'ccbnd', tags: [] }]).length === 1);
+check('Beers 판정: 조건 없으면 0건', beers.check([], [{ ing: 'verapamil', cls: 'ccbnd', tags: [] }]).length === 0);
+check('Kim 표1 약물이 HIRA 계열로 분류됨(졸피뎀 → Z-drugs)',
+  (hira.classify({ ing: 'zolpidem', cls: 'zdrug', tags: ['zolpidem'] }, '수면제(Z-drug)') || {}).name === 'Z-drugs');
+check('HIRA 미포괄 항목 존재(디곡신)', !hira.isCovered({ ing: 'digoxin', cls: 'digoxin', tags: [] }, '강심제'));
+
 console.log(`\nkorean-pim: ${pass} 통과 / ${fail} 실패 (총 ${pass + fail}건)`);
 if (fail) { console.log('실패:\n - ' + failed.join('\n - ')); process.exit(1); }

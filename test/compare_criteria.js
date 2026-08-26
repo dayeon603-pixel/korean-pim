@@ -10,6 +10,7 @@
 'use strict';
 const pim = require('../src/index.js');
 const hira = require('../src/hira2022.js');
+const beers = require('../src/beers2023.js');
 
 const line = (t) => console.log(`\n${t}\n${'─'.repeat(t.length)}`);
 console.log('기준 비교 — 심평원 2022 국가 기준(안) vs Kim 2018 한국형 PIM\n');
@@ -73,3 +74,35 @@ console.log(`국가 기준은 Kim 2018 표1의 ${(covered.length / pim.coverage.
 console.log(`**표2의 ${pim.coverage.table2Conditions}개 기저질환 조건은 후보 검토 대상에도 포함되지 않았다.**`);
 console.log(`환자 상태를 함께 봐야 성립하는 판정 축이 국가 기준에 존재하지 않는다.`);
 console.log(`\n※ 보고서 표 21은 계열과 성분 개수만 공개한다. 성분 단위 대조는 부록 원본 입수 후에 가능하다.`);
+
+line('7. 조건부 판정 축의 3자 비교');
+console.log(`Kim 2018 표2 (한국, 학술 합의)      ${pim.coverage.table2Conditions}개 조건`);
+console.log(`Beers 2023 Table 3 (미국, 학술 합의) ${beers.conditionCount}개 조건`);
+console.log(`심평원 2022 (한국, 국가 운영 기준)   ${hira.NATIONAL_CRITERIA.conditionBased ? '있음' : '0개 조건'}`);
+console.log(`\n${beers.source}`);
+console.log(`${beers.copyright}`);
+
+const kimIds = new Set(pim.conditions.map((c) => c.id));
+const shared = [], beersOnly = [], kimOnly = [];
+beers.TABLE3.forEach((c) => {
+  const eq = beers.KIM_EQUIVALENT[c.id];
+  if (eq && kimIds.has(eq)) shared.push({ beers: c, kim: eq });
+  else beersOnly.push(c);
+});
+const beersMapped = new Set(Object.values(beers.KIM_EQUIVALENT).filter(Boolean));
+pim.conditions.forEach((c) => { if (!beersMapped.has(c.id)) kimOnly.push(c); });
+
+console.log(`\n양쪽에 모두 있는 조건  ${shared.length}개`);
+shared.forEach((s) => console.log(`   ${s.beers.nameKo}`));
+console.log(`\nBeers에만 있는 조건    ${beersOnly.length}개`);
+beersOnly.forEach((c) => console.log(`   ${c.nameKo} (${c.name})`));
+console.log(`\nKim 2018에만 있는 조건 ${kimOnly.length}개`);
+kimOnly.forEach((c) => console.log(`   ${c.label}`));
+
+line('8. 이 비교가 말하는 것');
+console.log(`학술 합의 기준은 두 나라 모두 조건부 축을 갖는다 (한국 ${pim.coverage.table2Conditions}개, 미국 ${beers.conditionCount}개).`);
+console.log(`한국형 기준이 미국 기준보다 조건부 항목을 ${pim.coverage.table2Conditions - beers.conditionCount}개 더 갖는다.`);
+console.log(`그런데 국가 운영 기준(심평원 2022)에서는 그 축이 통째로 사라진다.`);
+console.log(`\n즉 조건부 기준의 소실은 "한국형 목록이 부실해서"가 아니라`);
+console.log(`**학술 합의를 국가 운영 기준으로 옮기는 단계에서 발생한다.**`);
+console.log(`\n※ Beers 2023은 일부 기준을 Table 3에서 Table 4·6으로 옮겼다. 여기서는 2023판 Table 3만 센다.`);
