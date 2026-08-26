@@ -14,6 +14,7 @@
 'use strict';
 const pim = require('../src/index.js');
 const bm = require('../src/bitmask.js');
+const hira = require('../src/hira2022.js');
 
 const N = parseInt(process.argv[2] || '10000', 10);
 let seed = 20260902;                                   // 시드 고정 → 항상 같은 데이터
@@ -52,6 +53,24 @@ const COMORBID_LIFT = {
   hyponatremia: { ckd: 1.8, hf: 1.5 },
 };
 
+// PIM 계열 처방 빈도는 국가 청구 실측치를 쓴다(심평원 2022 표 28, 2017년 코호트).
+// 부적절 약물을 1종 이상 처방받은 노인 684,538명 중 해당 계열 비율(%)이다.
+// 이 값은 [출처]가 있는 수치이며, 앞의 동반질환 가중치와 달리 가정이 아니다.
+const HIRA_PREVALENCE = {};
+hira.CLASSES.forEach((c) => { HIRA_PREVALENCE[c.name] = c.prevalence; });
+
+/** 약물이 HIRA 14계열에 속하면 그 계열의 실측 처방 비율을 가중치로 돌려준다.
+ *  속하지 않으면 기준 가중치 1을 준다(비-PIM 약물은 상대적으로 흔하게 처방되므로). */
+function hiraWeight(ing) {
+  const item = pim.checkIngredient(ing);
+  const drug = item
+    ? { ing, cls: item.classKey, tags: item.tags }
+    : { ing, cls: (EXTRA_CLASS[ing] && (Array.isArray(EXTRA_CLASS[ing]) ? EXTRA_CLASS[ing][0] : EXTRA_CLASS[ing])) || 'other', tags: [] };
+  const c = hira.classify(drug, item ? item.classKo : '');
+  // 실측 비율(0~43.3)을 가중치로 쓰되, 0%인 계열도 완전히 배제하지 않도록 하한을 둔다.
+  return c ? Math.max(0.3, c.prevalence / 5) : 1;
+}
+
 // 치료 영역별 약물 풀. PIM 등재 여부와 무관하게 구성했다.
 const POOL = {
   혈압: ['amlodipine', 'losartan', 'valsartan', 'lisinopril', 'telmisartan', 'bisoprolol', 'carvedilol', 'verapamil', 'diltiazem', 'doxazosin', 'terazosin', 'prazosin'],
@@ -74,6 +93,7 @@ const POOL = {
 const AREAS = Object.keys(POOL);
 
 // 표1 등재 성분의 효능군(엔진이 아는 분류). 표1 밖 약물은 최소 분류만 부여한다.
+// hiraWeight()가 이 표를 참조하므로 호이스팅되는 const 선언 순서에 주의한다.
 const EXTRA_CLASS = {
   losartan: 'arb', valsartan: 'arb', telmisartan: 'arb', lisinopril: 'acei', amlodipine: 'bp',
   bisoprolol: 'bb', carvedilol: 'bb', verapamil: 'ccbnd', diltiazem: 'ccbnd',
@@ -124,10 +144,11 @@ function makePrescription() {
   const n = lo + Math.floor(rnd() * (hi - lo + 1));
   const chosen = new Set();
   let guard = 0;
-  while (chosen.size < n && guard++ < 200) {
+  while (chosen.size < n && guard++ < 300) {
     const area = AREAS[Math.floor(rnd() * AREAS.length)];
     const pool = POOL[area];
-    chosen.add(pool[Math.floor(rnd() * pool.length)]);
+    // 계열 내 선택은 국가 청구 실측 비율로 가중한다(장기작용 벤조 43.3%, Z-drug 24.3% 등).
+    chosen.add(pickW(pool, pool.map(hiraWeight)));
   }
   // 동반질환은 독립이 아니다. 선행 질환이 있으면 관련 질환 확률을 조건부로 올린다.
   // 상승폭은 [가정]이며 실제 유병률 통계가 아니다. 독립 추출보다 현실에 가깝게 만들려는 장치일 뿐이다.
@@ -294,4 +315,42 @@ console.log(`과경고 감소       ${(warnClass - warnExact).toLocaleString()}�
 let t2total = 0, withCond = 0;
 cases.forEach((c) => { const r = bm.check(c); const m = bm.mergeByTarget(r.table2); t2total += m.length; if (m.length) withCond++; });
 console.log(`표2 조건부 판정   총 ${t2total.toLocaleString()}건 · 판정이 나온 처방 ${(withCond / N * 100).toFixed(1)}%`);
+// ── 4) 핵심: 국가 기준이 놓치고 표2만 잡는 사례 ──────────────────────
+// 국가 기준(심평원 2022)은 약물 단독 기준이다. 기저질환 조건부 축이 없다.
+// 같은 처방을 두 기준으로 판정해 "국가 기준으로는 아무 문제 없으나 표2로는 걸리는" 처방을 센다.
+let hiraFlag = 0, t2Flag = 0, onlyT2 = 0, both = 0, neither = 0;
+const onlyT2Examples = [];
+cases.forEach((c) => {
+  const drugs = c.drugs.map((d) => {
+    const k = pim.checkIngredient(d.ing);
+    return k ? { ing: d.ing, cls: k.classKey, tags: k.tags, cat: k.classKo } : { ...d, cat: '' };
+  });
+  const byHira = drugs.some((d) => hira.isCovered(d, d.cat));
+  const t2 = bm.mergeByTarget(bm.check(c).table2);
+  const byT2 = t2.length > 0;
+  if (byHira) hiraFlag++;
+  if (byT2) t2Flag++;
+  if (byHira && byT2) both++;
+  else if (!byHira && byT2) {
+    onlyT2++;
+    if (onlyT2Examples.length < 5) onlyT2Examples.push({
+      drugs: drugs.map((d) => pim.nameKo(d.ing)).slice(0, 6),
+      conds: c.conditions.slice(0, 3).map((id) => (pim.conditions.find((x) => x.id === id) || {}).label),
+      hit: t2.slice(0, 2).map((h) => `${h.condition.label} + ${h.target.nameKo}`),
+    });
+  } else if (!byHira && !byT2) neither++;
+});
+console.log(`\n국가 기준(약물 단독) 판정      ${hiraFlag.toLocaleString()}건 (${(hiraFlag / N * 100).toFixed(1)}%)`);
+console.log(`Kim 2018 표2(조건부) 판정      ${t2Flag.toLocaleString()}건 (${(t2Flag / N * 100).toFixed(1)}%)`);
+console.log(`둘 다 판정                     ${both.toLocaleString()}건`);
+console.log(`**국가 기준은 놓치고 표2만 판정  ${onlyT2.toLocaleString()}건 (${(onlyT2 / N * 100).toFixed(1)}%)**`);
+console.log(`둘 다 판정 없음                ${neither.toLocaleString()}건`);
+if (t2Flag) console.log(`표2 판정 중 국가 기준이 놓친 비율 ${(onlyT2 / t2Flag * 100).toFixed(1)}%`);
+console.log('\n국가 기준이 놓친 사례 예시:');
+onlyT2Examples.forEach((e, i) => {
+  console.log(`  ${i + 1}. 약: ${e.drugs.join(', ')}`);
+  console.log(`     기저질환: ${e.conds.filter(Boolean).join(', ')}`);
+  console.log(`     표2 판정: ${e.hit.join(' / ')}`);
+});
+
 console.log('\n※ 합성 데이터다. 실제 처방 분포가 아니므로 위 비율을 임상 알람 감소율로 읽으면 안 된다.');
