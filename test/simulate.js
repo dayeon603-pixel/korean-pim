@@ -17,8 +17,19 @@ const bm = require('../src/bitmask.js');
 const hira = require('../src/hira2022.js');
 
 const N = parseInt(process.argv[2] || '10000', 10);
-let seed = 20260902;                                   // 시드 고정 → 항상 같은 데이터
-const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+// mulberry32 — 시드 고정으로 재현 가능하되 시드를 충분히 섞는다.
+// 초기 구현의 LCG는 시드를 조금 바꾸면 같은 궤적으로 붕괴해 서로 다른 시드가 같은 결과를 냈다.
+// test/measure_gap.js에서 그 문제를 발견해 두 파일 모두 교체했다.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const SEED = 20260902;
+const rnd = mulberry32(SEED);
 const pickW = (items, weights) => {
   const t = weights.reduce((a, b) => a + b, 0); let r = rnd() * t;
   for (let i = 0; i < items.length; i++) { r -= weights[i]; if (r <= 0) return items[i]; }
@@ -163,7 +174,7 @@ function makePrescription() {
   return { drugs: [...chosen].map(toDrug), conditions: conds };
 }
 
-console.log(`합성 처방 스트레스 테스트 — ${N.toLocaleString()}건 (시드 ${20260902})\n`);
+console.log(`합성 처방 스트레스 테스트 — ${N.toLocaleString()}건 (시드 ${SEED}, mulberry32)\n`);
 const cases = [];
 let noisy = 0;
 for (let i = 0; i < N; i++) {
@@ -335,7 +346,8 @@ cases.forEach((c) => {
     onlyT2++;
     if (onlyT2Examples.length < 5) onlyT2Examples.push({
       drugs: drugs.map((d) => pim.nameKo(d.ing)).slice(0, 6),
-      conds: c.conditions.slice(0, 3).map((id) => (pim.conditions.find((x) => x.id === id) || {}).label),
+      // 실제로 판정을 발화시킨 조건만 보여준다(전체 조건을 잘라 보여주면 앞뒤가 안 맞는다).
+      conds: [...new Set(t2.map((h) => h.condition.label))],
       hit: t2.slice(0, 2).map((h) => `${h.condition.label} + ${h.target.nameKo}`),
     });
   } else if (!byHira && !byT2) neither++;
