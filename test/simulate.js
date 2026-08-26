@@ -1,0 +1,193 @@
+/* 합성 처방 스트레스 테스트 — node test/simulate.js [건수]
+ *
+ * 목적: 대량 처방에서 (1) 판정이 동일하게 나오는지 (2) 처리 속도가 어떤지
+ *       (3) 계열 추정 대비 경고가 얼마나 줄어드는지를 측정한다.
+ *
+ * 순환논증 회피: 처방 생성기는 PIM 규칙을 참조하지 않는다. 약물 풀은 치료 영역별로
+ *   구성했고, 어떤 약이 PIM 목록에 있는지는 생성 과정에서 쓰이지 않는다. 생성기가
+ *   규칙을 알면 "내가 낸 문제를 내가 푸는" 구조가 되므로 의도적으로 분리했다.
+ *
+ * 가중치의 출처: 복용 약물 수 분포는 공개 통계를 참고했고, 그 밖의 동반질환 유병률은
+ *   가정치다. 아래 WEIGHTS에 항목별로 [출처] 또는 [가정]으로 표기했다.
+ *   실제 청구데이터를 쓰지 않았으므로 이 분포는 현실을 근사한 것이 아니라 부하 시험용이다.
+ */
+'use strict';
+const pim = require('../src/index.js');
+const bm = require('../src/bitmask.js');
+
+const N = parseInt(process.argv[2] || '10000', 10);
+let seed = 20260902;                                   // 시드 고정 → 항상 같은 데이터
+const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+const pickW = (items, weights) => {
+  const t = weights.reduce((a, b) => a + b, 0); let r = rnd() * t;
+  for (let i = 0; i < items.length; i++) { r -= weights[i]; if (r <= 0) return items[i]; }
+  return items[items.length - 1];
+};
+
+const WEIGHTS = {
+  // 복용 약물 수. 75세 이상 5종 이상 동시복용 64.2%(심평원 2021), 10종 이상 상당수 존재(건보공단 2022).
+  // 이 두 지점에 맞춰 구간 비중을 잡았다. [출처 참고 + 구간 배분은 가정]
+  drugCount: { buckets: [[1, 2], [3, 4], [5, 6], [7, 9], [10, 14]], w: [14, 22, 28, 24, 12] },
+  // 동반질환 유병률. [전부 가정] 실제 유병률 통계를 쓰지 않았다.
+  conditions: {
+    htn: 0.55, dm: 0.28, ckd: 0.12, hf: 0.10, arrhythmia: 0.08, dementia: 0.12,
+    falls: 0.18, insomnia: 0.22, ulcer: 0.09, constipation: 0.20, bph: 0.16,
+    glaucoma: 0.05, copd: 0.07, parkinson: 0.03, hyponatremia: 0.04,
+    bleeding: 0.06, stroke_secondary: 0.07, age80_primary: 0.20,
+  },
+};
+
+// 치료 영역별 약물 풀. PIM 등재 여부와 무관하게 구성했다.
+const POOL = {
+  혈압: ['amlodipine', 'losartan', 'valsartan', 'lisinopril', 'telmisartan', 'bisoprolol', 'carvedilol', 'verapamil', 'diltiazem', 'doxazosin', 'terazosin', 'prazosin'],
+  이뇨: ['furosemide', 'hydrochlorothiazide', 'spironolactone'],
+  당뇨: ['metformin', 'glimepiride', 'glibenclamide', 'sitagliptin', 'linagliptin', 'pioglitazone', 'dapagliflozin'],
+  고지혈: ['simvastatin', 'atorvastatin', 'rosuvastatin'],
+  진통: ['acetaminophen', 'ibuprofen', 'naproxen', 'diclofenac', 'aceclofenac', 'meloxicam', 'celecoxib', 'piroxicam', 'mefenamic', 'indomethacin', 'tramadol', 'codeine', 'pethidine', 'pentazocine'],
+  위장: ['omeprazole', 'esomeprazole', 'rabeprazole', 'pantoprazole', 'cimetidine', 'metoclopramide'],
+  수면진정: ['zolpidem', 'diazepam', 'lorazepam', 'alprazolam', 'clonazepam', 'triazolam', 'bromazepam'],
+  정신: ['escitalopram', 'paroxetine', 'amitriptyline', 'nortriptyline', 'imipramine', 'haloperidol', 'risperidone', 'quetiapine', 'olanzapine'],
+  항히스타민: ['chlorpheniramine', 'diphenhydramine', 'hydroxyzine', 'dimenhydrinate', 'cetirizine', 'levocetirizine', 'loratadine'],
+  근이완: ['eperisone', 'baclofen', 'methocarbamol', 'orphenadrine'],
+  항혈전: ['aspirin', 'clopidogrel', 'warfarin', 'apixaban', 'rivaroxaban', 'edoxaban', 'cilostazol', 'ticlopidine'],
+  심장: ['digoxin', 'amiodarone', 'dronedarone', 'flecainide'],
+  비뇨: ['oxybutynin', 'tamsulosin', 'desmopressin'],
+  호흡: ['theophylline', 'pseudoephedrine', 'phenylephrine'],
+  신경: ['donepezil', 'rivastigmine', 'gabapentin', 'pregabalin', 'carbamazepine', 'oxcarbazepine', 'cholinealfoscerate'],
+  기타: ['levothyroxine', 'alendronate', 'prednisolone', 'methylphenidate', 'caffeine'],
+};
+const AREAS = Object.keys(POOL);
+
+// 표1 등재 성분의 효능군(엔진이 아는 분류). 표1 밖 약물은 최소 분류만 부여한다.
+const EXTRA_CLASS = {
+  losartan: 'arb', valsartan: 'arb', telmisartan: 'arb', lisinopril: 'acei', amlodipine: 'bp',
+  bisoprolol: 'bb', carvedilol: 'bb', verapamil: 'ccbnd', diltiazem: 'ccbnd',
+  furosemide: ['diuretic', 'diuretic'], hydrochlorothiazide: ['diuretic', 'diuretic'], spironolactone: ['kdiuretic', 'diuretic'],
+  metformin: 'dm', glimepiride: 'su', sitagliptin: 'dm2', linagliptin: 'dm2', pioglitazone: 'tzd', dapagliflozin: 'dm2',
+  simvastatin: 'statin', atorvastatin: 'statin', rosuvastatin: 'statin',
+  acetaminophen: 'apap', celecoxib: 'cox2', aceclofenac: ['nsaid', 'nsaid'], meloxicam: ['nsaid', 'nsaid'],
+  tramadol: 'opioid', codeine: 'opioid',
+  omeprazole: 'ppi', esomeprazole: 'ppi', rabeprazole: 'ppi', pantoprazole: 'ppi',
+  escitalopram: ['ssri', 'antidepressant'], paroxetine: ['ssri', 'antidepressant'],
+  cetirizine: 'antihist2', levocetirizine: 'antihist2', loratadine: 'antihist2',
+  eperisone: 'musclerelax', baclofen: 'musclerelax',
+  clopidogrel: 'antiplatelet', warfarin: 'anticoag', apixaban: 'noac', rivaroxaban: 'noac',
+  edoxaban: 'noac', cilostazol: 'antiplatelet',
+  tamsulosin: 'alpha1a', donepezil: 'chei', rivastigmine: 'chei',
+  gabapentin: ['anticonv', 'anticonvulsant'], pregabalin: ['anticonv', 'anticonvulsant'],
+  carbamazepine: 'anticonv', oxcarbazepine: 'anticonv', cholinealfoscerate: 'nootropic',
+  levothyroxine: 'thyroid', alendronate: 'bisphos', prednisolone: ['cortico', 'corticosteroid'],
+  theophylline: 'xanthine', pseudoephedrine: 'decongest', phenylephrine: 'decongest',
+  methylphenidate: 'stimulant', caffeine: 'stimulant',
+};
+function toDrug(ing) {
+  const known = pim.checkIngredient(ing);
+  if (known) return { ing, cls: known.classKey, tags: known.tags.slice() };
+  const e = EXTRA_CLASS[ing];
+  if (Array.isArray(e)) return { ing, cls: e[0], tags: [e[1]] };
+  return { ing, cls: e || 'other', tags: [] };
+}
+
+// 노이즈 주입: 실제 입력은 깨끗하지 않다. 존재하지 않는 성분, 빈 값, 잘못된 조건 id,
+// 대소문자 뒤섞임, 중복 등을 섞어 엔진이 죽지 않고 정상 판정을 유지하는지 본다.
+const NOISE_RATE = 0.15;
+function injectNoise(p) {
+  const kind = Math.floor(rnd() * 6);
+  const d = [...p.drugs];
+  const c = [...p.conditions];
+  if (kind === 0) d.push({ ing: 'not_a_real_ingredient_' + Math.floor(rnd() * 999), cls: 'other', tags: [] });
+  if (kind === 1) d.push({ ing: '', cls: '', tags: [] });
+  if (kind === 2) c.push('존재하지_않는_조건');
+  if (kind === 3 && d.length) d.push({ ...d[0], ing: String(d[0].ing).toUpperCase() });
+  if (kind === 4 && d.length) d.push(d[0]);
+  if (kind === 5) return { drugs: d, conditions: [] };
+  return { drugs: d, conditions: c };
+}
+
+function makePrescription() {
+  const [lo, hi] = pickW(WEIGHTS.drugCount.buckets, WEIGHTS.drugCount.w);
+  const n = lo + Math.floor(rnd() * (hi - lo + 1));
+  const chosen = new Set();
+  let guard = 0;
+  while (chosen.size < n && guard++ < 200) {
+    const area = AREAS[Math.floor(rnd() * AREAS.length)];
+    const pool = POOL[area];
+    chosen.add(pool[Math.floor(rnd() * pool.length)]);
+  }
+  const conds = Object.entries(WEIGHTS.conditions).filter(([, p]) => rnd() < p).map(([id]) => id);
+  return { drugs: [...chosen].map(toDrug), conditions: conds };
+}
+
+console.log(`합성 처방 스트레스 테스트 — ${N.toLocaleString()}건 (시드 ${20260902})\n`);
+const cases = [];
+let noisy = 0;
+for (let i = 0; i < N; i++) {
+  let c = makePrescription();
+  if (rnd() < NOISE_RATE) { c = injectNoise(c); noisy++; }
+  cases.push(c);
+}
+console.log(`노이즈 주입      ${noisy.toLocaleString()}건 (${(noisy / N * 100).toFixed(1)}%) — 없는 성분·빈 값·잘못된 조건 id·중복·대소문자 혼입\n`);
+
+const drugCounts = cases.map((c) => c.drugs.length);
+const condCounts = cases.map((c) => c.conditions.length);
+const avg = (a) => (a.reduce((x, y) => x + y, 0) / a.length).toFixed(2);
+console.log(`처방당 약물 수  평균 ${avg(drugCounts)} (최소 ${Math.min(...drugCounts)}, 최대 ${Math.max(...drugCounts)})`);
+console.log(`5종 이상 비율   ${(drugCounts.filter((n) => n >= 5).length / N * 100).toFixed(1)}%`);
+console.log(`처방당 기저질환 평균 ${avg(condCounts)}개\n`);
+
+// ── 1) 두 엔진 결과 동일성 ──
+const key = (h) => `${h.condition.id}|${h.target.token}|${h.drugs.map((d) => d.ing).sort().join(',')}`;
+const norm = (a) => a.map(key).sort().join('||');
+let mismatch = 0;
+for (let i = 0; i < N; i++) {
+  const a = pim.check(cases[i]);
+  const b = bm.check(cases[i]);
+  if (norm(a.table2) !== norm(bm.mergeByTarget(b.table2)) || a.table1.length !== b.table1.length) mismatch++;
+}
+console.log(`엔진 동일성      불일치 ${mismatch}건 / ${N.toLocaleString()}건`);
+
+// 노이즈 포함 전체에서 예외 없이 완주하는지
+let crashed = 0;
+for (let i = 0; i < N; i++) {
+  try { pim.check(cases[i]); bm.check(cases[i]); } catch (e) { crashed++; }
+}
+console.log(`예외 발생        ${crashed}건 / ${N.toLocaleString()}건 (노이즈 포함)`);
+
+// ── 2) 속도 ── JIT 워밍업 후 여러 번 재고 중앙값으로 본다. 단발 측정은 편차가 커서 못 믿는다.
+function bench(fn, label, reps = 7, warmup = 3) {
+  for (let w = 0; w < warmup; w++) for (let i = 0; i < N; i++) fn(cases[i]);
+  const runs = [];
+  for (let r = 0; r < reps; r++) {
+    const t0 = process.hrtime.bigint();
+    for (let i = 0; i < N; i++) fn(cases[i]);
+    runs.push(Number(process.hrtime.bigint() - t0) / 1e6);
+  }
+  runs.sort((a, b) => a - b);
+  const med = runs[Math.floor(reps / 2)];
+  console.log(`${label.padEnd(14)} 중앙값 ${med.toFixed(1).padStart(6)} ms  (${runs[0].toFixed(1)}~${runs[reps - 1].toFixed(1)})  ·  처방당 ${(med / N * 1000).toFixed(2)} µs  ·  ${Math.round(N / (med / 1000)).toLocaleString()} 건/초`);
+  return med;
+}
+console.log(`\n속도 (워밍업 3회 후 7회 측정)`);
+const msLinear = bench((c) => pim.check(c), '선형 순회');
+const msBit = bench((c) => bm.check(c), '비트마스크');
+const ratio = msLinear / msBit;
+console.log(`속도비          ${ratio.toFixed(2)}배  ${ratio > 1.1 ? '(비트마스크 우세)' : ratio < 0.9 ? '(선형 우세)' : '(유의한 차이 없음)'}  · 마스크 캐시 ${bm.cacheSize()}종`);
+
+// ── 3) 계열 추정 대비 경고 감소 ──
+const pimClasses = new Set(pim.table1.map((x) => x.classKey));
+let warnClass = 0, warnExact = 0;
+cases.forEach((c) => {
+  const seenC = new Set(), seenE = new Set();
+  c.drugs.forEach((d) => {
+    if (pimClasses.has(d.cls)) seenC.add(d.ing);
+    if (pim.isTable1(d.ing)) seenE.add(d.ing);
+  });
+  warnClass += seenC.size; warnExact += seenE.size;
+});
+console.log(`\n표1 경고 건수     계열 추정 ${warnClass.toLocaleString()}건 → 완전일치 ${warnExact.toLocaleString()}건`);
+console.log(`과경고 감소       ${(warnClass - warnExact).toLocaleString()}건 (${((warnClass - warnExact) / warnClass * 100).toFixed(1)}%)`);
+
+let t2total = 0, withCond = 0;
+cases.forEach((c) => { const r = bm.check(c); const m = bm.mergeByTarget(r.table2); t2total += m.length; if (m.length) withCond++; });
+console.log(`표2 조건부 판정   총 ${t2total.toLocaleString()}건 · 판정이 나온 처방 ${(withCond / N * 100).toFixed(1)}%`);
+console.log('\n※ 합성 데이터다. 실제 처방 분포가 아니므로 위 비율을 임상 알람 감소율로 읽으면 안 된다.');

@@ -10,8 +10,9 @@
     "VERIFICATION.md"
   ],
   "scripts": {
-    "test": "node test/test.js && node test/verify_against_paper.js",
-    "verify": "node test/verify_against_paper.js"
+    "test": "node test/test.js && node test/verify_against_paper.js && node test/test_bitmask.js",
+    "verify": "node test/verify_against_paper.js",
+    "simulate": "node test/simulate.js 10000"
   },
   "keywords": [
     "pim",
