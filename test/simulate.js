@@ -29,12 +29,27 @@ const WEIGHTS = {
   // 이 두 지점에 맞춰 구간 비중을 잡았다. [출처 참고 + 구간 배분은 가정]
   drugCount: { buckets: [[1, 2], [3, 4], [5, 6], [7, 9], [10, 14]], w: [14, 22, 28, 24, 12] },
   // 동반질환 유병률. [전부 가정] 실제 유병률 통계를 쓰지 않았다.
+  // 순서 중요: 선행 질환(고혈압·당뇨·치매·뇌졸중)을 앞에 두어야 조건부 상승이 적용된다.
   conditions: {
-    htn: 0.55, dm: 0.28, ckd: 0.12, hf: 0.10, arrhythmia: 0.08, dementia: 0.12,
+    htn: 0.55, dementia: 0.12, stroke_secondary: 0.07,
+    dm: 0.28, hf: 0.10, ckd: 0.12, arrhythmia: 0.08,
     falls: 0.18, insomnia: 0.22, ulcer: 0.09, constipation: 0.20, bph: 0.16,
     glaucoma: 0.05, copd: 0.07, parkinson: 0.03, hyponatremia: 0.04,
-    bleeding: 0.06, stroke_secondary: 0.07, age80_primary: 0.20,
+    bleeding: 0.06, age80_primary: 0.20,
   },
+};
+
+// 동반질환 조건부 상승률. key가 먼저 뽑히면 대상 질환 확률에 곱한다. [전부 가정]
+// WEIGHTS.conditions 순서대로 평가되므로 선행 질환이 앞에 오도록 배치돼 있어야 한다.
+const COMORBID_LIFT = {
+  dm: { htn: 1.6 },            // 고혈압이 있으면 당뇨 동반 확률 상승
+  ckd: { htn: 1.8, dm: 2.0 },  // 고혈압·당뇨는 만성콩팥병의 대표 선행 요인
+  hf: { htn: 1.7 },
+  arrhythmia: { hf: 2.2 },
+  falls: { dementia: 1.9 },    // 인지장애가 있으면 낙상 병력 확률 상승
+  insomnia: { dementia: 1.5 },
+  bleeding: { stroke_secondary: 1.8 },
+  hyponatremia: { ckd: 1.8, hf: 1.5 },
 };
 
 // 치료 영역별 약물 풀. PIM 등재 여부와 무관하게 구성했다.
@@ -114,7 +129,16 @@ function makePrescription() {
     const pool = POOL[area];
     chosen.add(pool[Math.floor(rnd() * pool.length)]);
   }
-  const conds = Object.entries(WEIGHTS.conditions).filter(([, p]) => rnd() < p).map(([id]) => id);
+  // 동반질환은 독립이 아니다. 선행 질환이 있으면 관련 질환 확률을 조건부로 올린다.
+  // 상승폭은 [가정]이며 실제 유병률 통계가 아니다. 독립 추출보다 현실에 가깝게 만들려는 장치일 뿐이다.
+  const conds = [];
+  const has = (id) => conds.includes(id);
+  Object.entries(WEIGHTS.conditions).forEach(([id, base]) => {
+    let p = base;
+    const lift = COMORBID_LIFT[id];
+    if (lift) Object.entries(lift).forEach(([pre, mult]) => { if (has(pre)) p = Math.min(0.95, p * mult); });
+    if (rnd() < p) conds.push(id);
+  });
   return { drugs: [...chosen].map(toDrug), conditions: conds };
 }
 
@@ -167,11 +191,91 @@ function bench(fn, label, reps = 7, warmup = 3) {
   console.log(`${label.padEnd(14)} 중앙값 ${med.toFixed(1).padStart(6)} ms  (${runs[0].toFixed(1)}~${runs[reps - 1].toFixed(1)})  ·  처방당 ${(med / N * 1000).toFixed(2)} µs  ·  ${Math.round(N / (med / 1000)).toLocaleString()} 건/초`);
   return med;
 }
-console.log(`\n속도 (워밍업 3회 후 7회 측정)`);
-const msLinear = bench((c) => pim.check(c), '선형 순회');
-const msBit = bench((c) => bm.check(c), '비트마스크');
+// ── 속도 비교는 "같은 일"을 시켜야 한다 ──────────────────────────────
+// 앞선 측정에서 소박한 구현이 더 빨라 보였는데, 그건 정규화와 표1 판정을 건너뛰었기 때문이다.
+// 비교 대상을 표2 조건 매칭 하나로 좁히고, 입력도 미리 정규화해 동일 조건에서 잰다.
+
+const PRE = cases.map((c) => ({
+  drugs: c.drugs.map((d) => {
+    const known = pim.checkIngredient(d.ing);
+    return known
+      ? { ing: d.ing, cls: known.classKey, tags: known.tags.slice() }
+      : { ing: String(d.ing || '').toLowerCase(), cls: d.cls || 'other', tags: d.tags || [] };
+  }),
+  conditions: c.conditions,
+}));
+
+const SINGLE = [];
+pim.table2.forEach((c) => c.targets.forEach((t) => { if (!t.all) SINGLE.push({ cond: c, target: t }); }));
+function hits(t, d) {
+  if (t.ingredient) return d.ing === t.ingredient;
+  if (t.class) return d.cls === t.class;
+  if (t.tag) { const k = [d.cls, ...(d.tags || [])]; for (let i = 0; i < k.length; i++) if (k[i] === t.tag) return true; return false; }
+  return false;
+}
+// (0) 소박: 약물마다 조건 18개를 훑고, 켜진 조건마다 대상 전체를 훑는다. 색인 없음.
+function m0({ drugs, conditions }) {
+  let n = 0;
+  for (let i = 0; i < drugs.length; i++)
+    for (let c = 0; c < pim.table2.length; c++) {
+      let on = false;
+      for (let k = 0; k < conditions.length; k++) if (conditions[k] === pim.table2[c].id) { on = true; break; }
+      if (!on) continue;
+      const tg = pim.table2[c].targets;
+      for (let t = 0; t < tg.length; t++) if (!tg[t].all && hits(tg[t], drugs[i])) n++;
+    }
+  return n;
+}
+// (1) 색인: 조건 집합을 Set으로 만들고 단일 대상 목록을 한 번만 훑는다.
+function m1({ drugs, conditions }) {
+  const on = new Set(conditions);
+  let n = 0;
+  for (let i = 0; i < drugs.length; i++)
+    for (let j = 0; j < SINGLE.length; j++)
+      if (on.has(SINGLE[j].cond.id) && hits(SINGLE[j].target, drugs[i])) n++;
+  return n;
+}
+// (2) 비트 연산: 약물 마스크와 환자 마스크를 AND 하고 켜진 비트만 펼친다.
+function m2({ drugs, conditions }) {
+  const pMask = bm.conditionMask(conditions);
+  if (pMask === 0) return 0;
+  let n = 0;
+  for (let i = 0; i < drugs.length; i++) {
+    const r = bm.check({ drugs: [drugs[i]], conditions });
+    n += r.table2.length;
+  }
+  return n;
+}
+
+console.log(`\n속도 — 표2 조건 매칭만 분리, 입력 사전 정규화 (워밍업 3회 후 7회 측정)`);
+// 세 구현이 같은 건수를 세는지 먼저 확인한다. 다르면 비교 자체가 무의미하다.
+let same = true;
+for (let i = 0; i < 300; i++) { if (m0(PRE[i]) !== m1(PRE[i])) { same = false; break; } }
+console.log(`소박 vs 색인 판정 건수 일치: ${same ? '예' : '아니오 — 비교 무효'}`);
+
+function bench2(fn, label, reps = 7, warmup = 3) {
+  for (let w = 0; w < warmup; w++) for (let i = 0; i < N; i++) fn(PRE[i]);
+  const runs = [];
+  for (let r = 0; r < reps; r++) {
+    const t0 = process.hrtime.bigint();
+    for (let i = 0; i < N; i++) fn(PRE[i]);
+    runs.push(Number(process.hrtime.bigint() - t0) / 1e6);
+  }
+  runs.sort((a, b) => a - b);
+  const med = runs[Math.floor(reps / 2)];
+  console.log(`${label.padEnd(12)} 중앙값 ${med.toFixed(1).padStart(6)} ms  (${runs[0].toFixed(1)}~${runs[reps - 1].toFixed(1)})  ·  ${Math.round(N / (med / 1000)).toLocaleString()} 건/초`);
+  return med;
+}
+const t0m = bench2(m0, '소박한 순회');
+const t1m = bench2(m1, '색인 순회');
+console.log(`색인 / 소박   ${(t0m / t1m).toFixed(2)}배`);
+
+// 전체 파이프라인(정규화+표1+표2) 비교는 따로 표시한다.
+console.log(`\n속도 — 전체 판정 파이프라인`);
+const msLinear = bench((c) => pim.check(c), '순회 구현');
+const msBit = bench((c) => bm.check(c), '비트 연산');
 const ratio = msLinear / msBit;
-console.log(`속도비          ${ratio.toFixed(2)}배  ${ratio > 1.1 ? '(비트마스크 우세)' : ratio < 0.9 ? '(선형 우세)' : '(유의한 차이 없음)'}  · 마스크 캐시 ${bm.cacheSize()}종`);
+console.log(`비트 연산 / 순회 구현   ${ratio.toFixed(2)}배  ${ratio > 1.1 ? '(비트 연산 우세)' : ratio < 0.9 ? '(순회 우세)' : '(유의한 차이 없음)'}  · 마스크 캐시 ${bm.cacheSize()}종`);
 
 // ── 3) 계열 추정 대비 경고 감소 ──
 const pimClasses = new Set(pim.table1.map((x) => x.classKey));
