@@ -24,7 +24,10 @@ check('표2 조건 id 중복 없음', new Set(pim.table2.map((c) => c.id)).size 
 check('표2 전 대상에 해석 매처', pim.table2.every((c) => c.targets.every((t) => t.ingredient || t.class || t.tag || t.all)));
 check('표1/표2 객체 동결(불변)', Object.isFrozen(pim.table1[0]) && Object.isFrozen(pim.table2[0]));
 check('출처·DOI 노출', /Kim MY/.test(pim.source) && pim.doi === '10.4235/agmr.2018.22.3.121');
-check('검증 미완료 고지 유지', /재확인 필요/.test(pim.note));
+check('임상 사용 금지 고지 유지', /임상 의사결정에 그대로 사용하지 말 것/.test(pim.note));
+check('원문 대조 기록 노출', pim.verification && pim.verification.date === '2026-08-26');
+check('남은 검증 항목 명시', Array.isArray(pim.verification.open_items) && pim.verification.open_items.length >= 3);
+check('매핑 확장분 명시', Array.isArray(pim.verification.mapping_expansions) && pim.verification.mapping_expansions.length === 2);
 
 section('2. 표1 전수 판정');
 check('63종 전부 성분키로 조회됨', pim.table1.every((x) => pim.isTable1(x.ingredient)));

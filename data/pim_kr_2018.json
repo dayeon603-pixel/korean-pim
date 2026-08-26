@@ -2,7 +2,7 @@
   "source": "Kim MY, Etherton-Beer C, Kim CB, Yoon JL, Ga H, Kim HC, Song JS, Kim KI, Won CW. Development of a Consensus List of Potentially Inappropriate Medications for Korean Older Adults. Ann Geriatr Med Res 2018;22(3):121-129.",
   "doi": "10.4235/agmr.2018.22.3.121",
   "digitized": "2026-07",
-  "note": "2차 요약 경로로 추출. 용량 기준(>325 mg/day aspirin, >6 mg/day doxepin, CrCl<30)과 사유 문구는 원문 PDF로 재확인 필요. 임상 반영 전 약사·교수 검토 권장. kr/ing/cls/tags·match 필드는 엔진 반영을 위해 케어브리지가 추가한 매핑 계층이며 논문 원문에는 없다.",
+  "note": "항목 구성은 2026-08-26 원문 대조 완료(VERIFICATION.md). 사유 문구·용량 임계값의 자구 대조와 약사·임상의 검토는 미완료. kr/ing/cls/tags·match 필드는 엔진 반영을 위해 케어브리지가 추가한 매핑 계층이며 논문 원문에는 없다. 임상 의사결정에 그대로 사용하지 말 것.",
   "table1_regardless_of_condition": [
     {
       "drug": "Chlorpromazine",
@@ -1399,5 +1399,20 @@
     "unique_items": 102,
     "definition": "고유 항목 = 표1 개별 약물 + 표2에만 등장하는 판정 대상(계열·약물·병용) 합집합"
   },
-  "engine_applied": "2026-08"
+  "engine_applied": "2026-08",
+  "verification": {
+    "date": "2026-08-26",
+    "source": "e-agmr.org full text (DOI 10.4235/agmr.2018.22.3.121)",
+    "scope": "표1 63항목 및 표2 18개 조건의 항목 구성·순서·약물군 대조 완료 (test/verify_against_paper.js, 197건)",
+    "open_items": [
+      "사유 문구 자구 대조",
+      "용량 임계값 근거 문맥",
+      "약사·임상의 검토"
+    ],
+    "mapping_expansions": [
+      "hyponatremia: 원문 '기타 약물'을 6개 성분으로 구현",
+      "bleeding: 원문 'DOAC'를 4개 성분으로 구현"
+    ],
+    "clinical_use": "불가. 연구·프로토타입·교육용."
+  }
 }

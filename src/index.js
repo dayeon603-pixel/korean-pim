@@ -150,4 +150,5 @@ module.exports = {
   checkIngredient, isTable1, classify, check, nameKo,
   byIngredient, byCondition,
   source: RAW.source, doi: RAW.doi, digitized: RAW.digitized, note: RAW.note,
+  verification: RAW.verification,
 };
