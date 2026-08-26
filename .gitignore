@@ -1,3 +1,8 @@
 node_modules/
 *.log
 .DS_Store
+
+# MIMIC-IV 데이터는 저장소에 넣지 않는다.
+# ODC-BY 라이선스이며 PhysioNet에서 직접 받아야 한다. 분석 스크립트만 커밋한다.
+mimic/
+*.csv.gz
