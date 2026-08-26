@@ -13,7 +13,7 @@
     "test": "node test/test.js && node test/verify_against_paper.js && node test/test_bitmask.js",
     "verify": "node test/verify_against_paper.js",
     "simulate": "node test/simulate.js 10000",
-    "compare": "node test/compare_criteria.js"
+    "compare": "node test/compare_criteria.js && node test/compare_ingredient_level.js"
   },
   "keywords": [
     "pim",
