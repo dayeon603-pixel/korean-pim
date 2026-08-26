@@ -142,6 +142,16 @@ check('Beers 판정 동작: 심부전 + 베라파밀',
 check('Beers 판정: 조건 없으면 0건', beers.check([], [{ ing: 'verapamil', cls: 'ccbnd', tags: [] }]).length === 0);
 check('Kim 표1 약물이 HIRA 계열로 분류됨(졸피뎀 → Z-drugs)',
   (hira.classify({ ing: 'zolpidem', cls: 'zdrug', tags: ['zolpidem'] }, '수면제(Z-drug)') || {}).name === 'Z-drugs');
+const reg = require('../src/criteria_registry.js');
+check('레지스트리 4개 기준 등재', reg.CRITERIA.length === 4);
+check('학술 합의 3개 모두 조건부 축 보유',
+  reg.CRITERIA.filter((c) => c.kind === '학술 합의').every((c) => c.conditionAxis));
+check('국가 운영 기준만 조건부 축 없음',
+  reg.split().withoutAxis.length === 1 && reg.split().withoutAxis[0].id === 'hira2022');
+check('미확인 항목은 null로 두고 추정치를 넣지 않음',
+  reg.CRITERIA.find((c) => c.id === 'stopp3').conditionCount === null);
+check('미확인 항목에 사유 명시', /세지 못했다/.test(reg.CRITERIA.find((c) => c.id === 'stopp3').note));
+check('전 기준에 출처 표기', reg.CRITERIA.every((c) => c.source && c.source.length > 10));
 check('HIRA 미포괄 항목 존재(디곡신)', !hira.isCovered({ ing: 'digoxin', cls: 'digoxin', tags: [] }, '강심제'));
 
 console.log(`\nkorean-pim: ${pass} 통과 / ${fail} 실패 (총 ${pass + fail}건)`);

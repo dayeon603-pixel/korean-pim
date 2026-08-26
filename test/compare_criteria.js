@@ -11,6 +11,7 @@
 const pim = require('../src/index.js');
 const hira = require('../src/hira2022.js');
 const beers = require('../src/beers2023.js');
+const reg = require('../src/criteria_registry.js');
 
 const line = (t) => console.log(`\n${t}\n${'─'.repeat(t.length)}`);
 console.log('기준 비교 — 심평원 2022 국가 기준(안) vs Kim 2018 한국형 PIM\n');
@@ -106,3 +107,23 @@ console.log(`그런데 국가 운영 기준(심평원 2022)에서는 그 축이 
 console.log(`\n즉 조건부 기준의 소실은 "한국형 목록이 부실해서"가 아니라`);
 console.log(`**학술 합의를 국가 운영 기준으로 옮기는 단계에서 발생한다.**`);
 console.log(`\n※ Beers 2023은 일부 기준을 Table 3에서 Table 4·6으로 옮겼다. 여기서는 2023판 Table 3만 센다.`);
+
+line('9. 기준 레지스트리 — 조건부 축의 유무');
+console.log('지역·성격            기준                                  조건부 축   조건 수   구현');
+reg.CRITERIA.forEach((c) => {
+  const cnt = c.conditionCount === null ? '미확인' : `${c.conditionCount}개`;
+  console.log(`${(c.region + ' · ' + c.kind).padEnd(20)} ${c.name.slice(0, 36).padEnd(38)} ${(c.conditionAxis ? '있음' : '없음').padEnd(9)} ${cnt.padEnd(8)} ${c.implemented}`);
+});
+const sp = reg.split();
+console.log(`\n조건부 축 보유 ${sp.withAxis.length}/${reg.CRITERIA.length}`);
+console.log(`미보유: ${sp.withoutAxis.map((c) => c.name).join(', ')}`);
+if (sp.uncounted.length) {
+  console.log(`\n조건 수 미확인 ${sp.uncounted.length}건 — 추정치를 넣지 않는다:`);
+  sp.uncounted.forEach((c) => console.log(`  ${c.id}: ${c.note}`));
+}
+
+line('10. 종합');
+console.log('학술 합의로 만들어진 기준은 한국·미국·유럽 모두 조건부 판정 축을 갖는다.');
+console.log('국가 운영 기준으로 옮겨진 하나만 그 축이 없다.');
+console.log('국가 기준은 한국형 목록을 몰라서 뺀 것이 아니다. 표1 63종 중 61종(96.8%)을 후보로 검토했다.');
+console.log('약물 축은 거의 전부 가져갔고 조건 축만 구조적으로 배제했다.');
