@@ -21,6 +21,8 @@ const table1 = RAW.table1_regardless_of_condition.map((x) => Object.freeze({
   ingredient: x.ing,     // 성분키(소문자 영문)
   nameKo: x.kr,          // 한글 성분명
   classKey: x.cls,       // 효능군 키(표2의 계열 단위 기준 매칭에 쓰임)
+  atc: x.atc || null,    // WHO ATC 5단계 코드. 단일 매핑 불가 시 null이며 atcNote에 사유
+  atcNote: x.atc_note || null,
   classKo: x.cat,        // 한글 효능군 표시명
   group: x.class,        // 논문의 약효군 분류
   tags: Object.freeze(x.tags || []),
@@ -72,6 +74,11 @@ const coverage = Object.freeze({
 });
 
 const conditions = table2.map((c) => Object.freeze({ id: c.id, label: c.label, kind: c.kind, condition: c.condition }));
+
+const byAtc = new Map(table1.filter((x) => x.atc).map((x) => [x.atc, x]));
+
+/** ATC 5단계 코드로 표1 항목을 조회한다. 표준 용어체계를 쓰는 시스템과의 연결점. */
+function checkAtc(code) { return code ? byAtc.get(String(code).toUpperCase()) || null : null; }
 
 /** 성분키 → 표1 항목. 계열 추정을 하지 않는다(완전일치만). 없으면 null. */
 function checkIngredient(ingredient) {
@@ -147,7 +154,8 @@ function check({ drugs = [], conditions: condIds = [] } = {}) {
 
 module.exports = {
   table1, table2, conditions, coverage,
-  checkIngredient, isTable1, classify, check, nameKo,
+  checkIngredient, isTable1, classify, check, nameKo, checkAtc, byAtc,
+  atcMapping: RAW.atc_mapping,
   byIngredient, byCondition,
   source: RAW.source, doi: RAW.doi, digitized: RAW.digitized, note: RAW.note,
   verification: RAW.verification,

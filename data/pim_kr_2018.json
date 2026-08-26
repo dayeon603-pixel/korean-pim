@@ -16,7 +16,9 @@
         "antipsychotic",
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AA01",
+      "atc_note": null
     },
     {
       "drug": "Haloperidol",
@@ -29,7 +31,9 @@
       "tags": [
         "antipsychotic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AD01",
+      "atc_note": null
     },
     {
       "drug": "Risperidone",
@@ -42,7 +46,9 @@
       "tags": [
         "antipsychotic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AX08",
+      "atc_note": null
     },
     {
       "drug": "Olanzapine",
@@ -56,7 +62,9 @@
         "antipsychotic",
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AH03",
+      "atc_note": null
     },
     {
       "drug": "Clozapine",
@@ -70,7 +78,9 @@
         "antipsychotic",
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AH02",
+      "atc_note": null
     },
     {
       "drug": "Quetiapine",
@@ -84,7 +94,9 @@
         "antipsychotic",
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05AH04",
+      "atc_note": null
     },
     {
       "drug": "Amitriptyline",
@@ -99,7 +111,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N06AA09",
+      "atc_note": null
     },
     {
       "drug": "Amoxapine",
@@ -114,7 +128,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N06AA17",
+      "atc_note": null
     },
     {
       "drug": "Clomipramine",
@@ -129,7 +145,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N06AA04",
+      "atc_note": null
     },
     {
       "drug": "Doxepin (>6 mg/day)",
@@ -144,7 +162,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": ">6 mg/일"
+      "dose": ">6 mg/일",
+      "atc": "N06AA12",
+      "atc_note": null
     },
     {
       "drug": "Nortriptyline",
@@ -159,7 +179,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N06AA10",
+      "atc_note": null
     },
     {
       "drug": "Imipramine",
@@ -174,7 +196,9 @@
         "tca",
         "antidepressant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N06AA02",
+      "atc_note": null
     },
     {
       "drug": "Alprazolam",
@@ -187,7 +211,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA12",
+      "atc_note": null
     },
     {
       "drug": "Lorazepam",
@@ -200,7 +226,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA06",
+      "atc_note": null
     },
     {
       "drug": "Temazepam",
@@ -213,7 +241,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05CD07",
+      "atc_note": null
     },
     {
       "drug": "Triazolam",
@@ -226,7 +256,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05CD05",
+      "atc_note": null
     },
     {
       "drug": "Chlordiazepoxide",
@@ -239,7 +271,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA02",
+      "atc_note": null
     },
     {
       "drug": "Clonazepam",
@@ -252,7 +286,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N03AE01",
+      "atc_note": null
     },
     {
       "drug": "Diazepam",
@@ -265,7 +301,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA01",
+      "atc_note": null
     },
     {
       "drug": "Flurazepam",
@@ -278,7 +316,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05CD01",
+      "atc_note": null
     },
     {
       "drug": "Bromazepam",
@@ -291,7 +331,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA08",
+      "atc_note": null
     },
     {
       "drug": "Clobazam",
@@ -305,7 +347,9 @@
         "benzodiazepine",
         "anticonvulsant"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BA09",
+      "atc_note": null
     },
     {
       "drug": "Flunitrazepam",
@@ -318,7 +362,9 @@
       "tags": [
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05CD03",
+      "atc_note": null
     },
     {
       "drug": "Zolpidem",
@@ -331,7 +377,9 @@
       "tags": [
         "zolpidem"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05CF02",
+      "atc_note": null
     },
     {
       "drug": "Benztropine",
@@ -344,7 +392,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N04AC01",
+      "atc_note": null
     },
     {
       "drug": "Trihexyphenidyl",
@@ -357,7 +407,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N04AA01",
+      "atc_note": null
     },
     {
       "drug": "Chlorpheniramine",
@@ -370,7 +422,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "R06AB04",
+      "atc_note": null
     },
     {
       "drug": "Dimenhydrinate",
@@ -383,7 +437,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "R06AA11",
+      "atc_note": null
     },
     {
       "drug": "Diphenhydramine",
@@ -396,7 +452,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "R06AA02",
+      "atc_note": null
     },
     {
       "drug": "Hydroxyzine",
@@ -409,7 +467,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N05BB01",
+      "atc_note": null
     },
     {
       "drug": "Triprolidine",
@@ -422,7 +482,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "R06AX07",
+      "atc_note": null
     },
     {
       "drug": "Dronedarone",
@@ -433,7 +495,9 @@
       "cls": "antiarr",
       "cat": "부정맥약",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "C01BD07",
+      "atc_note": null
     },
     {
       "drug": "Amiodarone",
@@ -444,7 +508,9 @@
       "cls": "amiodarone",
       "cat": "부정맥약",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "C01BD01",
+      "atc_note": null
     },
     {
       "drug": "Flecainide",
@@ -455,7 +521,9 @@
       "cls": "antiarr",
       "cat": "부정맥약",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "C01BC04",
+      "atc_note": null
     },
     {
       "drug": "Digoxin",
@@ -466,7 +534,9 @@
       "cls": "digoxin",
       "cat": "강심제",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "C01AA05",
+      "atc_note": null
     },
     {
       "drug": "Ticlopidine",
@@ -479,7 +549,9 @@
       "tags": [
         "ticlopidine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "B01AC05",
+      "atc_note": null
     },
     {
       "drug": "Metoclopramide",
@@ -492,7 +564,9 @@
       "tags": [
         "metoclopramide"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "A03FA01",
+      "atc_note": null
     },
     {
       "drug": "Cimetidine",
@@ -505,7 +579,9 @@
       "tags": [
         "h2ra"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "A02BA01",
+      "atc_note": null
     },
     {
       "drug": "Clidinium-chlordiazepoxide",
@@ -519,7 +595,9 @@
         "anticholinergic",
         "benzodiazepine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": null,
+      "atc_note": "클리디늄·클로르디아제폭시드 복합제. 단일 성분 ATC로 특정되지 않음"
     },
     {
       "drug": "Scopolamine",
@@ -532,7 +610,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": null,
+      "atc_note": "염 형태에 따라 A04AD01(하이오신)·A03BB01(부틸브로마이드)로 갈려 단일 코드 불가"
     },
     {
       "drug": "Doxazosin",
@@ -545,7 +625,9 @@
       "tags": [
         "alpha1"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "C02CA04",
+      "atc_note": null
     },
     {
       "drug": "Prazosin",
@@ -558,7 +640,9 @@
       "tags": [
         "alpha1"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "C02CA01",
+      "atc_note": null
     },
     {
       "drug": "Terazosin",
@@ -571,7 +655,9 @@
       "tags": [
         "alpha1"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "G04CA03",
+      "atc_note": null
     },
     {
       "drug": "Desmopressin",
@@ -582,7 +668,9 @@
       "cls": "vaso",
       "cat": "항이뇨호르몬제",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "H01BA02",
+      "atc_note": null
     },
     {
       "drug": "Oxybutynin",
@@ -595,7 +683,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "G04BD04",
+      "atc_note": null
     },
     {
       "drug": "Estrogens ± progestins",
@@ -606,7 +696,9 @@
       "cls": "hormone",
       "cat": "여성호르몬제",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": null,
+      "atc_note": "에스트로겐±프로게스틴은 성분군이며 제제별로 G03C·G03F로 분산되어 단일 코드 불가"
     },
     {
       "drug": "Growth hormone",
@@ -617,7 +709,9 @@
       "cls": "hormone",
       "cat": "성장호르몬제",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "H01AC01",
+      "atc_note": null
     },
     {
       "drug": "Insulin, sliding scale",
@@ -628,7 +722,9 @@
       "cls": "insulin",
       "cat": "인슐린 요법",
       "tags": [],
-      "dose": "슬라이딩 스케일 단독요법"
+      "dose": "슬라이딩 스케일 단독요법",
+      "atc": null,
+      "atc_note": "슬라이딩 스케일은 투여 요법이지 성분이 아니므로 ATC 대상 아님"
     },
     {
       "drug": "Glibenclamide (glyburide)",
@@ -639,7 +735,9 @@
       "cls": "su",
       "cat": "당뇨약(설폰요소제)",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "A10BB01",
+      "atc_note": null
     },
     {
       "drug": "Pethidine (meperidine)",
@@ -653,7 +751,9 @@
         "opioid",
         "pethidine"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N02AB02",
+      "atc_note": null
     },
     {
       "drug": "Pentazocine",
@@ -666,7 +766,9 @@
       "tags": [
         "opioid"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "N02AD01",
+      "atc_note": null
     },
     {
       "drug": "Aspirin (>325 mg/day)",
@@ -679,7 +781,9 @@
       "tags": [
         "aspirin"
       ],
-      "dose": ">325 mg/일"
+      "dose": ">325 mg/일",
+      "atc": "N02BA01",
+      "atc_note": "저용량 항혈소판 용도는 B01AC06. PIM 기준(>325mg/일)은 진통 용량이라 N02BA01로 부여"
     },
     {
       "drug": "Diclofenac",
@@ -693,7 +797,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AB05",
+      "atc_note": null
     },
     {
       "drug": "Indomethacin",
@@ -707,7 +813,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AB01",
+      "atc_note": null
     },
     {
       "drug": "Ibuprofen",
@@ -721,7 +829,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AE01",
+      "atc_note": null
     },
     {
       "drug": "Dexibuprofen",
@@ -735,7 +845,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AE14",
+      "atc_note": null
     },
     {
       "drug": "Ketorolac",
@@ -749,7 +861,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AB15",
+      "atc_note": "안과용 점안제는 S01BC05. 전신 제제 기준으로 부여"
     },
     {
       "drug": "Mefenamic acid",
@@ -763,7 +877,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AG01",
+      "atc_note": null
     },
     {
       "drug": "Naproxen",
@@ -777,7 +893,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AE02",
+      "atc_note": null
     },
     {
       "drug": "Piroxicam",
@@ -791,7 +909,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AC01",
+      "atc_note": null
     },
     {
       "drug": "Sulindac",
@@ -805,7 +925,9 @@
         "nsaid",
         "nsaid_ns"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M01AB02",
+      "atc_note": null
     },
     {
       "drug": "Methocarbamol",
@@ -816,7 +938,9 @@
       "cls": "musclerelax",
       "cat": "근이완제",
       "tags": [],
-      "dose": null
+      "dose": null,
+      "atc": "M03BA03",
+      "atc_note": null
     },
     {
       "drug": "Orphenadrine",
@@ -829,7 +953,9 @@
       "tags": [
         "anticholinergic"
       ],
-      "dose": null
+      "dose": null,
+      "atc": "M03BC01",
+      "atc_note": "구연산염은 M03BC01, 염산염은 N04AB02. 근이완 용도 기준으로 부여"
     }
   ],
   "table2_by_condition": [
@@ -866,7 +992,8 @@
         {
           "ing": "zolpidem",
           "kr": "졸피뎀",
-          "token": "Zolpidem"
+          "token": "Zolpidem",
+          "atc": "N05CF02"
         },
         {
           "tag": "h2ra",
@@ -876,7 +1003,8 @@
         {
           "ing": "pethidine",
           "kr": "페티딘",
-          "token": "Pethidine"
+          "token": "Pethidine",
+          "atc": "N02AB02"
         }
       ]
     },
@@ -919,7 +1047,8 @@
         {
           "ing": "zolpidem",
           "kr": "졸피뎀",
-          "token": "Zolpidem"
+          "token": "Zolpidem",
+          "atc": "N05CF02"
         },
         {
           "cls": "opioid",
@@ -950,27 +1079,33 @@
         {
           "ing": "caffeine",
           "kr": "카페인",
-          "token": "Caffeine"
+          "token": "Caffeine",
+          "atc": "N06BC01"
         },
         {
           "ing": "methylphenidate",
           "kr": "메틸페니데이트",
-          "token": "Methylphenidate"
+          "token": "Methylphenidate",
+          "atc": "N06BA04"
         },
         {
           "ing": "phenylephrine",
           "kr": "페닐레프린",
-          "token": "Phenylephrine"
+          "token": "Phenylephrine",
+          "atc": "R01BA03",
+          "atc_note": "전신 제제 기준. 점안·국소 제제는 다른 코드"
         },
         {
           "ing": "pseudoephedrine",
           "kr": "슈도에페드린",
-          "token": "Pseudoephedrine"
+          "token": "Pseudoephedrine",
+          "atc": "R01BA02"
         },
         {
           "ing": "theophylline",
           "kr": "테오필린",
-          "token": "Theophylline"
+          "token": "Theophylline",
+          "atc": "R03DA04"
         }
       ]
     },
@@ -993,7 +1128,8 @@
         {
           "ing": "metoclopramide",
           "kr": "메토클로프라미드",
-          "token": "Metoclopramide"
+          "token": "Metoclopramide",
+          "atc": "A03FA01"
         }
       ]
     },
@@ -1015,12 +1151,14 @@
         {
           "ing": "verapamil",
           "kr": "베라파밀",
-          "token": "Verapamil"
+          "token": "Verapamil",
+          "atc": "C08DA01"
         },
         {
           "ing": "diltiazem",
           "kr": "딜티아젬",
-          "token": "Diltiazem"
+          "token": "Diltiazem",
+          "atc": "C08DB01"
         },
         {
           "tag": "nsaid",
@@ -1035,7 +1173,8 @@
         {
           "ing": "pioglitazone",
           "kr": "피오글리타존",
-          "token": "Pioglitazone"
+          "token": "Pioglitazone",
+          "atc": "A10BG03"
         },
         {
           "tag": "tca",
@@ -1091,7 +1230,9 @@
         {
           "ing": "aspirin",
           "kr": "아스피린",
-          "token": "Aspirin"
+          "token": "Aspirin",
+          "atc": "N02BA01",
+          "atc_note": "저용량 항혈소판 용도는 B01AC06. PIM 기준(>325mg/일)은 진통 용량이라 N02BA01로 부여"
         }
       ]
     },
@@ -1111,7 +1252,11 @@
             "clopidogrel"
           ],
           "kr": "아스피린+클로피도그렐 병용",
-          "token": "Aspirin + clopidogrel 병용"
+          "token": "Aspirin + clopidogrel 병용",
+          "atc_all": [
+            "N02BA01",
+            "B01AC04"
+          ]
         }
       ]
     },
@@ -1130,7 +1275,9 @@
           "ing": "aspirin",
           "kr": "아스피린(>325 mg/일)",
           "dose": ">325 mg/일",
-          "token": "Aspirin (>325 mg/day)"
+          "token": "Aspirin (>325 mg/day)",
+          "atc": "N02BA01",
+          "atc_note": "저용량 항혈소판 용도는 B01AC06. PIM 기준(>325mg/일)은 진통 용량이라 N02BA01로 부여"
         },
         {
           "tag": "nsaid_ns",
@@ -1238,32 +1385,38 @@
         {
           "ing": "carbamazepine",
           "kr": "카르바마제핀",
-          "token": "carbamazepine"
+          "token": "carbamazepine",
+          "atc": "N03AF01"
         },
         {
           "ing": "oxcarbazepine",
           "kr": "옥스카르바제핀",
-          "token": "oxcarbazepine"
+          "token": "oxcarbazepine",
+          "atc": "N03AF02"
         },
         {
           "ing": "carboplatin",
           "kr": "카보플라틴",
-          "token": "carboplatin"
+          "token": "carboplatin",
+          "atc": "L01XA02"
         },
         {
           "ing": "cyclophosphamide",
           "kr": "시클로포스파미드",
-          "token": "cyclophosphamide"
+          "token": "cyclophosphamide",
+          "atc": "L01AA01"
         },
         {
           "ing": "cisplatin",
           "kr": "시스플라틴",
-          "token": "cisplatin"
+          "token": "cisplatin",
+          "atc": "L01XA01"
         },
         {
           "ing": "vincristine",
           "kr": "빈크리스틴",
-          "token": "vincristine"
+          "token": "vincristine",
+          "atc": "L01CA02"
         }
       ]
     },
@@ -1281,7 +1434,8 @@
           "ing": "theophylline",
           "kr": "테오필린(단독요법)",
           "note": "단독요법 여부는 사람이 확인",
-          "token": "Theophylline (단독요법)"
+          "token": "Theophylline (단독요법)",
+          "atc": "R03DA04"
         }
       ]
     },
@@ -1306,17 +1460,21 @@
         {
           "ing": "aspirin",
           "kr": "아스피린",
-          "token": "Aspirin"
+          "token": "Aspirin",
+          "atc": "N02BA01",
+          "atc_note": "저용량 항혈소판 용도는 B01AC06. PIM 기준(>325mg/일)은 진통 용량이라 N02BA01로 부여"
         },
         {
           "ing": "clopidogrel",
           "kr": "클로피도그렐",
-          "token": "Clopidogrel"
+          "token": "Clopidogrel",
+          "atc": "B01AC04"
         },
         {
           "ing": "ticlopidine",
           "kr": "티클로피딘",
-          "token": "Ticlopidine"
+          "token": "Ticlopidine",
+          "atc": "B01AC05"
         },
         {
           "tag": "nsaid",
@@ -1326,27 +1484,32 @@
         {
           "ing": "warfarin",
           "kr": "와파린",
-          "token": "Warfarin"
+          "token": "Warfarin",
+          "atc": "B01AA03"
         },
         {
           "ing": "dabigatran",
           "kr": "다비가트란",
-          "token": "dabigatran"
+          "token": "dabigatran",
+          "atc": "B01AE07"
         },
         {
           "ing": "rivaroxaban",
           "kr": "리바록사반",
-          "token": "rivaroxaban"
+          "token": "rivaroxaban",
+          "atc": "B01AF01"
         },
         {
           "ing": "apixaban",
           "kr": "아픽사반",
-          "token": "apixaban"
+          "token": "apixaban",
+          "atc": "B01AF02"
         },
         {
           "ing": "edoxaban",
           "kr": "에독사반",
-          "token": "edoxaban"
+          "token": "edoxaban",
+          "atc": "B01AF03"
         }
       ]
     },
@@ -1414,5 +1577,62 @@
       "bleeding: 원문 'DOAC'를 4개 성분으로 구현"
     ],
     "clinical_use": "불가. 연구·프로토타입·교육용."
+  },
+  "atc_mapping": {
+    "system": "WHO ATC/DDD, 5단계(화학물질) 코드",
+    "assigned_by": "케어브리지 매핑 계층 (논문 원문에는 ATC 코드가 없음)",
+    "table1_coded": 59,
+    "table1_uncoded": 4,
+    "uncoded_reasons": [
+      {
+        "drug": "Clidinium-chlordiazepoxide",
+        "reason": "클리디늄·클로르디아제폭시드 복합제. 단일 성분 ATC로 특정되지 않음"
+      },
+      {
+        "drug": "Scopolamine",
+        "reason": "염 형태에 따라 A04AD01(하이오신)·A03BB01(부틸브로마이드)로 갈려 단일 코드 불가"
+      },
+      {
+        "drug": "Estrogens ± progestins",
+        "reason": "에스트로겐±프로게스틴은 성분군이며 제제별로 G03C·G03F로 분산되어 단일 코드 불가"
+      },
+      {
+        "drug": "Insulin, sliding scale",
+        "reason": "슬라이딩 스케일은 투여 요법이지 성분이 아니므로 ATC 대상 아님"
+      }
+    ],
+    "dual_class_notes": [
+      {
+        "drug": "Aspirin (>325 mg/day)",
+        "note": "저용량 항혈소판 용도는 B01AC06. PIM 기준(>325mg/일)은 진통 용량이라 N02BA01로 부여"
+      },
+      {
+        "drug": "Ketorolac",
+        "note": "안과용 점안제는 S01BC05. 전신 제제 기준으로 부여"
+      },
+      {
+        "drug": "Orphenadrine",
+        "note": "구연산염은 M03BC01, 염산염은 N04AB02. 근이완 용도 기준으로 부여"
+      }
+    ],
+    "verification": "형식·자리수·중복 자동 검증 + WHO ATC 인덱스 9항목 표본 대조(오류 1건 발견·수정). 전수 대조는 미완료.",
+    "spot_check": {
+      "date": "2026-08-26",
+      "source": "WHO ATC/DDD Index (atcddd.fhi.no)",
+      "checked": [
+        "R06AA02 diphenhydramine",
+        "R06AA11 dimenhydrinate",
+        "R06AB04 chlorphenamine",
+        "R06AX07 triprolidine",
+        "N04AC01 benzatropine",
+        "M01AE01 ibuprofen",
+        "M01AE02 naproxen",
+        "M01AE14 dexibuprofen",
+        "orphenadrine 이중분류(N04AB/M03BC)"
+      ],
+      "errors_found": 1,
+      "errors_detail": "Dimenhydrinate를 R06AA52(diphenhydramine, combinations)로 잘못 부여 → R06AA11로 수정",
+      "status": "9항목 표본 대조 완료. 나머지 코드는 형식·중복 자동 검증만 수행."
+    }
   }
 }

@@ -94,5 +94,33 @@ check('세레콕시브는 COX-2라 만성콩팥병 조건에는 걸림',
   none([{ ing: 'celecoxib', cls: 'cox2' }], ['ckd']).table2.length === 1);
 check('같은 약 두 번 넣어도 표1 판정은 1건', none(['diazepam', 'diazepam']).table1.length === 1);
 
+section('5. ATC 표준 코드 매핑');
+const ATC_RE = /^[A-Z]\d{2}[A-Z]{2}\d{2}$/;   // 5단계(화학물질) 코드 형식
+const coded = pim.table1.filter((x) => x.atc);
+const uncoded = pim.table1.filter((x) => !x.atc);
+check('표1 63항목 중 59항목에 ATC 부여', coded.length === 59 && uncoded.length === 4);
+check('부여된 코드 전부 5단계 형식', coded.every((x) => ATC_RE.test(x.atc)));
+check('ATC 코드 중복 없음', new Set(coded.map((x) => x.atc)).size === coded.length);
+check('미부여 4항목 전부 사유 명시', uncoded.every((x) => !!x.atcNote && x.atcNote.length > 5));
+check('미부여 항목은 복합제·성분군·투여요법', uncoded.map((x) => x.ingredient).sort().join() ===
+  ['clidinium', 'estrogen', 'insulin_sliding', 'scopolamine'].sort().join());
+check('이중분류 항목에 판단 근거 주석', coded.filter((x) => x.atcNote).length === 3);
+check('ATC 코드로 역조회 가능', pim.checkAtc('N05CF02').ingredient === 'zolpidem');
+check('ATC 조회는 대소문자 무시', pim.checkAtc('n05cf02') !== null);
+check('없는 ATC 코드는 null', pim.checkAtc('Z99ZZ99') === null);
+check('매핑 메타 노출', pim.atcMapping && pim.atcMapping.system.includes('WHO ATC'));
+check('표본 대조 기록 존재', pim.atcMapping.spot_check.checked.length >= 9);
+check('표본 대조에서 발견한 오류 기록', pim.atcMapping.spot_check.errors_found === 1);
+check('전수 대조 미완료 사실 명시', /전수 대조는 미완료/.test(pim.atcMapping.verification));
+
+// WHO ATC 인덱스로 직접 확인한 코드(2026-08-26). 데이터가 바뀌면 여기서 잡힌다.
+const VERIFIED = {
+  diphenhydramine: 'R06AA02', dimenhydrinate: 'R06AA11', chlorpheniramine: 'R06AB04',
+  triprolidine: 'R06AX07', benztropine: 'N04AC01', ibuprofen: 'M01AE01',
+  naproxen: 'M01AE02', dexibuprofen: 'M01AE14',
+};
+Object.entries(VERIFIED).forEach(([ing, code]) =>
+  check(`WHO 인덱스 대조: ${ing} = ${code}`, pim.checkIngredient(ing).atc === code));
+
 console.log(`\nkorean-pim: ${pass} 통과 / ${fail} 실패 (총 ${pass + fail}건)`);
 if (fail) { console.log('실패:\n - ' + failed.join('\n - ')); process.exit(1); }
