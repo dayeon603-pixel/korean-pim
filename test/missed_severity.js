@@ -91,8 +91,6 @@ function resolveTarget(t, kind) {
   return out;
 }
 
-console.log('국가 기준이 놓치는 조건부 판정의 임상 중요도\n');
-
 const rows = [];
 pim.table2.forEach((c) => {
   c.targets.forEach((t) => {
@@ -120,20 +118,26 @@ const inB = rows.filter((r) => r.inBeers);
 const notB = rows.filter((r) => !r.inBeers);
 const pct = (n) => (n / rows.length * 100).toFixed(1);
 
-console.log(`국가 기준의 약물 목록으로 잡히지 않는 (조건 x 대상) 조합: ${rows.length}건`);
-console.log(`  그중 Beers 2023 Table 3에도 등재   ${inB.length}건 (${pct(inB.length)}%)`);
-console.log(`  Kim 2018에만 존재                 ${notB.length}건 (${pct(notB.length)}%)`);
+/** 보고서를 출력한다. 다른 스크립트가 수치만 가져다 쓸 때는 돌지 않아야 한다. */
+function report() {
+  console.log('국가 기준이 놓치는 조건부 판정의 임상 중요도\n');
+  console.log(`국가 기준의 약물 목록으로 잡히지 않는 (조건 x 대상) 조합: ${rows.length}건`);
+  console.log(`  그중 Beers 2023 Table 3에도 등재   ${inB.length}건 (${pct(inB.length)}%)`);
+  console.log(`  Kim 2018에만 존재                 ${notB.length}건 (${pct(notB.length)}%)`);
 
-console.log('\n-- 두 국제 학술 기준이 각각 지정한 조합 (중요도 높음) --');
-inB.forEach((r) => console.log(`  ${r.cond} + ${r.target}`));
+  console.log('\n-- 두 국제 학술 기준이 각각 지정한 조합 (중요도 높음) --');
+  inB.forEach((r) => console.log(`  ${r.cond} + ${r.target}`));
 
-console.log('\n-- Kim 2018에만 있는 조합 (한국형 기준 고유) --');
-const byCond = {};
-notB.forEach((r) => { (byCond[r.cond] = byCond[r.cond] || []).push(r.target); });
-Object.entries(byCond).forEach(([c, ts]) => console.log(`  ${c.padEnd(24)} ${ts.join(', ')}`));
+  console.log('\n-- Kim 2018에만 있는 조합 (한국형 기준 고유) --');
+  const byCond = {};
+  notB.forEach((r) => { (byCond[r.cond] = byCond[r.cond] || []).push(r.target); });
+  Object.entries(byCond).forEach(([c, ts]) => console.log(`  ${c.padEnd(24)} ${ts.join(', ')}`));
 
-console.log('\n* Beers 등재 여부를 임상 중요도의 대리지표로 사용했다. harm 데이터가 아니다.');
-console.log('* 구조화한 Beers는 Table 3(조건부)뿐이며 Table 2/4/6은 비교 대상에 없다.');
-console.log('* 국가 기준의 최종 성분명이 미공개라 계열 단위로 판단했다.');
+  console.log('\n* Beers 등재 여부를 임상 중요도의 대리지표로 사용했다. harm 데이터가 아니다.');
+  console.log('* 구조화한 Beers는 Table 3(조건부)뿐이며 Table 2/4/6은 비교 대상에 없다.');
+  console.log('* 국가 기준의 최종 성분명이 미공개라 계열 단위로 판단했다.');
+}
+
+if (require.main === module) report();
 
 module.exports = { total: rows.length, inBeers: inB.length, kimOnly: notB.length, rows };
