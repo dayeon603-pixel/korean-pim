@@ -21,7 +21,12 @@
  * 표기 원칙
  *   conditionCount : 1차 원문에서 **실제로 센** 조건부 항목 수. 세지 못했으면 null.
  *   axisRetained   : 그 계층의 판정 로직에 약물-질환 축이 있는가. 판정 불가면 null.
- *   verified       : 1차 원문(정부·발행기관 문서)을 직접 열람했는가.
+ *   verified       : 1차 원문(정부·발행기관 문서)에 근거하는가.
+ *   verifiedBy     : 근거의 등급. 이 둘은 성격이 달라 구분해 적는다.
+ *                    'read'  = 2026-08-27 원문을 직접 열어 해당 문장·행을 눈으로 확인했다.
+ *                    'agent' = 조사 단계에서 1차 원문 URL과 직접 인용문을 함께 받았으나
+ *                              사람이 원문을 열어보지는 않았다. 인용문이 정확하다는 보장이 없다.
+ *                    논문에 싣는 문장이 얹히는 항목은 'read' 여야 한다.
  *
  * 절대 하지 않는 것: 관할 간 항목 수의 직접 비교. 세는 단위가 나라마다 다르다
  *   (성분/성분군/약효군/조건 statement/지표 rate). 비교 가능한 것은 축의 존재 여부와
@@ -41,6 +46,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'read',   // 부록 원문을 직접 대조했다 (test/compare_ingredient_level.js, 61/63)
     note: '후보 297개 중 77성분·14계열 확정. 후보 출처표의 "Korea PIM 63"은 표1이며 '
         + '표2 18개 조건은 후보 목록에조차 없다. 성분 축은 61/63(96.8%) 검토, 조건 축은 0%.',
   },
@@ -54,6 +60,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'agent',
     note: '학회 기준의 「対象となる患者群」 전용 열(29행 중 8행 기재)이 국가 지침에서 '
         + '통째로 소멸한다(문서 전체 출현 0회). 다만 12행 중 최소 5행이 조건을 '
         + '「推奨される使用法」 산문 안에 보존한다. **삭제가 아니라 판정 축에서 문장으로의 강등**이다.',
@@ -66,6 +73,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'agent',
     note: '판정축이 전부 개수다(내복 4주 이상 6종류 이상, 퇴원시 2종류 이상 감소, '
         + '精神病棟 抗精神病薬 4종류 이상). PIM 리스트는 산정요건 본문이 아니라 '
         + '「〜等を参考にすること」 참조문구로만 연결된다. 2026 개정에서도 축은 불변(100点→160点).',
@@ -80,6 +88,7 @@ const JURISDICTIONS = [
     conditionCount: 3,
     axisRetained: true,
     verified: true,
+    verifiedBy: 'read',   // 2026-08-27 MY2025 사양 직접 열람. 3 rate·분모분자 구조 확인
     note: '낙상력·치매·만성콩팥병 3개 조건. 질환=적격모집단(분모) / 약물=분자 구조로, '
         + 'Beers Table 3형 판정을 청구데이터 위에서 그대로 구현한다. '
         + '2023 Beers 개정에 맞춰 낙상 rate에 항콜린제를 **추가**(확장)했고 MY2025 확정본에 존속한다. '
@@ -88,16 +97,22 @@ const JURISDICTIONS = [
   {
     id: 'us-ncqa-rating', region: '미국', layer: 'rating',
     instrument: 'NCQA Health Plan Ratings 2026 필수 성과지표 목록',
-    source: '2026-HPR-List-of-Required-Performance-Measures (2026-03-27 최종본)',
+    source: '2026-HPR-List-of-Required-Performance-Measures (2026-03-27 최종본) 및 '
+          + 'Overview-Memo_HPR-2026_HPR-2027-Public-Comment (권고·사유)',
     academicBasis: '동일 (Beers 2023)',
     conditionCount: 0,
     axisRetained: false,
     verified: true,
-    note: '최종본 개정이력 원문: "Removed the Potentially Harmful Drug-Disease Interactions '
-        + 'in Older Adults (DDE) ... from the Medicare measure list." 잔존은 약물 단독 지표 DAE(가중치 1)뿐. '
-        + '**제거 사유가 원문에 명시돼 있다**: "not used in any external programs and is also '
-        + 'highly correlated with the ... (DAE) measure." 이 사유는 검증 가능한 실증 명제다. '
-        + '→ test/test_ncqa_correlation.js 에서 한국 기준으로 직접 검정한다.',
+    verifiedBy: 'read',   // 2026-08-27 두 문서 모두 직접 열람. 아래 인용문은 축자 대조를 마쳤다.
+    note: '최종본 개정이력: "Removed the Potentially Harmful Drug-Disease Interactions in Older Adults '
+        + '(DDE) and Follow-Up After High-Intensity Care for Substance Use Disorder (FUI) measures from '
+        + 'the Medicare measure list." 잔존은 약물 단독 지표 DAE(가중치 1)뿐. '
+        + '**제거가 임의 판단이 아니라 명문화된 선정 원칙의 적용이라는 점이 중요하다.** '
+        + '같은 메모의 원칙 4는 "Eliminate redundancy. ... For highly correlated measures, choose the '
+        + 'measure with the most desirable statistical properties."이고, DDE에 이 원칙을 적용한 사유가 '
+        + '"The measure is not used in any external programs and is also highly correlated with the Use of '
+        + 'High-Risk Medications in Older Adults (DAE) measure."다. '
+        + '뒷부분은 데이터로 참·거짓을 가릴 수 있다 → test/test_ncqa_correlation.js 에서 한국 기준으로 검정한다.',
     testableClaim: 'ncqa-correlation',
   },
   {
@@ -108,6 +123,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'agent',
     note: '별점 산정 약물지표 5개(D08–D12)에 노인 PIM 지표가 약물 단독 축조차 0개다. '
         + '유일한 조건부 노인 PIM 지표 APD(치매×항정신병약)는 2018년 이래 전 기간 display measure로만 '
         + '존속해 단 한 해도 별점에 반영된 적이 없다.',
@@ -117,14 +133,18 @@ const JURISDICTIONS = [
   {
     id: 'eng-pincer', region: '잉글랜드', layer: 'cds',
     instrument: 'PINCER National Prescribing Safety Indicators (13개)',
-    source: 'PRIMIS/Nottingham · NHS England·AHSN Network 전국 확산',
+    source: 'PRIMIS/Nottingham PINCER progress report (2020-07) · NHS England·AHSN Network 전국 확산',
     academicBasis: 'Beers/STOPP 파생 아님. Avery/Howard 계열 전연령 위험처방 지표',
     conditionCount: 5,
     axisRetained: true,
     verified: true,
-    note: '13개 중 5개가 진단코드·검사치를 분모로 요구한다(B2·B3 소화성궤양 Read code + NSAID/항혈소판제, '
-        + 'F2 심부전 진단 + 경구 NSAID, G2 eGFR<45 + 경구 NSAID, H2 천식 Read code + 비선택성 β차단제). '
-        + '최소 23,350,696건의 환자기록에서 검색됐다. 단 노인 연령을 분모에 명시한 것은 A2(≥65세)·I2(≥75세) 2개뿐.',
+    verifiedBy: 'read',   // 2026-08-27 Appendix 1 지표 전량 직접 대조
+    note: '13개 중 5개가 진단코드를 분모로 요구한다(B2·B3 소화성궤양 Read code + NSAID/항혈소판제, '
+        + 'F2 심부전 진단 + 경구 NSAID, G2 만성신부전 + 경구 NSAID, H2 천식 Read code + 비선택성 β차단제). '
+        + '부록 표는 14행이지만 J2(FBC)·J3(LFT)이 한 지표의 두 검사라 원문 본문은 "13 evidence-based '
+        + 'prescribing safety indicators"로 센다. 검색 규모는 원문이 "a minimum of 23.35 million patient '
+        + 'records"라고만 적었으므로 그 이상의 자릿수를 쓰지 않는다(2,430개 진료소 기준). '
+        + '단 노인 연령을 분모에 명시한 것은 A2(≥65세)·I2(≥75세) 2개뿐이다.',
   },
   {
     id: 'eng-iif', region: '잉글랜드', layer: 'payment',
@@ -134,6 +154,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'agent',
     note: '**같은 계층 안에서 축이 갈린다.** 대상자 식별 지표 SMR-01A의 분모 9개 항목 중 5개는 '
         + '조건부가 그대로 편입돼 지불 규칙 본문에 진단명이 들어간다("Patients aged 18 or over with an '
         + 'unresolved heart failure diagnosis prescribed an oral NSAID."). 그러나 실제 **지급** 성과지표 '
@@ -150,6 +171,7 @@ const JURISDICTIONS = [
     conditionCount: 6,
     axisRetained: true,
     verified: true,
+    verifiedBy: 'read',   // 2026-08-27 Table 40 데이터 19행 전량 대조
     note: '**가장 강한 반례.** 데이터 19행 중 질환 진단을 분모 조건으로 요구하는 항목 6행'
         + '(치매+HbA1c<53, 천식 진단+비선택성 β차단제, CKD4/5 또는 eGFR<30+metformin, '
         + 'CKD5 또는 eGFR<10+colchicine, 유방암/에스트로겐의존암 기왕력+에스트로겐, '
@@ -169,6 +191,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
+    verifiedBy: 'agent',
     note: '국가 문서는 두 축을 유지하는데 **실제 공표된 지표는 약물 단독 축 하나뿐**이다. '
         + '분모 75세 이상 인구, 분자 ATC 엔트리 31개, 진단 조건 전무. '
         + '(2017년판 PDF 원문 미확보로 diagnosspecifika 축의 항목 수는 미확인.)',
@@ -183,6 +206,7 @@ const JURISDICTIONS = [
     conditionCount: null,
     axisRetained: null,
     verified: true,
+    verifiedBy: 'agent',
     note: '**미명세.** 13페이지 전문에 「以2015年Beer\'s criteria計算」이라고만 적혀 있고 '
         + '어느 표를 쓰는지, 항목 수, 건보 약품코드 매핑을 전혀 명시하지 않는다. '
         + '채택·배제 판정이 원문으로 불가능하다. 대만은 조건부 축을 "탈락시킨" 사례가 아니라 '
@@ -196,6 +220,7 @@ const JURISDICTIONS = [
     conditionCount: 2,
     axisRetained: true,
     verified: true,
+    verifiedBy: 'agent',
     note: '노인 기준과 무관한 개별 질환-금기 지표이므로 "노인 PIM의 조건부 축이 살아남은 사례"가 아니다. '
         + '그러나 **"조건부 판정은 청구데이터로 구현 불가능하다"는 방어논리를 직접 반증한다**: '
         + '病史檔의 2·3도 방실차단 병력(I441/I442/I443, 심박조율기 사용자 제외) 고혈압 환자의 '
@@ -218,10 +243,16 @@ const LAYER_KO = {
   rating: '공개 등급평가', payment: '지불·재정 인센티브',
 };
 
-/** 계층별 조건부 축 존치 집계. 판정 불가(null)는 분모에서 뺀다. */
-function byLayer() {
+/** 계층별 조건부 축 존치 집계. 판정 불가(null)는 분모에서 뺀다.
+ *
+ * @param {{readOnly?: boolean}} [opt] readOnly=true 면 사람이 원문을 직접 열어 확인한 항목만 센다.
+ *   전체 집계는 에이전트 보고분을 포함하므로, 기울기가 근거 등급에 의존하지 않는지
+ *   확인하려면 두 집계를 비교해야 한다. 결론이 갈리면 그 사실을 논문에 적어야 한다.
+ */
+function byLayer(opt) {
+  const pool = opt && opt.readOnly ? JURISDICTIONS.filter((j) => j.verifiedBy === 'read') : JURISDICTIONS;
   return LAYER_ORDER.map((layer) => {
-    const rows = JURISDICTIONS.filter((j) => j.layer === layer);
+    const rows = pool.filter((j) => j.layer === layer);
     const judged = rows.filter((j) => j.axisRetained !== null);
     return {
       layer,
