@@ -154,5 +154,53 @@ check('미확인 항목에 사유 명시', /세지 못했다/.test(reg.CRITERIA.
 check('전 기준에 출처 표기', reg.CRITERIA.every((c) => c.source && c.source.length > 10));
 check('HIRA 미포괄 항목 존재(디곡신)', !hira.isCovered({ ing: 'digoxin', cls: 'digoxin', tags: [] }, '강심제'));
 
+
+section('7. 국가 운영 계층별 조건부 축 존치 (6개 관할)');
+const jur = require('../src/jurisdictions.js');
+check('관할 7곳 등재', jur.regionCount === 7);
+check('판정 가능한 관할×계층 11건', jur.assessableCount === 11);
+check('전 항목에 1차 원문 열람 여부 표기', jur.JURISDICTIONS.every((x) => typeof x.verified === 'boolean'));
+check('전 항목에 출처 표기', jur.JURISDICTIONS.every((x) => x.source && x.source.length > 5));
+check('전 항목에 근거 서술 표기', jur.JURISDICTIONS.every((x) => x.note && x.note.length > 30));
+// 판정 불가는 반드시 null 이어야 한다. 0 으로 적으면 "확인해 보니 없었다"가 되어 사실이 바뀐다.
+check('미명세 관할은 conditionCount·axisRetained 둘 다 null (대만 NHIA)',
+  (() => { const t = jur.JURISDICTIONS.find((x) => x.id === 'tw-nhia-pim');
+           return t.conditionCount === null && t.axisRetained === null; })());
+check('축 소실 항목은 조건부 0개, 축 유지 항목은 1개 이상',
+  jur.JURISDICTIONS.filter((x) => x.axisRetained === false).every((x) => x.conditionCount === 0)
+  && jur.JURISDICTIONS.filter((x) => x.axisRetained === true).every((x) => x.conditionCount >= 1));
+
+// 이 저장소의 원래 가설은 반증됐다. 반증 사실 자체를 시험으로 고정해 둔다.
+// 나중에 데이터를 만지다 반례가 사라지면 시험이 깨져서 알아차릴 수 있다.
+check('가설 반례가 실재한다 (조건부 축을 유지한 국가 운영 사례)', jur.counterExamples().length >= 3);
+check('가장 강한 반례는 스코틀랜드 — 정부 발행 + 전국 CDS 탑재',
+  (() => { const s = jur.JURISDICTIONS.find((x) => x.id === 'sct-poly');
+           return s.axisRetained === true && s.layer === 'cds' && s.conditionCount === 6; })());
+check('잉글랜드는 같은 나라 안에서 계층별로 갈린다 (CDS 유지 / 지불 소실)',
+  jur.JURISDICTIONS.find((x) => x.id === 'eng-pincer').axisRetained === true
+  && jur.JURISDICTIONS.find((x) => x.id === 'eng-iif').axisRetained === false);
+check('지불 계층에서는 판정 가능한 전건이 축 소실',
+  (() => { const p = jur.byLayer().find((x) => x.layer === 'payment');
+           return p.judged === 4 && p.retained === 0; })());
+check('임상의사결정지원 계층에서는 전건이 축 유지',
+  (() => { const c = jur.byLayer().find((x) => x.layer === 'cds');
+           return c.judged === 2 && c.retained === 2; })());
+check('판정 불가 관할을 표본에 섞지 않고 분리 기록', jur.NOT_ASSESSABLE.length === 4
+  && jur.NOT_ASSESSABLE.every((x) => x.reason && x.reason.length > 20));
+check('NCQA 제거 사유가 검정 대상으로 연결됨',
+  jur.JURISDICTIONS.find((x) => x.id === 'us-ncqa-rating').testableClaim === 'ncqa-correlation');
+
+section('8. NCQA 제거 사유의 검정 (φ 상관)');
+const { stats } = require('./test_ncqa_correlation.js');
+// 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
+const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+check('φ 계산 검증: 완전일치 분할표에서 φ = 1', Math.abs(perfect.phi - 1) < 1e-12);
+const independent = stats({ both: 25, onlyHira: 25, onlyT2: 25, neither: 25 });
+check('φ 계산 검증: 독립 분할표에서 φ = 0', Math.abs(independent.phi) < 1e-12);
+check('φ 계산 검증: 완전일치에서 κ = 1', Math.abs(perfect.kappa - 1) < 1e-12);
+check('중복률 P(A|B) 계산 검증', Math.abs(stats({ both: 92, onlyHira: 8, onlyT2: 8, neither: 0 }).overlap - 0.92) < 1e-12);
+check('한계수확 P(B∧¬A) 계산 검증',
+  Math.abs(stats({ both: 10, onlyHira: 10, onlyT2: 5, neither: 75 }).marginal - 0.05) < 1e-12);
+
 console.log(`\nkorean-pim: ${pass} 통과 / ${fail} 실패 (총 ${pass + fail}건)`);
 if (fail) { console.log('실패:\n - ' + failed.join('\n - ')); process.exit(1); }
