@@ -28,9 +28,14 @@ const THRESHOLD = 0.5;
 
 /** 파라미터 한 조합을 시드 여러 개로 돌려 평균을 낸다. */
 function probe(opt) {
-  const r = SEEDS.map((s) => stats(run(s, N, opt)));
+  const raw = SEEDS.map((s) => run(s, N, opt));
+  const r = raw.map(stats);
   const avg = (k) => r.reduce((a, x) => a + x[k], 0) / r.length;
-  return { phi: avg('phi'), overlap: avg('overlap'), marginal: avg('marginal'), kappa: avg('kappa') };
+  // 기저율 P(A). 중복률을 해석하려면 반드시 이 값과 함께 봐야 한다.
+  // 두 축이 독립이어도 중복률은 P(A) 만큼 나오므로, 중복률 - P(A) 가 실제 연관의 크기다.
+  const pA = raw.reduce((a, x) => a + (x.both + x.onlyHira) / N, 0) / raw.length;
+  return { phi: avg('phi'), overlap: avg('overlap'), marginal: avg('marginal'), kappa: avg('kappa'),
+           pA, lift: avg('overlap') - pA };
 }
 
 /** 전체 격자를 훑어 보고서를 출력한다. test.js 가 probe() 만 쓸 때는 돌지 않아야 한다. */
@@ -39,6 +44,11 @@ function main() {
   [0, 0.5, 1, 1.5, 2].forEach((liftScale) => GRID.push({ liftScale }));
   [0.5, 0.75, 1.5, 2].forEach((condScale) => GRID.push({ condScale }));
   [-1, -0.5, 0.5, 1].forEach((sizeShift) => GRID.push({ sizeShift }));
+// 국가 기준 포괄 약물의 선택 빈도. 기본 코호트의 P(A)=81.8% 는 심평원 실측 44.7% 보다 1.83배 높다.
+// 계열 단위 구현이라 성분 단위보다 넓게 잡히는 것이 주된 이유로 보인다.
+// 실측 쪽으로 보정했을 때 결론이 어느 방향으로 움직이는지 확인한다.
+[0.5, 0.25, 0.1].forEach((pimWeight) => GRID.push({ pimWeight }));
+GRID.push({ sizeShift: -1.8, pimWeight: 0.1 });   // 도달 가능한 최저 기저율
   // 극단 조합. 한 축씩 흔드는 것으로는 놓치는 구석을 본다.
   GRID.push({ liftScale: 0, condScale: 0.5, sizeShift: -1 });
   GRID.push({ liftScale: 2, condScale: 2, sizeShift: 1 });
@@ -72,6 +82,13 @@ function main() {
   console.log(`φ 범위          ${minPhi.toFixed(3)} ~ ${maxPhi.toFixed(3)}   (기준선 ${THRESHOLD})`);
   console.log(`중복률 최대     ${(maxOv * 100).toFixed(1)}%`);
   console.log(`한계수확 최소   ${(minMarg * 100).toFixed(2)}%`);
+const byPA = rows.slice().sort((a, b) => a.pA - b.pA);
+const lo = byPA[0], hi = byPA[byPA.length - 1];
+console.log(`\n기저율 P(A) 범위 ${(lo.pA * 100).toFixed(1)}% ~ ${(hi.pA * 100).toFixed(1)}%  (심평원 실측 44.7%)`);
+console.log(`  기저율이 낮아질수록: 중복률 ${(hi.overlap * 100).toFixed(1)}% → ${(lo.overlap * 100).toFixed(1)}%, `
+  + `한계수확 ${(hi.marginal * 100).toFixed(2)}% → ${(lo.marginal * 100).toFixed(2)}%`);
+console.log('  즉 실측 기저율 쪽으로 보정하면 NCQA 주장에 유리한 중복률이 떨어지고 한계수확은 커진다.');
+console.log('  본문에 쓴 92.0% / 4.54% 는 우리 결론에 **불리한 쪽**의 보수적인 값이다.');
   console.log(`\n결론 — φ가 강한 상관 기준선을 넘는 조합: ${breached.length}개 / ${rows.length}개`);
   if (!breached.length) {
     console.log('  가정을 넓게 흔들어도 φ는 0.5에 이르지 않는다.');

@@ -232,8 +232,20 @@ check('φ 결론이 가정한 동반질환 상승률(LIFT)에 둔감 (0↔2 변�
   Math.abs(sens.noLift.phi - sens.bigLift.phi) < 0.05);
 check('한계수확이 어느 조합에서도 0이 되지 않음',
   Object.values(sens).every((x) => x.marginal > 0.01));
-check('중복률은 어느 조합에서도 높게 유지 (NCQA 주장에 유리한 쪽도 그대로 보고)',
-  Object.values(sens).every((x) => x.overlap > 0.85));
+check('중복률은 기본 코호트에서 높게 유지 (NCQA 주장에 유리한 쪽도 그대로 보고)',
+  sens.base.overlap > 0.85);
+// 중복률 해석의 핵심. 두 축이 독립이어도 중복률은 P(A) 만큼 나온다.
+// 따라서 92% 라는 숫자 자체가 아니라 P(A) 대비 초과분이 실제 연관의 크기다.
+check('중복률의 기저율 초과분이 20%p 미만 (높은 중복률은 대부분 기저율 때문)',
+  sens.base.lift < 0.20 && sens.base.lift > 0);
+// 우리 코호트는 약물 단독 축이 심평원 실측(44.7%)보다 넓게 발화한다.
+// 실측 쪽으로 보정하면 결론이 어느 방향으로 가는지 고정해 둔다.
+const cal = probe({ sizeShift: -1.8, pimWeight: 0.1 });
+check('기저율을 실측 쪽으로 낮추면 중복률이 떨어진다 (본문 수치가 보수적)',
+  cal.overlap < sens.base.overlap - 0.10);
+check('기저율을 실측 쪽으로 낮추면 한계수확이 커진다 (본문 수치가 보수적)',
+  cal.marginal > sens.base.marginal);
+check('기저율 보정 후에도 φ가 기준선 아래', cal.phi < THRESHOLD);
 
 check('φ 계산 검증: 완전일치 분할표에서 φ = 1', Math.abs(perfect.phi - 1) < 1e-12);
 const independent = stats({ both: 25, onlyHira: 25, onlyT2: 25, neither: 25 });

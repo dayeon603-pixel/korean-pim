@@ -64,9 +64,12 @@ function toDrug(ing) {
   const e = EXTRA[ing];
   return Array.isArray(e) ? { ing, cls: e[0], tags: [e[1]], cat: '' } : { ing, cls: e || 'other', tags: [], cat: '' };
 }
+/** 국가 기준 14계열에 포괄되는 약물인지. pimWeight 보정 대상을 고르는 데 쓴다. */
+const COVERED = {};
 const W = {}; Object.values(POOL).flat().forEach((i) => {
   const d = toDrug(i); const c = hira.classify(d, d.cat);
   W[i] = c ? Math.max(0.3, c.prevalence / 5) : 1;
+  COVERED[i] = !!hira.isCovered({ ing: d.ing, cls: d.cls, tags: d.tags }, d.cat);
 });
 
 // mulberry32 — 시드를 충분히 섞는다.
@@ -90,12 +93,17 @@ function mulberry32(a) {
  *     결론이 이 값에 얼마나 의존하는지 반드시 확인해야 한다. 0 이면 질환 간 상관을 없앤다.
  *   condScale 전체 기저질환 유병률의 배율.
  *   sizeShift 처방 약물 수 분포를 큰 쪽/작은 쪽으로 미는 정도(-1~+1).
+ *   pimWeight 국가 기준에 포괄되는 약물의 선택 가중치 배율. 1 미만이면 PIM 약물이 덜 뽑힌다.
+ *     **이게 분할표를 가장 크게 움직이는 손잡이다.** 기본 코호트는 약물 단독 축 발화율이 81.8%인데
+ *     심평원 보고서의 실측(다약제 노인의 44.7%가 목록 약물 1종 이상)보다 1.83배 높다.
+ *     외부 실측에 맞춰 보정했을 때 결론이 유지되는지 반드시 확인해야 한다.
  */
 function run(seedInit, N, opt) {
   const o = opt || {};
   const liftScale = o.liftScale === undefined ? 1 : o.liftScale;
   const condScale = o.condScale === undefined ? 1 : o.condScale;
   const sizeShift = o.sizeShift === undefined ? 0 : o.sizeShift;
+  const pimWeight = o.pimWeight === undefined ? 1 : o.pimWeight;
   const rnd = mulberry32(seedInit);
   const pickW = (a, w) => { const t = w.reduce((x,y)=>x+y,0); let r = rnd()*t; for (let i=0;i<a.length;i++){ r-=w[i]; if(r<=0) return a[i]; } return a[a.length-1]; };
   let hiraFlag=0, t2Flag=0, onlyT2=0, both=0, neither=0, onlyHira=0;
@@ -107,7 +115,7 @@ function run(seedInit, N, opt) {
     const chosen = new Set(); let g = 0;
     while (chosen.size < cnt && g++ < 300) {
       const pool = POOL[AREAS[Math.floor(rnd() * AREAS.length)]];
-      chosen.add(pickW(pool, pool.map((i) => W[i])));
+      chosen.add(pickW(pool, pool.map((i) => W[i] * (COVERED[i] ? pimWeight : 1))));
     }
     const conds = [];
     for (const [id, base] of Object.entries(COND_BASE)) {
@@ -139,4 +147,4 @@ function run(seedInit, N, opt) {
   return { hiraFlag, t2Flag, both, onlyHira, onlyT2, neither };
 }
 
-module.exports = { run, POOL, COND_BASE, LIFT, toDrug, mulberry32 };
+module.exports = { run, POOL, COND_BASE, LIFT, COVERED, toDrug, mulberry32 };
