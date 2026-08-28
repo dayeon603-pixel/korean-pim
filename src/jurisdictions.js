@@ -54,16 +54,23 @@ const JURISDICTIONS = [
   // ── 일본 ────────────────────────────────────────────────────────────────
   {
     id: 'jp-mhlw', region: '일본', layer: 'guideline',
-    instrument: '厚生労働省「高齢者の医薬品適正使用の指針(総論編)」別添 別表2 (2018-05)',
-    source: 'mhlw.go.jp',
-    academicBasis: '日本老年医学会「高齢者の安全な薬物療法ガイドライン2015」(원문에 改変引用 명기)',
+    instrument: '厚生労働省「高齢者の医薬品適正使用の指針(総論編)」別表2 (2018-05)',
+    source: 'mhlw.go.jp/content/11121000/kourei-tekisei_web.pdf',
+    academicBasis: '日本老年医学会「高齢者の安全な薬物療法ガイドライン2015」'
+                 + '(별표 말미에 「より改変引用」으로 명기)',
     conditionCount: 0,
     axisRetained: false,
+    verifiedBy: 'read',   // 2026-08-27 별표2 전문 및 문서 전체 직접 확인
     verified: true,
-    verifiedBy: 'agent',
-    note: '학회 기준의 「対象となる患者群」 전용 열(29행 중 8행 기재)이 국가 지침에서 '
-        + '통째로 소멸한다(문서 전체 출현 0회). 다만 12행 중 최소 5행이 조건을 '
-        + '「推奨される使用法」 산문 안에 보존한다. **삭제가 아니라 판정 축에서 문장으로의 강등**이다.',
+    note: '학회 기준이 갖고 있던 「対象となる患者群」 전용 열이 국가 지침에서 사라진다. '
+        + '별표2의 열 구성은 「分類 / 薬物(クラス又は一般名) / 推奨される使用法 / 主な薬物有害事象・理由」 '
+        + '4열이며, **「対象となる患者群」은 문서 전체에서 0회 출현한다**(직접 검색 확인). '
+        + '데이터 12행. 다만 조건이 삭제된 것이 아니라 「推奨される使用法」 산문 안으로 옮겨갔다. '
+        + '경구 스테로이드 「慢性安定期のCOPD患者には使用すべきでない」, 비선택성 β차단제 '
+        + '「気管支喘息やCOPDでは…気管支喘息では禁忌」, α차단제의 고혈압·전립선비대 분기, '
+        + '무스카린 수용체 길항제 「前立腺肥大症の場合は…」, 알도스테론 길항제 「K高値、腎機能低下の症例では」 '
+        + '등 5행이 질환 조건을 보존한다. **삭제가 아니라 판정 축에서 문장으로의 강등**이다. '
+        + '기계가 읽을 수 있는 열에서 빠졌으므로 지표 산출에는 쓸 수 없다.',
   },
   {
     id: 'jp-shinryo', region: '일본', layer: 'payment',
@@ -149,16 +156,20 @@ const JURISDICTIONS = [
   {
     id: 'eng-iif', region: '잉글랜드', layer: 'payment',
     instrument: 'NHS England Network Contract DES — Investment and Impact Fund 2022/23',
-    source: 'B1963-iii Network contract IIF Implementation Guidance',
+    source: 'england.nhs.uk B1963-iii Network Contract IIF Implementation Guidance (2022-09)',
     academicBasis: 'PINCER 지표군',
     conditionCount: 0,
     axisRetained: false,
+    verifiedBy: 'read',   // 2026-08-27 SMR-01A 분모 9항목 및 SMR-02A~D 정의 직접 대조
     verified: true,
-    verifiedBy: 'agent',
-    note: '**같은 계층 안에서 축이 갈린다.** 대상자 식별 지표 SMR-01A의 분모 9개 항목 중 5개는 '
-        + '조건부가 그대로 편입돼 지불 규칙 본문에 진단명이 들어간다("Patients aged 18 or over with an '
-        + 'unresolved heart failure diagnosis prescribed an oral NSAID."). 그러나 실제 **지급** 성과지표 '
-        + 'SMR-02A~D는 전부 약물-약물/연령-약물이며 분모에 진단을 요구하지 않는다.',
+    note: '**같은 재정 인센티브 안에서 단계별로 갈린다.** 대상자 식별 지표 SMR-01A의 분모는 9개 항목이고 '
+        + '그중 5개가 조건부다(소화성궤양 병력 + NSAID / 소화성궤양 병력 + 항혈소판제 / '
+        + '심부전 진단 + 경구 NSAID / eGFR<45 + 경구 NSAID / 천식 진단 + 비선택성 β차단제). '
+        + '지불 규칙 본문에 진단명이 그대로 들어간다 — '
+        + '"Patients aged 18 or over with an unresolved heart failure diagnosis prescribed an oral NSAID." '
+        + '그러나 실제 **지급** 성과지표 SMR-02A~D의 분모는 전부 약물-약물 또는 연령-약물이다 '
+        + '(02A NSAID+항응고제, 02B 65세 이상 NSAID, 02C 항응고제+항혈소판제, 02D 아스피린+다른 항혈소판제). '
+        + '어느 분모에도 진단이 없다. 조건부 축은 대상자를 고를 때까지만 쓰이고 돈이 걸리는 단계에서 사라진다.',
   },
 
   // ── 스코틀랜드 ──────────────────────────────────────────────────────────

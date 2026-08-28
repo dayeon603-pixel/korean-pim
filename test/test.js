@@ -188,14 +188,16 @@ check('임상의사결정지원 계층에서는 전건이 축 유지',
 check('판정 불가 관할을 표본에 섞지 않고 분리 기록', jur.NOT_ASSESSABLE.length === 4
   && jur.NOT_ASSESSABLE.every((x) => x.reason && x.reason.length > 20));
 // 근거 등급. 에이전트 보고와 직접 열람은 다른 것이고, 논문에 이름이 실리는 항목은 직접 열람이어야 한다.
+check('1차 원문 직접 열람 7건', jur.JURISDICTIONS.filter((x) => x.verifiedBy === 'read').length === 7);
 check('전 항목에 근거 등급(read/agent) 표기',
   jur.JURISDICTIONS.every((x) => x.verifiedBy === 'read' || x.verifiedBy === 'agent'));
 // 초록이 관할을 이름으로 지목하는 곳. 여기 있는 건 사람이 원문을 열어봤어야 한다.
-const CITED_IN_ABSTRACT = ['kr-hira', 'sct-poly', 'eng-pincer', 'us-hedis-dde', 'us-ncqa-rating'];
+const CITED_IN_ABSTRACT = ['kr-hira', 'sct-poly', 'eng-pincer', 'us-hedis-dde', 'us-ncqa-rating',
+  'jp-mhlw', 'eng-iif'];
 check('초록이 이름으로 인용하는 관할은 전부 1차 원문 직접 열람',
   CITED_IN_ABSTRACT.every((id) => jur.JURISDICTIONS.find((x) => x.id === id).verifiedBy === 'read'));
 // 기울기가 근거 등급에 의존하면 결론이 약해진다. 직접 확인분만으로도 단조로운지 본다.
-check('계층 기울기가 직접 확인분만으로도 단조 유지 (CDS 2/2 → 사양 1/1 → 등급 0/1 → 지불 0/1)',
+check('계층 기울기가 직접 확인분만으로도 단조 유지 (CDS·사양 전건 유지 → 등급·지불 전건 소실)',
   (() => {
     const r = jur.byLayer({ readOnly: true });
     const rate = (k) => { const x = r.find((y) => y.layer === k); return x.judged ? x.retained / x.judged : null; };
