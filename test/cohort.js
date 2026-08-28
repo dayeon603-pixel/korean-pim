@@ -80,12 +80,29 @@ function mulberry32(a) {
   };
 }
 
-function run(seedInit, N) {
+/** 코호트를 만들고 두 판정 축의 2x2 분할표를 돌려준다.
+ *
+ * @param {number} seedInit 난수 시드
+ * @param {number} N 처방 건수
+ * @param {{liftScale?:number, condScale?:number, sizeShift?:number}} [opt]
+ *   민감도 분석용 파라미터. 기본값(1,1,0)이 본 측정에 쓴 설정이다.
+ *   liftScale 동반질환 조건부 상승률(LIFT)의 배율. **LIFT 는 측정치가 아니라 가정이므로**
+ *     결론이 이 값에 얼마나 의존하는지 반드시 확인해야 한다. 0 이면 질환 간 상관을 없앤다.
+ *   condScale 전체 기저질환 유병률의 배율.
+ *   sizeShift 처방 약물 수 분포를 큰 쪽/작은 쪽으로 미는 정도(-1~+1).
+ */
+function run(seedInit, N, opt) {
+  const o = opt || {};
+  const liftScale = o.liftScale === undefined ? 1 : o.liftScale;
+  const condScale = o.condScale === undefined ? 1 : o.condScale;
+  const sizeShift = o.sizeShift === undefined ? 0 : o.sizeShift;
   const rnd = mulberry32(seedInit);
   const pickW = (a, w) => { const t = w.reduce((x,y)=>x+y,0); let r = rnd()*t; for (let i=0;i<a.length;i++){ r-=w[i]; if(r<=0) return a[i]; } return a[a.length-1]; };
   let hiraFlag=0, t2Flag=0, onlyT2=0, both=0, neither=0, onlyHira=0;
   for (let n = 0; n < N; n++) {
-    const [lo, hi] = pickW(BUCKETS, BW);
+    // sizeShift>0 이면 다제약물 쪽으로, <0 이면 소수 처방 쪽으로 가중치를 기울인다.
+    const bw = BW.map((w, i) => Math.max(0.01, w * (1 + sizeShift * (i - (BW.length - 1) / 2) / 2)));
+    const [lo, hi] = pickW(BUCKETS, bw);
     const cnt = lo + Math.floor(rnd() * (hi - lo + 1));
     const chosen = new Set(); let g = 0;
     while (chosen.size < cnt && g++ < 300) {
@@ -94,8 +111,11 @@ function run(seedInit, N) {
     }
     const conds = [];
     for (const [id, base] of Object.entries(COND_BASE)) {
-      let p = base; const lf = LIFT[id];
-      if (lf) for (const [pre, m] of Object.entries(lf)) if (conds.includes(pre)) p = Math.min(0.95, p * m);
+      let p = Math.min(0.95, base * condScale); const lf = LIFT[id];
+      // 상승률을 1 쪽으로 당기거나(liftScale<1) 밀어서(>1) 질환 간 상관의 세기를 조절한다.
+      if (lf) for (const [pre, m] of Object.entries(lf)) {
+        if (conds.includes(pre)) p = Math.min(0.95, p * (1 + (m - 1) * liftScale));
+      }
       if (rnd() < p) conds.push(id);
     }
     let drugs = [...chosen].map(toDrug);

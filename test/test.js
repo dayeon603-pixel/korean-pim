@@ -211,6 +211,30 @@ section('8. NCQA 제거 사유의 검정 (φ 상관)');
 const { stats } = require('./test_ncqa_correlation.js');
 // 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
 const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+section('9. φ의 가정 의존성 (민감도)');
+const { probe, THRESHOLD } = require('./sensitivity.js');
+// 가벼운 시험이라 표본을 줄인다. 전체 격자는 node test/sensitivity.js 로 돌린다.
+const SN = 30000;
+const sens = {
+  base: probe({}),
+  noLift: probe({ liftScale: 0 }),      // 질환 간 상관을 완전히 없앤 극단
+  bigLift: probe({ liftScale: 2 }),
+  lowCond: probe({ condScale: 0.5 }),
+  highCond: probe({ condScale: 2 }),
+  fewDrugs: probe({ sizeShift: -1 }),
+  manyDrugs: probe({ sizeShift: 1 }),
+};
+const phis = Object.values(sens).map((x) => x.phi);
+check('φ가 어느 파라미터 조합에서도 강한 상관 기준선(0.5)에 이르지 않음',
+  phis.every((p) => p < THRESHOLD));
+// LIFT 는 우리가 가정한 값이다. 결론이 여기 크게 의존하면 방어할 수 없다.
+check('φ 결론이 가정한 동반질환 상승률(LIFT)에 둔감 (0↔2 변화폭 0.05 미만)',
+  Math.abs(sens.noLift.phi - sens.bigLift.phi) < 0.05);
+check('한계수확이 어느 조합에서도 0이 되지 않음',
+  Object.values(sens).every((x) => x.marginal > 0.01));
+check('중복률은 어느 조합에서도 높게 유지 (NCQA 주장에 유리한 쪽도 그대로 보고)',
+  Object.values(sens).every((x) => x.overlap > 0.85));
+
 check('φ 계산 검증: 완전일치 분할표에서 φ = 1', Math.abs(perfect.phi - 1) < 1e-12);
 const independent = stats({ both: 25, onlyHira: 25, onlyT2: 25, neither: 25 });
 check('φ 계산 검증: 독립 분할표에서 φ = 0', Math.abs(independent.phi) < 1e-12);
