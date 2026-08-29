@@ -211,6 +211,25 @@ section('8. NCQA 제거 사유의 검정 (φ 상관)');
 const { stats } = require('./test_ncqa_correlation.js');
 // 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
 const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+section('11. 표1 밖 약물 사전 (실제 진료자료 적용용)');
+const dcm = require('../analysis/drug_class_map.js');
+// 표1 성분을 사전에 또 넣으면 엔진의 판정과 어긋날 수 있고 어느 쪽이 맞는지 판단할 근거가 없다.
+check('사전에 표1 성분이 중복 등재되지 않음',
+  Object.keys(dcm.MAP).every((k) => !pim.checkIngredient(k)));
+check('전 항목이 [계열키, ...태그] 형식',
+  Object.values(dcm.MAP).every((v) => Array.isArray(v) && v.length >= 1 && typeof v[0] === 'string'));
+// 요로선택적 알파차단제를 말초 알파-1 차단제와 뭉치면 낙상 조건에서 과판정한다.
+check('요로선택적 알파차단제를 사전에 넣지 않음',
+  dcm.UROSELECTIVE.every((k) => !(k in dcm.MAP)));
+check('요로선택적 제외 목록에 탐스로신 포함', dcm.UROSELECTIVE.includes('tamsulosin'));
+// 한쪽 축에만 유리한 사전이면 비교가 성립하지 않는다. 양쪽 축이 쓰는 계열을 모두 채웠는지 본다.
+check('조건부 축이 지목하는 계열을 사전이 포괄 (opioid·cox2·bb·cortico)',
+  ['opioid', 'cox2', 'bb', 'cortico'].every((c) =>
+    Object.values(dcm.MAP).some((v) => v[0] === c)));
+check('약물 단독 축이 쓰는 계열도 함께 포괄 (근이완제·항정신병약·항우울제)',
+  ['musclerelax', 'antipsych', 'ssri'].every((c) =>
+    Object.values(dcm.MAP).some((v) => v[0] === c)));
+
 section('10. 놓친 판정이 겨냥한 유해사례');
 const harm = require('./missed_harm.js');
 check('35개 조합 전부가 유해사례 범주로 분류됨',
