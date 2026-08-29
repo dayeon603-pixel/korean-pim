@@ -211,6 +211,24 @@ section('8. NCQA 제거 사유의 검정 (φ 상관)');
 const { stats } = require('./test_ncqa_correlation.js');
 // 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
 const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+section('10. 놓친 판정이 겨냥한 유해사례');
+const harm = require('./missed_harm.js');
+check('35개 조합 전부가 유해사례 범주로 분류됨',
+  harm.rows.length === 35 && harm.rows.every((r) => r.harm && r.harm.label));
+check('전 조합에 원문 사유가 붙음', harm.rows.every((r) => r.reason && r.reason.length > 3));
+// 놓친 판정이 대부분 "이익 근거가 약한 약" 이야기라면 배제의 손실이 작다는 반론이 성립한다.
+// 실제로는 반대다. 이 사실을 시험으로 고정한다.
+check('놓친 판정의 90% 이상이 구체적 유해사례를 겨냥 (이익 근거 부족은 소수)',
+  (() => {
+    const noBenefit = harm.rows.filter((r) => r.harm.id === 'no_benefit').length;
+    return (harm.rows.length - noBenefit) / harm.rows.length > 0.9;
+  })());
+check('유해사례가 한 범주에 쏠리지 않음 (3개 이상 범주에 분산)',
+  Object.keys(harm.tally).filter((k) => harm.tally[k].n >= 3).length >= 3);
+// 경고와 위해는 다른 것이다. 스크립트가 그 구분을 반드시 출력하게 한다.
+check('경고와 위해의 구분이 문서에 명시됨',
+  /겨냥한.{0,4}위해의 분류이지 위해가 (발생|실제)/.test(require('fs').readFileSync('./test/missed_harm.js', 'utf8')));
+
 section('9. φ의 가정 의존성 (민감도)');
 const { probe, THRESHOLD } = require('./sensitivity.js');
 // 가벼운 시험이라 표본을 줄인다. 전체 격자는 node test/sensitivity.js 로 돌린다.
