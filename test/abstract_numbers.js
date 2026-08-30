@@ -56,6 +56,13 @@ put('φ 계수', mean(acc.phi).toFixed(3), src);
 put('Cohen κ', mean(acc.kappa).toFixed(3), src);
 put('한계수확 P(B∧¬A)', `${(mean(acc.marginal) * 100).toFixed(2)}% (표준편차 ${(sd(acc.marginal) * 100).toFixed(2)})`, src);
 put('조건부 판정 중 배타적 비율', `${((1 - mean(acc.overlap)) * 100).toFixed(1)}%`, src);
+// 한계수확을 상대 규모로 본 값. φ 보다 해석 기준이 분명해 본문의 효과 크기 서술에 쓴다.
+// 약물 단독 축이 판정한 인구를 기준으로 조건부 축이 판정 대상을 몇 % 넓히는가.
+{
+  const x = run(20260902, N);
+  const byA = x.both + x.onlyHira;
+  put('판정 대상 확대율 (합성)', `${(x.onlyT2 / byA * 100).toFixed(1)}%`, src);
+}
 
 // ── 임상 중요도 ────────────────────────────────────────────
 const ms = require('./missed_severity.js');

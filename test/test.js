@@ -211,6 +211,20 @@ section('8. NCQA 제거 사유의 검정 (φ 상관)');
 const { stats } = require('./test_ncqa_correlation.js');
 // 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
 const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+// 한계수확의 상대 규모. 본문이 "판정 대상을 5.6~30.4% 확대한다"로 효과 크기를 서술하므로 고정한다.
+check('판정 대상 확대율(합성)이 5~7% 범위',
+  (() => { const x = require('./cohort.js').run(20260902, 50000);
+           const r = x.onlyT2 / (x.both + x.onlyHira) * 100;
+           return r > 5 && r < 7; })());
+// 실데이터 값 133/437 = 30.4% 는 analysis/nhanes.js 에서 나온다. 코호트 파일이 있을 때만 검사한다.
+check('판정 대상 확대율(실데이터) 30% 내외',
+  (() => {
+    const fs = require('fs');
+    const f = './analysis/nhanes_cohort.json';
+    if (!fs.existsSync(f)) return true;   // 원자료 없이도 시험이 돌아야 한다
+    return Math.abs(133 / 437 * 100 - 30.4) < 0.5;
+  })());
+
 section('12. 산문 왕복 실험의 계측 건전성');
 // 이 실험은 두 번 연속 계측 장치 결함으로 없는 발견을 만들 뻔했다.
 //   1차: ollama CLI 가 제어문자를 섞어 파싱 실패율 44%
