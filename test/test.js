@@ -211,6 +211,21 @@ section('8. NCQA 제거 사유의 검정 (φ 상관)');
 const { stats } = require('./test_ncqa_correlation.js');
 // 손으로 만든 분할표로 계산식 자체를 검증한다. 실측값이 맞는지가 아니라 산식이 맞는지를 본다.
 const perfect = stats({ both: 50, onlyHira: 0, onlyT2: 0, neither: 50 });
+section('12. 산문 왕복 실험의 계측 건전성');
+// 이 실험은 두 번 연속 계측 장치 결함으로 없는 발견을 만들 뻔했다.
+//   1차: ollama CLI 가 제어문자를 섞어 파싱 실패율 44%
+//   2차: CLI 가 터미널 폭에 맞춰 JSON 문자열 안에 줄바꿈을 삽입
+// 둘 다 모델 출력은 정상이었다. CLI 경로를 다시 쓰지 못하도록 시험으로 막는다.
+const roundtripSrc = require('fs').readFileSync('./analysis/prose_roundtrip.js', 'utf8');
+check('산문 왕복 실험이 CLI 가 아니라 HTTP API 를 쓴다',
+  /localhost:11434\/api\/generate/.test(roundtripSrc) && !/execFileSync/.test(roundtripSrc));
+check('출력 형식을 json 으로 강제', /format:\s*'json'/.test(roundtripSrc));
+check('재현성을 위해 temperature 0 고정', /temperature:\s*0/.test(roundtripSrc));
+// 계측 결함으로 잘못된 결론에 갈 뻔한 경위를 코드에 남겨 둔다. 지우면 시험이 깨진다.
+check('계측 장치 결함 경위가 코드에 기록됨',
+  /없는 발견/.test(roundtripSrc) && /원출력을 확인/.test(roundtripSrc));
+check('정답이 원문 대조로 검증된 구조임을 명시', /197/.test(roundtripSrc));
+
 section('11. 표1 밖 약물 사전 (실제 진료자료 적용용)');
 const dcm = require('../analysis/drug_class_map.js');
 // 표1 성분을 사전에 또 넣으면 엔진의 판정과 어긋날 수 있고 어느 쪽이 맞는지 판단할 근거가 없다.
