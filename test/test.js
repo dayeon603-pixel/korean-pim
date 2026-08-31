@@ -225,6 +225,18 @@ check('판정 대상 확대율(실데이터) 30% 내외',
     return Math.abs(133 / 437 * 100 - 30.4) < 0.5;
   })());
 
+section('14. 결속 선택의 판정 변동 (설계 무결성)');
+// 이 실험은 "결속이 저작자마다 달라진다"를 재는 것이므로, 두 변형이 모두 원문에서
+// 방어 가능해야 성립한다. 한쪽을 일부러 엉터리로 만들면 큰 차이가 나오는 게 당연해진다.
+const sensSrc = require('fs').readFileSync('./analysis/binding_sensitivity.js', 'utf8');
+check('두 변형 모두 원문에서 방어 가능함을 명시', /둘 다 방어 가능/.test(sensSrc));
+check('어느 결속이 옳은지 판정하지 않음을 명시', /어느 결속이 옳은지 판정하지 않는다/.test(sensSrc));
+check('변형 근거(why)를 항목마다 기록', (sensSrc.match(/why:/g) || []).length >= 10);
+check('저자가 만든 변형이며 실제 기관 값집합이 아님을 명시',
+  /다른 기관이 실제 저작한 값집합이 아니다/.test(sensSrc));
+// 절대 비율을 유병률로 읽지 못하도록 경고가 남아 있어야 한다
+check('중환자실 표본 경고 유지', /일반 노인 유병률로 읽으면 안 된다/.test(sensSrc));
+
 section('13. 용어 결속 측정');
 const bind = require('../src/binding.js');
 // 이 논문의 기전 주장은 "학술 기준이 조건 축에 코드를 주지 않는다"에 걸려 있다.
