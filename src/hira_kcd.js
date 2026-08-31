@@ -77,7 +77,43 @@ const BOUND_BY_TABLE22 = {
 const NOT_BOUND = ['insomnia', 'parkinson', 'arrhythmia', 'age80_primary',
   'constipation', 'bph', 'hyponatremia', 'bleeding', 'glaucoma'];
 
+
+/** <표 35>·<표 37> 부적절 다약제 사용에 따른 부정적 건강결과.
+ *
+ * 이 표들이 중요한 이유는 결과 수치 자체보다 **모형의 보정변수**에 있다.
+ * Model2·Model3 은 동반질환(암·심뇌혈관질환·만성 신질환·호흡기계질환·치매·우울증)을
+ * 교란변수로 보정한다. 즉 <표 22>의 KCD 결속은 이 보고서 안에서 세 번 사용되었다.
+ *   (1) 코호트 동반질환 현황 기술 <표 25>
+ *   (2) 부적절 다약제 그룹별 특성 비교
+ *   (3) 건강결과 모형의 보정변수 <표 37>
+ * 그러나 **판정 기준에는 사용되지 않았다.** 결속의 부재가 아니라 적용 범위의 문제다.
+ */
+const OUTCOMES = {
+  rates: {   // <표 35> 부적절 다약제 사용 여부별 발생률
+    inappropriate: { 입원: 0.318, 응급실: 0.184, 사망: 0.025 },
+    appropriate: { 입원: 0.235, 응급실: 0.129, 사망: 0.018 },
+  },
+  aOR: {     // <표 37> Model3 (성별·연령·의료보장·동반질환·ECI·외래방문 보정)
+    입원: { est: 1.32, ci: [1.31, 1.34] },
+    응급실: { est: 1.34, ci: [1.32, 1.35] },
+    사망: { est: 1.35, ci: [1.30, 1.39] },
+  },
+  adjustedComorbidities: ['암', '심뇌혈관질환', '만성 신질환', '호흡기계질환', '치매', '우울증'],
+  note: 'Model3 은 동반질환을 보정변수로 사용한다. 보정에 쓴 6개 중 4개(심뇌혈관질환·만성 신질환·'
+      + '호흡기계질환·치매)가 한국형 PIM 2018 표2의 조건과 대응한다. 건강결과 예측에 유의한 변수로 '
+      + '인정한 동반질환이, 판정 기준에서는 후보에도 오르지 않았다.',
+};
+
+/** 보정변수 6개 중 표2 조건과 대응하는 것. */
+const ADJUSTED_MATCHING_TABLE2 = {
+  심뇌혈관질환: ['hf', 'stroke_secondary'],
+  '만성 신질환': ['ckd'],
+  호흡기계질환: ['copd'],
+  치매: ['dementia'],
+};
+
 module.exports = {
+  OUTCOMES, ADJUSTED_MATCHING_TABLE2,
   TABLE22, TABLE25, DRUG_AXIS_FLAGGED, BOUND_BY_TABLE22, NOT_BOUND,
   source: '건강보험심사평가원 G000F8Q-2022-170, <표 22>(59쪽)·<표 25>(63쪽)·본문 66쪽',
   get boundCount() { return Object.keys(BOUND_BY_TABLE22).length; },

@@ -225,6 +225,27 @@ check('판정 대상 확대율(실데이터) 30% 내외',
     return Math.abs(133 / 437 * 100 - 30.4) < 0.5;
   })());
 
+section('16. 결속의 사용 범위 (보고서 내 세 용도)');
+const hko = require('../src/hira_kcd.js');
+// 논문의 결론이 여기 걸려 있다. 결속이 기준 이외의 세 곳에서는 쓰였다는 사실.
+check('<표 37> 보정 aOR 3종 전사',
+  ['입원', '응급실', '사망'].every((k) => hko.OUTCOMES.aOR[k] && hko.OUTCOMES.aOR[k].ci.length === 2));
+check('Model3 입원 aOR 1.32', hko.OUTCOMES.aOR['입원'].est === 1.32);
+check('신뢰구간이 추정치를 포함',
+  Object.values(hko.OUTCOMES.aOR).every((v) => v.ci[0] <= v.est && v.est <= v.ci[1]));
+check('보정변수 6개 전사', hko.OUTCOMES.adjustedComorbidities.length === 6);
+// 보정에 쓴 동반질환이 표2 조건과 겹친다는 것이 논거다
+check('보정변수 중 4개가 표2 조건과 대응',
+  Object.keys(hko.ADJUSTED_MATCHING_TABLE2).length === 4);
+check('대응하는 표2 조건이 실제로 존재',
+  Object.values(hko.ADJUSTED_MATCHING_TABLE2).flat()
+    .every((id) => pim.table2.some((c) => c.id === id)));
+check('대응 관계가 보정변수 목록 안에 있는 항목만 사용',
+  Object.keys(hko.ADJUSTED_MATCHING_TABLE2)
+    .every((k) => hko.OUTCOMES.adjustedComorbidities.includes(k)));
+check('결속이 기준 외 용도로 쓰였다는 사실을 주석에 남김',
+  /판정 기준에서는 후보에도 오르지 않았다/.test(hko.OUTCOMES.note));
+
 section('15. 심평원 원문의 KCD 결속 (1차 출처 대조)');
 const hk = require('../src/hira_kcd.js');
 // 이 논문의 결론이 바뀐 근거다. 결속은 없던 것이 아니라 기준에 적용되지 않은 것이다.
