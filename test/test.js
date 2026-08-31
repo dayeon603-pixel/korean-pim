@@ -225,6 +225,32 @@ check('판정 대상 확대율(실데이터) 30% 내외',
     return Math.abs(133 / 437 * 100 - 30.4) < 0.5;
   })());
 
+section('13. 용어 결속 측정');
+const bind = require('../src/binding.js');
+// 이 논문의 기전 주장은 "학술 기준이 조건 축에 코드를 주지 않는다"에 걸려 있다.
+check('학술 기준의 조건 축은 원문 코드 지정이 0',
+  bind.CRITERIA_BINDING.filter((c) => c.axis === '조건').every((c) => c.sourceBound === 0));
+check('조건 축 기준 2개(Kim 표2·Beers Table3)를 모두 대상으로 함',
+  bind.CRITERIA_BINDING.filter((c) => c.axis === '조건').length === 2);
+check('약물 축은 ATC 5단계로 59/63 단일 매핑', bind.atcSingleMapped() === 59);
+// 기전의 핵심 대조. 축을 유지한 곳은 결속을 저작했고 잃은 곳은 저작하지 않았다.
+check('조건 축을 유지한 관할은 전부 결속을 저작했다',
+  bind.AUTHORED_BINDINGS.filter((x) => x.authored).every((x) => x.system && x.evidence));
+check('축을 잃은 관할은 결속을 저작하지 않았다',
+  bind.AUTHORED_BINDINGS.filter((x) => !x.authored).every((x) => x.system === null));
+check('저작 3건 / 미저작 2건',
+  bind.AUTHORED_BINDINGS.filter((x) => x.authored).length === 3
+  && bind.AUTHORED_BINDINGS.filter((x) => !x.authored).length === 2);
+check('전 관할에 1차 원문 표기 증거가 붙음',
+  bind.AUTHORED_BINDINGS.every((x) => x.evidence && x.evidence.length > 20));
+// 본 연구의 산출물
+const ob = bind.ourBinding();
+check('본 연구가 저작한 결속은 17/18 조건', ob.mapped === 17 && ob.total === 18);
+check('미결속 1건은 연령 조건이라 진단코드 대상이 아님',
+  ob.unmapped.length === 1 && ob.unmapped[0] === 'age80_primary');
+check('결속 체계를 명시하고 KCD 연계를 밝힘',
+  /ICD-10/.test(ob.system) && /KCD-8/.test(ob.note));
+
 section('12. 산문 왕복 실험의 계측 건전성');
 // 이 실험은 두 번 연속 계측 장치 결함으로 없는 발견을 만들 뻔했다.
 //   1차: ollama CLI 가 제어문자를 섞어 파싱 실패율 44%
