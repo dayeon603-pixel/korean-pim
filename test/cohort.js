@@ -51,9 +51,23 @@ const EXTRA = { losartan:'arb', valsartan:'arb', telmisartan:'arb', lisinopril:'
   prednisolone:['cortico','corticosteroid'], theophylline:'xanthine', pseudoephedrine:'decongest', phenylephrine:'decongest',
   methylphenidate:'stimulant', caffeine:'stimulant' };
 const AREAS = Object.keys(POOL);
-const COND_BASE = { htn:0.55, dementia:0.12, stroke_secondary:0.07, dm:0.28, hf:0.10, ckd:0.12, arrhythmia:0.08,
-  falls:0.18, insomnia:0.22, ulcer:0.09, constipation:0.20, bph:0.16, glaucoma:0.05, copd:0.07, parkinson:0.03,
-  hyponatremia:0.04, bleeding:0.06, age80_primary:0.20 };
+// 기본 유병률. **국내 실측치가 있는 항목은 실측치를 쓴다.**
+// 심평원 2022 <표 25> 2017년 다약제 사용 노인 코호트(153만명)의 동반질환 현황에서 가져왔다.
+// 청구 상병코드 기반이므로 설문 기반 유병률과 다르며, 진단·코딩된 것만 잡힌다.
+// 예: 만성 신질환 2.1%는 국민건강영양조사 추정치보다 크게 낮은데, 코딩된 N18만 세기 때문이다.
+// 실측치가 없는 항목(불면·파킨슨·부정맥 등)은 가정치이며 그 사실을 KOREA_SOURCE 로 구분한다.
+const COND_BASE = { htn:0.676, dementia:0.120, stroke_secondary:0.052, dm:0.384, hf:0.052, ckd:0.021,
+  arrhythmia:0.08, falls:0.069, insomnia:0.22, ulcer:0.151, constipation:0.20, bph:0.16, glaucoma:0.05,
+  copd:0.047, parkinson:0.03, hyponatremia:0.04, bleeding:0.06, age80_primary:0.20 };
+
+/** 각 유병률의 출처. 'hira' = 심평원 <표 25> 실측, 'assumed' = 본 연구의 가정.
+ *  심뇌혈관질환 15.5%는 허혈성심장질환·심부전·뇌졸중 합산이므로 세 질환에 균등 배분하였고,
+ *  호흡기계질환 14.2%는 COPD·폐렴·천식 합산이므로 COPD 몫을 1/3로 잡았다.
+ *  이 배분은 본 연구의 조작이며 원문이 세부 값을 제시하지는 않는다. */
+const KOREA_SOURCE = { htn:'hira', dementia:'hira', dm:'hira', ulcer:'hira', ckd:'hira', falls:'hira',
+  stroke_secondary:'hira-split', hf:'hira-split', copd:'hira-split',
+  arrhythmia:'assumed', insomnia:'assumed', constipation:'assumed', bph:'assumed', glaucoma:'assumed',
+  parkinson:'assumed', hyponatremia:'assumed', bleeding:'assumed', age80_primary:'assumed' };
 const LIFT = { dm:{htn:1.6}, ckd:{htn:1.8,dm:2.0}, hf:{htn:1.7}, arrhythmia:{hf:2.2}, falls:{dementia:1.9},
   insomnia:{dementia:1.5}, bleeding:{stroke_secondary:1.8}, hyponatremia:{ckd:1.8,hf:1.5} };
 const BUCKETS = [[1,2],[3,4],[5,6],[7,9],[10,14]], BW = [14,22,28,24,12];
@@ -147,4 +161,4 @@ function run(seedInit, N, opt) {
   return { hiraFlag, t2Flag, both, onlyHira, onlyT2, neither };
 }
 
-module.exports = { run, POOL, COND_BASE, LIFT, COVERED, toDrug, mulberry32 };
+module.exports = { run, POOL, COND_BASE, KOREA_SOURCE, LIFT, COVERED, toDrug, mulberry32 };

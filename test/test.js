@@ -225,6 +225,28 @@ check('판정 대상 확대율(실데이터) 30% 내외',
     return Math.abs(133 / 437 * 100 - 30.4) < 0.5;
   })());
 
+section('15. 심평원 원문의 KCD 결속 (1차 출처 대조)');
+const hk = require('../src/hira_kcd.js');
+// 이 논문의 결론이 바뀐 근거다. 결속은 없던 것이 아니라 기준에 적용되지 않은 것이다.
+check('<표 22> 질환군 18행 전사', hk.TABLE22.length === 18);
+check('전 행에 KCD 코드가 있음', hk.TABLE22.every((r) => r.kcd && r.kcd.length));
+check('표2 18조건 중 9개가 <표 22>로 이미 결속됨', hk.boundCount === 9);
+check('미결속 9개와 합쳐 18개', hk.boundCount + hk.NOT_BOUND.length === 18);
+// 국가 규모 환산의 분모. 두 경로로 계산해 일치해야 한다.
+check('코호트 규모가 684,538 / 44.7% 와 일치(오차 1천명 이내)',
+  Math.abs(hk.TABLE25.cohortSize - hk.DRUG_AXIS_FLAGGED.n / hk.DRUG_AXIS_FLAGGED.share) < 1000);
+check('<표 25> 유병률이 고혈압 67.6%로 전사됨', hk.TABLE25.prevalence['고혈압'] === 0.676);
+check('청구 기반과 설문 기반의 차이를 주석으로 남김', /설문 기반 유병률과 다르다/.test(hk.TABLE25.note));
+check('출처에 표 번호와 쪽수 명시', /표 22/.test(hk.source) && /59쪽/.test(hk.source));
+// 코호트가 국내 실측 유병률을 쓰는지, 그리고 가정치를 실측치로 위장하지 않는지
+const { KOREA_SOURCE, COND_BASE } = require('./cohort.js');
+check('유병률 출처가 항목마다 표기됨', Object.keys(COND_BASE).every((k) => KOREA_SOURCE[k]));
+check('국내 실측 기반 항목이 9개', Object.values(KOREA_SOURCE).filter((v) => v.startsWith('hira')).length === 9);
+check('고혈압·당뇨·치매가 심평원 실측치와 일치',
+  COND_BASE.htn === 0.676 && COND_BASE.dm === 0.384 && COND_BASE.dementia === 0.120);
+check('합산 항목을 분할한 경우 hira-split 으로 구분',
+  ['hf', 'stroke_secondary', 'copd'].every((k) => KOREA_SOURCE[k] === 'hira-split'));
+
 section('14. 결속 선택의 판정 변동 (설계 무결성)');
 // 이 실험은 "결속이 저작자마다 달라진다"를 재는 것이므로, 두 변형이 모두 원문에서
 // 방어 가능해야 성립한다. 한쪽을 일부러 엉터리로 만들면 큰 차이가 나오는 게 당연해진다.
