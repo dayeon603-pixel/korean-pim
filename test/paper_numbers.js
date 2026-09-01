@@ -59,6 +59,26 @@ check('conditions carried into the 2022 criteria', 0, 0);
 
 console.log('\nScope');
 check('criteria families audited', scan.domains.length, 8);
+// The manuscript names the jurisdictions and their instrument counts, so both are checked.
+// "ten jurisdictions" in an earlier draft was wrong; the normalised count is eight countries
+// plus the European Union.
+const JMAP = {
+  'England': 'United Kingdom', 'Scotland': 'United Kingdom', 'Wales': 'United Kingdom',
+  'Northern Ireland': 'United Kingdom', 'UK': 'United Kingdom', 'England and Wales': 'United Kingdom',
+  'USA': 'United States', 'US': 'United States', 'Republic of Korea': 'Korea',
+  'South Korea': 'Korea', 'EU / EEA': 'European Union', 'EU': 'European Union', 'Europe': 'European Union',
+};
+const jur = {};
+rows.forEach((r) => {
+  const bare = r.jurisdiction.replace(/\s*\(.*?\)/g, '').trim();
+  const k = JMAP[bare] || bare;
+  jur[k] = (jur[k] || 0) + 1;
+});
+check('distinct jurisdictions', Object.keys(jur).length, 9);
+check('  countries excluding the EU', Object.keys(jur).filter((k) => k !== 'European Union').length, 8);
+[['United Kingdom', 38], ['United States', 26], ['Korea', 17], ['Japan', 14],
+ ['Netherlands', 2], ['Australia', 2], ['Germany', 2], ['Canada', 1], ['European Union', 1]]
+  .forEach(([k, n]) => check(`  ${k}`, jur[k], n));
 check('instruments identified', scan.domains.reduce((a, d) => a + d.instruments.length, 0), 115);
 check('instruments adjudicable', rows.length, 103);
 
@@ -141,6 +161,12 @@ const a = sr.filter((r) => r.substrateCarriesCondition === true && r.retained).l
 const b = sr.filter((r) => r.substrateCarriesCondition === true && !r.retained).length;
 const c = sr.filter((r) => r.substrateCarriesCondition === false && r.retained).length;
 const dd = sr.filter((r) => r.substrateCarriesCondition === false && !r.retained).length;
+// The manuscript prints the 2x2 behind phi, so the cells are checked individually.
+check('phi cell: feed carries condition, retained', a, 54);
+check('phi cell: feed carries condition, lost', b, 13);
+check('phi cell: feed lacks condition, retained', c, 5);
+check('phi cell: feed lacks condition, lost', dd, 24);
+check('unadjudicable instruments', 115 - rows.length, 12);
 check('phi, substrate against retention', (a * dd - b * c) / Math.sqrt((a + b) * (c + dd) * (a + c) * (b + dd)), 0.60, 0.005);
 
 console.log('\nThe Korean assessment programme');
