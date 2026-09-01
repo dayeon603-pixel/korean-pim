@@ -64,6 +64,32 @@ const VERIFIED = [
     source: 'https://github.com/NHSBSA-Open-Data/ODP/raw/a3a50d3/EPD_SNOMED_release_guidance_v004.odt',
   },
   {
+    id: 'us-partd-pde',
+    name: 'Medicare Part D Prescription Drug Event (PDE)',
+    operator: 'Centers for Medicare & Medicaid Services / Chronic Conditions Warehouse',
+    fields: [
+      'PDE_ID', 'BENE_ID', 'DOB_DT', 'SEX_CD', 'SRVC_DT', 'PD_DT', 'RX_SRVC_RFRNC_NUM',
+      'PROD_SRVC_ID', 'PLAN_CNTRCT_REC_ID', 'PLAN_PBP_REC_NUM', 'CMPND_CD', 'DAW_PROD_SLCTN_CD',
+      'QTY_DSPNSD_NUM', 'DAYS_SUPLY_NUM', 'FILL_NUM', 'DSPNSTCD_STUS_CD', 'DRUG_CVRG_STUS_CD',
+      'ADJSTMT_DLTN_CD', 'NSTD_FRMT_CD', 'PRCNG_EXCPTN_CD', 'CTSTRPHC_CVRG_CD', 'GDC_BLW_OOPT_AMT',
+      'GDC_ABV_OOPT_AMT', 'PTNT_PAY_AMT', 'OTHR_TROOP_AMT', 'LICS_AMT', 'PLRO_AMT',
+      'CVRD_D_PLAN_PD_AMT', 'NCVRD_PLAN_PD_AMT', 'TOT_RX_CST_AMT', 'RX_ORGN_CD',
+      'RPTD_GAP_DSCNT_NUM', 'BRND_GNRC_CD', 'PHRMCY_SRVC_TYPE_CD', 'PTNT_RSDNC_CD',
+      'SUBMSN_CLR_CD', 'BENEFIT_PHASE', 'CCW_PHARM_ID', 'NCPDP_ID', 'PRSCRBR_ID',
+      'PRSCRBR_ID_QLFYR_CD', 'CCW_PRSCRBR_ID', 'PDE_PRSCRBR_ID_FRMT_CD',
+      'PRIOR_AUTHORIZATION_YN', 'TIER_ID', 'QUANTITY_LIMIT_YN', 'STEP', 'FORMULARY_ID',
+      'FRMLRY_RX_ID', 'PTD_MODEL_IND', 'OTHR_TROOP_AMOUNT_IND',
+    ],
+    carriesCondition: false,
+    patientLevel: true,   // unlike the two above, a row is a patient's fill
+    howChecked:
+      'Complete variable list read from the CCW record layout for the Part D Event file as '
+      + 'published through ResDAC. The file is patient-level and carries date of birth, sex, drug, '
+      + 'quantity, days supply, pharmacy, prescriber, plan, cost fields, formulary tier and a '
+      + 'residence code. It carries no diagnosis, no indication and no clinical condition.',
+    source: 'https://resdac.org/cms-data/files/pde/data-documentation',
+  },
+  {
     id: 'ecdc-esacnet',
     name: 'ESAC-Net antimicrobial consumption surveillance',
     operator: 'European Centre for Disease Prevention and Control',

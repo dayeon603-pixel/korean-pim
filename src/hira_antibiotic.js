@@ -32,6 +32,43 @@ const SOURCE = {
 };
 
 /**
+ * The indicator definition itself, from HIRA's own indicator page rather than from the annual
+ * results narrative. Obtained after a reviewer objected that the annual report is a results
+ * document and not a specification. The objection was fair and this is the answer to it: the
+ * definition, the code range and the formula are published by 평가관리부 on the agency's open-data
+ * portal, dated 2023-08-11.
+ */
+const OFFICIAL_DEFINITION = {
+  url: 'https://opendata.hira.or.kr/op/opc/olapEvaInfoTab1.do?docNo=05-003',
+  maintainer: '건강보험심사평가원 평가관리부',
+  dated: '2023-08-11',
+  accessed: '2026-09-01',
+  definitionKo: '급성상기도감염(J00-J06) 상병의 항생제 처방 빈도를 나타내는 지표',
+  formulaKo: '급성상기도감염 항생제 처방률 = (항생제 총처방횟수 / 총내원횟수) * 100',
+  scopeKo: '「전체」는 상급종합병원, 종합병원, 병원, 요양병원, 정신병원, 의원 건강보험 심사결정분을 대상으로 함',
+  // Published series from the same page, extending one year beyond the 2023 results report.
+  seriesPct: { 2020: 36.21, 2021: 35.33, 2022: 32.49, 2023: 41.59, 2024: 45.38 },
+};
+
+/**
+ * Evidence grade for the payment claim, stated separately because it is weaker than the
+ * definition claim and a reviewer downgraded it once already.
+ *
+ * What is read: HIRA states, in its own published annual report, that this indicator is in the
+ *   clinic-level differential payment programme and that the adjustment was widened in 2017 from
+ *   one percent to a maximum of five percent, applied to 2018 심사결정분. See HISTORY below.
+ * What is not read: the 가감지급 세부시행계획 itself, which would give the formula by which the
+ *   adjustment is computed. Attempts to reach it in this session failed. Nothing here depends on
+ *   the formula, only on the fact of inclusion and the stated maximum rate.
+ */
+const PAYMENT_EVIDENCE = {
+  claim: 'The acute upper respiratory infection antibiotic indicator is in the clinic-level '
+       + 'differential payment programme, with the adjustment widened in 2017 to a maximum of five per cent.',
+  restsOn: 'issuing body\'s own annual report, 추진 경과 section',
+  notObtained: '가감지급 세부시행계획 (the payment specification itself)',
+};
+
+/**
  * Layers a specification can reach, ordered by proximity to payment.
  * Used elsewhere in this repository; repeated here so the module stands alone.
  */
@@ -168,4 +205,4 @@ function byConditionBinding() {
   };
 }
 
-module.exports = { SOURCE, LAYERS, INDICATORS, HISTORY, highestLayer, byConditionBinding };
+module.exports = { SOURCE, OFFICIAL_DEFINITION, PAYMENT_EVIDENCE, LAYERS, INDICATORS, HISTORY, highestLayer, byConditionBinding };

@@ -47,14 +47,21 @@ established without circularity.
 
 | feed the instrument runs on | condition axis retained | 95% CI | evidence |
 |---|---|---|---|
-| **three feeds whose field list was read directly** | **0 / 14 — 0%** | **0–22** | **read** |
+| **four feeds whose field list was read directly** | **2 / 20 — 10.0%** | **3–30** | **read** |
 | prescription dispensing or drug sales, as classified | 2 / 27 — 7.4% | 2–23 | agent |
 | every other feed | 61 / 76 — 80.3% | 70–88 | agent |
 | all instruments | 63 / 103 — 61.2% | 52–70 | agent |
 
 The first row is the one this repository asserts. Against the pooled base rate of 61.2 percent,
-observing none of fourteen has exact binomial p = 1.8 × 10⁻⁶, one-sided, with the direction fixed
+observing two of twenty has exact binomial p = 3.1 × 10⁻⁶, one-sided, with the direction fixed
 before the count.
+
+Both exceptions are stated rather than excluded. They are Medicare Part D instruments whose
+condition does not come from the Part D event file: the point-of-sale safety edits take hospice and
+cancer status from enrolment and coverage data, and the medication therapy management rule takes its
+ten chronic diseases from the sponsor rather than from the dispensing record. Under an account that
+is about a feed rather than about a country or a programme, that is the shape an exception should
+have. It is still an exception and the count includes it.
 
 ### Why only that row, and why only the negative direction
 
@@ -79,16 +86,24 @@ their field lists in `src/feeds.js`:
   presentation; items; quantity; total quantity; net ingredient cost; actual cost; ADQ usage;
   practice name and address; an unidentified flag; and the SNOMED code for the BNF presentation.
   The unit is the practice, not the patient.
+- **United States, Medicare Part D Prescription Drug Event file.** All 51 variables read from the
+  Chronic Conditions Warehouse record layout: beneficiary identifier, date of birth, sex, service
+  and paid dates, product identifier, quantity, days supply, fill number, pharmacy, prescriber,
+  plan, formulary tier, prior-authorisation and quantity-limit flags, a patient residence code, and
+  cost fields. No diagnosis, no indication, no clinical condition. This one is patient-level, which
+  matters: it separates the question of whether a feed carries conditions from the question of
+  whether it is patient-level, and the two Scottish and English feeds confound them.
 - **ECDC, ESAC-Net**. Consumption reported as DDD per 1 000 inhabitants per day and tonnes per year,
   classified to the fourth ATC level. Aggregate, with no patient record and no indication.
 
 The membership test is a conjunction: the classifying agent must have said the instrument runs on a
-dispensing or sales feed, and the named dataset must be one of these three. Either half alone is too
+dispensing or sales feed, and the named dataset must be one of these four. Either half alone is too
 weak. A name match alone over-matched on the Scottish Therapeutics Utility, which the agent had
 correctly placed on the GP record rather than on the dispensing extract; the conjunction excludes it.
 
-So the sentence this repository asserts is: **no instrument computed over a national dataset
-established to contain no diagnosis keeps a condition denominator, in 14 of 14 observed cases.** The
+So the sentence this repository asserts is: **instruments computed over a national dataset
+established to contain no diagnosis keep a condition denominator in 2 of 20 observed cases, and both
+of those two take their condition from a different feed.** The
 converse — that a feed containing diagnoses causes retention — is an association of φ = 0.60 that
 cannot be separated from its own definition, and is reported rather than claimed.
 

@@ -110,8 +110,9 @@ function verifiedFeed(r) {
   if (!drugOnlyFeeds.has(r.substrate)) return null;
   const s = `${r.jurisdiction} ${r.instrument}`.toLowerCase();
   if (/esac-net|esac net/.test(s)) return 'ecdc-esacnet';
-  if (/scotland/.test(s) && /therapeutic indicator|prescribing information system|prescribing data/.test(s)) return 'scot-pis';
+  if (/scotland/.test(s) && /therapeutic indicator|prescribing information system|prescribing data|quality prescribing/.test(s)) return 'scot-pis';
   if (/england/.test(s) && /nhsbsa|nhs bsa|business services|epact|prescribing comparator|prescribing dataset|quality premium|prescribing data/.test(s)) return 'eng-epd';
+  if (/united states|usa/.test(s) && /part d|pqa|medication therapy management|star ratings|point-of-sale|point of sale/.test(s)) return 'us-partd-pde';
   return null;
 }
 const onVerified = rows.filter((r) => verifiedFeed(r));
@@ -131,14 +132,25 @@ for (let i = 0; i <= vk; i += 1) {
 }
 console.log(`  Against the pooled base rate of ${(100 * base).toFixed(1)}%, exact binomial p = ${pExact.toExponential(1)} (one-sided).`);
 
-console.log('\n  These rows do not depend on any agent\'s judgement about substrate. Each feed\'s');
-console.log('  field list was obtained from the issuing body and read: Scotland\'s ten columns from');
-console.log('  the open-data datastore schema itself, England\'s contents list from NHSBSA release');
-console.log('  guidance v004, ECDC\'s from its surveillance database description. None carries a');
-console.log('  diagnosis and none is patient-level.');
+console.log('\n  These rows do not rest on any agent\'s judgement about substrate. Each feed\'s field');
+console.log('  list was obtained from the issuing body and read, and is stored in src/feeds.js:');
+feeds.VERIFIED.forEach((f) => {
+  console.log(`    ${f.id.padEnd(14)} ${String(f.fields.length).padStart(2)} fields, patient-level ${f.patientLevel ? 'yes' : 'no '}  ${f.name.slice(0, 40)}`);
+});
+console.log('  None of the four contains a diagnosis, an indication, or any clinical condition.');
+console.log('  Two are practice or population aggregates; the Part D event file is patient-level');
+console.log('  and still has no clinical field, which separates the feed question from the');
+console.log('  patient-level question.\n');
 onVerified.forEach((r) => {
   console.log(`    [${r.retained ? 'KEPT' : 'lost'}] ${verifiedFeed(r).padEnd(13)} ${r.instrument.slice(0, 52)}`);
 });
+console.log('\n  The two exceptions, stated rather than excluded. Both are Part D instruments whose');
+console.log('  condition does not come from the Part D event file: the point-of-sale edits take');
+console.log('  hospice and cancer status from enrolment and coverage data, and the medication');
+console.log('  therapy management rule takes its ten chronic diseases from the sponsor rather than');
+console.log('  from the dispensing record. Under the account being tested that is the expected');
+console.log('  shape of an exception, since the account is about a feed and not about a country or');
+console.log('  a programme. It is still an exception, and the count above includes it.');
 
 // -------------------------------------------------- the contaminated direction
 console.log('\n\n2. THE POSITIVE DIRECTION — reported, not claimed');
