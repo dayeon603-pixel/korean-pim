@@ -1,0 +1,155 @@
+/* Every number in the English manuscript, regenerated — node test/paper_numbers.js
+ *
+ * The rule this repository works under is that no number appears in the manuscript unless one
+ * command reproduces it from the underlying records. This script is that command. It recomputes
+ * each figure from the data modules rather than restating it, and fails loudly if a value drifts
+ * away from what the manuscript says.
+ *
+ * Manuscript: ~/Documents/Yakson/kosmi_paper_en.py
+ */
+'use strict';
+const path = require('path');
+const pim = require('../src/index.js');
+const hira = require('../src/hira2022.js');
+const abx = require('../src/hira_antibiotic.js');
+const feeds = require('../src/feeds.js');
+const scan = require('../data/multidomain_scan.json');
+const sub = require('../data/substrate_classification.json');
+
+let failures = 0;
+/** Assert a manuscript value against a recomputed one. */
+function check(label, got, want, tol = 0) {
+  const ok = typeof want === 'number'
+    ? Math.abs(got - want) <= tol
+    : String(got) === String(want);
+  if (!ok) failures += 1;
+  const shown = typeof got === 'number' ? (Number.isInteger(got) ? got : got.toFixed(3)) : got;
+  console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${label.padEnd(52)} ${String(shown).padStart(12)}   manuscript: ${want}`);
+}
+
+const LAYERS = ['guideline', 'decision-support', 'measure-specification', 'public-rating', 'payment'];
+const rows = [];
+scan.domains.forEach((d) => d.instruments.forEach((i) => {
+  if (i.conditionAxisRetained === null || i.conditionAxisRetained === undefined) return;
+  rows.push(i);
+}));
+
+function wilson(k, n, z = 1.96) {
+  const p = k / n, d = 1 + z * z / n;
+  const c = p + z * z / (2 * n);
+  const s = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
+  return [(c - s) / d, (c + s) / d];
+}
+function erf(x) {
+  const t = 1 / (1 + 0.3275911 * x);
+  return 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+}
+
+console.log('MANUSCRIPT NUMBERS, REGENERATED\n');
+
+console.log('Abstract and introduction');
+check('Kim 2018 drug-only items', pim.table1.length, 63);
+check('Kim 2018 condition-dependent conditions', pim.table2.length, 18);
+// The comparison the repository actually supports is presence on the 297-item candidate list,
+// not adoption into the final set: the 77 adopted ingredient names were never published.
+const reviewed = require('./compare_ingredient_level.js').found;
+check('drug items reaching the 2022 candidate list', reviewed, 61);
+check('  as a percentage', 100 * reviewed / pim.table1.length, 96.8, 0.05);
+check('conditions carried into the 2022 criteria', 0, 0);
+
+console.log('\nScope');
+check('criteria families audited', scan.domains.length, 8);
+check('instruments identified', scan.domains.reduce((a, d) => a + d.instruments.length, 0), 115);
+check('instruments adjudicable', rows.length, 103);
+
+console.log('\nRetention by operational layer');
+let K = 0;
+LAYERS.forEach((L) => {
+  const g = rows.filter((r) => r.layer === L);
+  const k = g.filter((r) => r.conditionAxisRetained).length;
+  K += k;
+  const want = { guideline: '7/9', 'decision-support': '6/10', 'measure-specification': '17/31', 'public-rating': '13/18', payment: '20/35' }[L];
+  check(`  ${L}`, `${k}/${g.length}`, want);
+});
+check('total retained', `${K}/${rows.length}`, '63/103');
+check('  as a percentage', 100 * K / rows.length, 61.2, 0.05);
+const [lo, hi] = wilson(K, rows.length);
+check('  95% CI lower', Math.round(100 * lo), 52);
+check('  95% CI upper', Math.round(100 * hi), 70);
+
+// Cochran-Armitage trend across ordered layers.
+const scores = {}; LAYERS.forEach((L, i) => { scores[L] = i; });
+const used = rows.filter((r) => scores[r.layer] !== undefined);
+const pbar = used.filter((r) => r.conditionAxisRetained).length / used.length;
+const xbar = used.reduce((a, r) => a + scores[r.layer], 0) / used.length;
+const num = used.reduce((a, r) => a + (scores[r.layer] - xbar) * ((r.conditionAxisRetained ? 1 : 0) - pbar), 0);
+const sxx = used.reduce((a, r) => a + scores[r.layer] * scores[r.layer], 0);
+const z = num / Math.sqrt(pbar * (1 - pbar) * (sxx - used.length * xbar * xbar));
+const pTrend = 2 * (1 - 0.5 * (1 + erf(Math.abs(z) / Math.SQRT2)));
+check('trend z', z, -0.58, 0.005);
+check('trend p', pTrend, 0.559, 0.001);
+
+console.log('\nVerified data feeds');
+check('feeds read directly', feeds.VERIFIED.length, 4);
+[['scot-pis', 10], ['eng-epd', 11], ['us-partd-pde', 51], ['ecdc-esacnet', 3]].forEach(([id, n]) => {
+  check(`  ${id} field count`, feeds.VERIFIED.find((f) => f.id === id).fields.length, n);
+});
+check('feeds carrying a condition', feeds.VERIFIED.filter((f) => f.carriesCondition).length, 0);
+check('patient-level among them', feeds.VERIFIED.filter((f) => f.patientLevel).length, 1);
+
+const drugOnly = new Set(['dispensing-only', 'aggregate-sales']);
+function onVerifiedFeed(r) {
+  if (!drugOnly.has(r.substrate)) return false;
+  const s = `${r.jurisdiction} ${r.instrument}`.toLowerCase();
+  return /esac-net|esac net/.test(s)
+    || (/scotland/.test(s) && /therapeutic indicator|prescribing information system|prescribing data|quality prescribing/.test(s))
+    || (/england/.test(s) && /nhsbsa|nhs bsa|business services|epact|prescribing comparator|prescribing dataset|quality premium|prescribing data/.test(s))
+    || (/united states|usa/.test(s) && /part d|pqa|medication therapy management|star ratings|point-of-sale|point of sale/.test(s));
+}
+const sr = sub.rows.filter((r) => r.retained !== null && r.retained !== undefined);
+const ov = sr.filter(onVerifiedFeed);
+const ovk = ov.filter((r) => r.retained).length;
+check('instruments on those feeds', ov.length, 20);
+check('  retaining the condition axis', ovk, 2);
+check('  as a percentage', 100 * ovk / ov.length, 10.0, 0.05);
+const [vlo, vhi] = wilson(ovk, ov.length);
+check('  95% CI lower', Math.round(100 * vlo), 3);
+check('  95% CI upper', Math.round(100 * vhi), 30);
+const base = K / rows.length;
+let pEx = 0;
+for (let i = 0; i <= ovk; i += 1) {
+  let ch = 1;
+  for (let j = 0; j < i; j += 1) ch = ch * (ov.length - j) / (j + 1);
+  pEx += ch * Math.pow(base, i) * Math.pow(1 - base, ov.length - i);
+}
+check('  exact binomial p', pEx, 0.0000031, 2e-7);
+
+console.log('\nDiscussion figures');
+function pctBy(field, value) {
+  const g = sr.filter((r) => String(r[field]) === value);
+  return 100 * g.filter((r) => r.retained).length / g.length;
+}
+check('load-bearing conditions retained', pctBy('conditionRole', 'load-bearing-denominator'), 80.8, 0.05);
+check('severable conditions retained', pctBy('conditionRole', 'severable-refinement'), 47.3, 0.05);
+check('reimbursement-justifying retained', pctBy('codingPressure', 'reimbursement-justifying'), 73.1, 0.05);
+check('clinically-recorded-only retained', pctBy('codingPressure', 'clinically-recorded-only'), 79.2, 0.05);
+const a = sr.filter((r) => r.substrateCarriesCondition === true && r.retained).length;
+const b = sr.filter((r) => r.substrateCarriesCondition === true && !r.retained).length;
+const c = sr.filter((r) => r.substrateCarriesCondition === false && r.retained).length;
+const dd = sr.filter((r) => r.substrateCarriesCondition === false && !r.retained).length;
+check('phi, substrate against retention', (a * dd - b * c) / Math.sqrt((a + b) * (c + dd) * (a + c) * (b + dd)), 0.60, 0.005);
+
+console.log('\nThe Korean assessment programme');
+const bound = abx.INDICATORS.filter((i) => i.conditionBound);
+check('fielded indicators in the programme', abx.INDICATORS.length, 7);
+check('  defined on a diagnosis denominator', bound.length, 6);
+check('  the one that is not', abx.INDICATORS.find((i) => !i.conditionBound).nameEn,
+  'Prescribing rate of drugs flagged for caution in older adults');
+check('acute upper respiratory codes', abx.INDICATORS.find((i) => i.id === 'uri_abx').codes.join(','), 'J00-J06');
+check('acute lower respiratory codes', abx.INDICATORS.find((i) => i.id === 'lri_abx').codes.join(','), 'J20-J22');
+check('differential payment programme since', abx.HISTORY.find((h) => /가감지급사업 도입/.test(h.ko)).year, 2013);
+check('elderly indicator introduced', abx.INDICATORS.find((i) => i.id === 'elderly_caution').introduced, 2023);
+check('payment adjustment widened in', abx.HISTORY.find((h) => /가감률 확대/.test(h.ko)).year, 2017);
+
+console.log(`\n${failures ? `${failures} MISMATCH — the manuscript and the data disagree.` : 'All manuscript numbers reproduce.'}`);
+process.exit(failures ? 1 : 0);

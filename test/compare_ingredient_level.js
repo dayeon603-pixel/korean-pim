@@ -38,15 +38,21 @@ function inAppendix(ing) {
 const found = [], missing = [];
 pim.table1.forEach((x) => (inAppendix(x.ingredient) ? found : missing).push(x));
 
-console.log('성분 단위 대조 — Kim 2018 표1 63종 vs 심평원 2022 후보 목록(부록1, 297개)\n');
-console.log(`후보 목록에 존재    ${found.length}/63 (${(found.length / 63 * 100).toFixed(1)}%)`);
-console.log(`후보 목록에 없음    ${missing.length}/63 (${(missing.length / 63 * 100).toFixed(1)}%)\n`);
-if (missing.length) {
-  console.log('국가 기준 후보 검토 대상에 오르지 않은 Kim 2018 표1 약물:');
-  missing.forEach((x) => console.log(`  ${x.nameKo.padEnd(12)} ${x.drug}  [${x.classKo}]`));
+/** 보고서를 출력한다. 다른 스크립트가 수치만 가져다 쓸 때는 돌지 않아야 한다. */
+function report() {
+  console.log('성분 단위 대조 — Kim 2018 표1 63종 vs 심평원 2022 후보 목록(부록1, 297개)\n');
+  console.log(`후보 목록에 존재    ${found.length}/63 (${(found.length / 63 * 100).toFixed(1)}%)`);
+  console.log(`후보 목록에 없음    ${missing.length}/63 (${(missing.length / 63 * 100).toFixed(1)}%)\n`);
+  if (missing.length) {
+    console.log('국가 기준 후보 검토 대상에 오르지 않은 Kim 2018 표1 약물:');
+    missing.forEach((x) => console.log(`  ${x.nameKo.padEnd(12)} ${x.drug}  [${x.classKo}]`));
+  }
+  console.log('\n※ 부록1은 후보 297개 목록이다. 최종 채택 77개의 성분명은 보고서에 공개되지 않아,');
+  console.log('   "후보에 올랐는가"까지만 확인할 수 있다. 최종 채택 여부는 확인 불가.');
+  console.log('※ 표2의 18개 기저질환 조건은 후보 목록 자체가 약물 단위라 대응 항목이 존재하지 않는다.');
 }
-console.log('\n※ 부록1은 후보 297개 목록이다. 최종 채택 77개의 성분명은 보고서에 공개되지 않아,');
-console.log('   "후보에 올랐는가"까지만 확인할 수 있다. 최종 채택 여부는 확인 불가.');
-console.log('※ 표2의 18개 기저질환 조건은 후보 목록 자체가 약물 단위라 대응 항목이 존재하지 않는다.');
+
+if (require.main === module) report();
+
 
 module.exports = { found: found.length, missing: missing.map((x) => x.drug) };
