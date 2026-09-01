@@ -45,17 +45,18 @@ condition, and fails where it does not.
 The reportable form of this is the negative direction, because only the negative direction can be
 established without circularity.
 
-| feed the instrument runs on | condition axis retained | 95% CI |
-|---|---|---|
-| prescription dispensing or drug sales | 2 / 27 — 7.4% | 2–23 |
-| every other feed | 61 / 76 — 80.3% | 70–88 |
-| all instruments | 63 / 103 — 61.2% | 52–70 |
+| feed the instrument runs on | condition axis retained | 95% CI | evidence |
+|---|---|---|---|
+| **three feeds whose field list was read directly** | **0 / 14 — 0%** | **0–22** | **read** |
+| prescription dispensing or drug sales, as classified | 2 / 27 — 7.4% | 2–23 | agent |
+| every other feed | 61 / 76 — 80.3% | 70–88 | agent |
+| all instruments | 63 / 103 — 61.2% | 52–70 | agent |
 
-The intervals do not overlap. Both apparent exceptions in the first row draw their condition from
-enrolment or medical-claims data rather than from the dispensing transaction, so the classification
-is probably wrong for them and the true contrast is wider.
+The first row is the one this repository asserts. Against the pooled base rate of 61.2 percent,
+observing none of fourteen has exact binomial p = 1.8 × 10⁻⁶, one-sided, with the direction fixed
+before the count.
 
-### Why only the negative direction
+### Why only that row, and why only the negative direction
 
 The classifiers knew the outcome. One that reasons "this indicator binds SNOMED refsets, therefore
 its substrate carries conditions" has restated the outcome and explained nothing. A second agent
@@ -63,14 +64,33 @@ audited every domain for exactly this and reported downgrade fractions between 0
 about 0.74. The objection is correct and cannot be repaired by dropping rows, because it attaches to
 the reasoning rather than to identifiable rows.
 
-Classifying a feed as dispensing-only is different in kind. The NHS Business Services Authority
-prescribing extract, Scotland's Prescribing Information System, ECDC's ATC/DDD consumption returns
-and NCPDP pharmacy transactions carry a drug, a quantity, a prescriber and a patient identifier and
-no diagnosis. That is a documented property of each dataset, established without reference to any
-indicator built on it. So the sentence this repository may assert is: **instruments computed over a
-feed that contains no diagnosis do not keep a condition denominator, in 25 of 27 observed cases.**
-The converse — that a feed containing diagnoses causes retention — is an association of φ = 0.60
-that cannot be separated from its own definition, and is reported rather than claimed.
+Establishing that a named national dataset contains no diagnosis is different in kind, because it is
+a property of that dataset's published schema and is settled without looking at any indicator built
+on it. Three were obtained from the issuing body and read on 2026-09-01, and they are recorded with
+their field lists in `src/feeds.js`:
+
+- **Scotland, Prescriptions in the Community**, from the Prescribing Information System. Ten
+  columns, read from the open-data datastore schema itself rather than from a description of it:
+  `HBT, DispLocationCode, DMDCode, BNFItemCode, BNFItemDescription, PrescribedType,
+  NumberOfPaidItems, PaidQuantity, GrossIngredientCost, PaidDateMonth`. No patient identifier, no
+  age, no sex, no diagnosis.
+- **England, English Prescribing Dataset**, NHS Business Services Authority. Contents enumerated in
+  the issuing body's own release guidance v004 of 30 April 2025: BNF chapter, chemical substance and
+  presentation; items; quantity; total quantity; net ingredient cost; actual cost; ADQ usage;
+  practice name and address; an unidentified flag; and the SNOMED code for the BNF presentation.
+  The unit is the practice, not the patient.
+- **ECDC, ESAC-Net**. Consumption reported as DDD per 1 000 inhabitants per day and tonnes per year,
+  classified to the fourth ATC level. Aggregate, with no patient record and no indication.
+
+The membership test is a conjunction: the classifying agent must have said the instrument runs on a
+dispensing or sales feed, and the named dataset must be one of these three. Either half alone is too
+weak. A name match alone over-matched on the Scottish Therapeutics Utility, which the agent had
+correctly placed on the GP record rather than on the dispensing extract; the conjunction excludes it.
+
+So the sentence this repository asserts is: **no instrument computed over a national dataset
+established to contain no diagnosis keeps a condition denominator, in 14 of 14 observed cases.** The
+converse — that a feed containing diagnoses causes retention — is an association of φ = 0.60 that
+cannot be separated from its own definition, and is reported rather than claimed.
 
 ## Substrate does not explain the anchor case, and that is the interesting part
 
@@ -113,13 +133,26 @@ tier and left out of the final set.
 ## The case that would most damage the substrate account
 
 Korea's national DUR was reported by one analyst to transmit 주상병코드 and 임부여부 in the same
-message it screens prescriptions with, and to apply neither to its pregnancy-contraindication
-grading, returning that judgement to the prescriber. If that is right, the condition is in the feed
-and the rule drops it anyway.
+message it screens prescriptions with, and to apply neither. If the condition is in the feed and the
+rule drops it anyway, the feed account is not sufficient.
 
-**This is not verified.** It rests on an agent report, and the session's web-search budget was
-exhausted before the DUR message specification could be checked. It must be confirmed against the
-specification or removed before it is used in anything.
+Half of this is now settled and half is not.
+
+**Settled.** The categories DUR checks were read in full from 「환자안전 중심 약제평가 지표 개발
+연구」 (2021), p. 38. Within a prescription it checks 병용·연령·임부금기 의약품, 안전성 관련
+사용중지·사용주의 의약품, 용량·투여 기간·분할주의 의약품, 노인주의 의약품, 비용효과적인 함량 사용
+대상 의약품, and 약제 허가사항 관련 주의 의약품. Between prescriptions it checks 병용금기 의약품,
+안전성 관련 사용중지 의약품, 동일성분 중복 의약품, and 효능군 중복 의약품. Not one of those ten
+categories is defined by a patient diagnosis. They are drug-drug, drug-age, drug-pregnancy, dose,
+duration and duplication. Korea's national real-time prescribing check has no drug-disease category
+at all. The same page fixes the 노인주의 list at 61 ingredients under 식품의약품안전처 공고
+제2020-423호, which is the figure the 2021 study compares its own indicator against when it notes
+that only 37 of the 61 are covered.
+
+**Not settled.** Whether the DUR request message itself carries 주상병코드. That would decide whether
+the absence of a drug-disease category is a data limit or a design choice, and it is exactly the
+distinction this section turns on. The session's web-search budget was exhausted before the message
+specification could be reached. Until it is read, no claim rests on it.
 
 ## Correction log
 

@@ -93,6 +93,53 @@ noDx.filter((r) => r.retained).forEach((r) => {
   console.log(`      the dispensing transaction, so the substrate label is likely wrong for them.`);
 });
 
+// ------------------------------------- the subset whose feed was read by a person
+console.log('\n\n1b. RESTRICTED TO FEEDS WHOSE FIELD LIST WAS READ DIRECTLY');
+console.log(line());
+const feeds = require('../src/feeds.js');
+/**
+ * Match an instrument to a feed whose field list was read directly.
+ *
+ * The match is a conjunction on purpose. The classifying agent must have said the instrument runs
+ * on a dispensing or sales feed, AND the named dataset must be one whose schema was obtained from
+ * the issuing body. Either half alone is too weak: the agent's label is exposed to the circularity
+ * the audit found, and a name match alone over-matches, as it did on the Scottish Therapeutics
+ * Utility, which the agent correctly placed on the GP record rather than on the dispensing extract.
+ */
+function verifiedFeed(r) {
+  if (!drugOnlyFeeds.has(r.substrate)) return null;
+  const s = `${r.jurisdiction} ${r.instrument}`.toLowerCase();
+  if (/esac-net|esac net/.test(s)) return 'ecdc-esacnet';
+  if (/scotland/.test(s) && /therapeutic indicator|prescribing information system|prescribing data/.test(s)) return 'scot-pis';
+  if (/england/.test(s) && /nhsbsa|nhs bsa|business services|epact|prescribing comparator|prescribing dataset|quality premium|prescribing data/.test(s)) return 'eng-epd';
+  return null;
+}
+const onVerified = rows.filter((r) => verifiedFeed(r));
+const vk = onVerified.filter((r) => r.retained).length;
+const [vlo, vhi] = wilson(vk, onVerified.length);
+console.log(`  Feeds established to hold no diagnosis: ${feeds.conditionFreeFeeds().map((f) => f.id).join(', ')}`);
+console.log(`  Instruments computed over one of them: ${onVerified.length}`);
+console.log(`  Condition axis retained: ${vk}/${onVerified.length}  ${pct(vk, onVerified.length)}%  95% CI ${(100 * vlo).toFixed(0)}-${(100 * vhi).toFixed(0)}`);
+// Exact binomial against the pooled base rate. One-sided: the question is whether these feeds
+// retain LESS often than instruments in general, and the direction was fixed before the count.
+const base = rows.filter((r) => r.retained).length / rows.length;
+let pExact = 0;
+for (let i = 0; i <= vk; i += 1) {
+  let ch = 1;
+  for (let j = 0; j < i; j += 1) ch = ch * (onVerified.length - j) / (j + 1);
+  pExact += ch * Math.pow(base, i) * Math.pow(1 - base, onVerified.length - i);
+}
+console.log(`  Against the pooled base rate of ${(100 * base).toFixed(1)}%, exact binomial p = ${pExact.toExponential(1)} (one-sided).`);
+
+console.log('\n  These rows do not depend on any agent\'s judgement about substrate. Each feed\'s');
+console.log('  field list was obtained from the issuing body and read: Scotland\'s ten columns from');
+console.log('  the open-data datastore schema itself, England\'s contents list from NHSBSA release');
+console.log('  guidance v004, ECDC\'s from its surveillance database description. None carries a');
+console.log('  diagnosis and none is patient-level.');
+onVerified.forEach((r) => {
+  console.log(`    [${r.retained ? 'KEPT' : 'lost'}] ${verifiedFeed(r).padEnd(13)} ${r.instrument.slice(0, 52)}`);
+});
+
 // -------------------------------------------------- the contaminated direction
 console.log('\n\n2. THE POSITIVE DIRECTION — reported, not claimed');
 console.log(line());
