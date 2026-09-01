@@ -95,6 +95,10 @@ check('feeds read directly', feeds.VERIFIED.length, 4);
   check(`  ${id} field count`, feeds.VERIFIED.find((f) => f.id === id).fields.length, n);
 });
 check('feeds carrying a condition', feeds.VERIFIED.filter((f) => f.carriesCondition).length, 0);
+// The manuscript says the Part D file carries money where a clinical field would be. That is a
+// count, not a figure of speech: monetary amount fields in the published record layout.
+const pde = feeds.VERIFIED.find((f) => f.id === 'us-partd-pde').fields;
+check('  Part D monetary amount fields', pde.filter((f) => /_AMT$/.test(f)).length, 9);
 check('patient-level among them', feeds.VERIFIED.filter((f) => f.patientLevel).length, 1);
 
 const drugOnly = new Set(['dispensing-only', 'aggregate-sales']);
