@@ -218,6 +218,20 @@ const p2 = 2 * (1 - 0.5 * (1 + erf(Math.abs(z2) / Math.SQRT2)));
 check('stratified n', u2.length, 83);
 check('stratified trend z', z2, -1.01, 0.005);
 check('stratified trend p', p2, 0.312, 0.001);
+// A post-hoc specification that also drops every agent-called dispensing feed. Reported in the
+// manuscript because the null does not survive it, and not adopted because four of the seven
+// removed are decision-support rules whose condition-free status is directly established.
+const suspect = sr.filter((r) => drugOnly.has(r.substrate) && !onVerifiedFeed(r));
+check('unverified agent-called dispensing feeds', suspect.length, 7);
+check('  of them at decision support', suspect.filter((r) => r.layer === 'decision-support').length, 4);
+const u3 = otherRows.filter((r) => !suspect.includes(r) && sc2[r.layer] !== undefined);
+const pb3 = u3.filter((r) => r.retained).length / u3.length;
+const xb3 = u3.reduce((a3, r) => a3 + sc2[r.layer], 0) / u3.length;
+const num3 = u3.reduce((a3, r) => a3 + (sc2[r.layer] - xb3) * ((r.retained ? 1 : 0) - pb3), 0);
+const sxx3 = u3.reduce((a3, r) => a3 + sc2[r.layer] * sc2[r.layer], 0);
+const z3 = num3 / Math.sqrt(pb3 * (1 - pb3) * (sxx3 - u3.length * xb3 * xb3));
+check('post-hoc trend z', z3, -2.25, 0.005);
+check('post-hoc trend p', 2 * (1 - 0.5 * (1 + erf(Math.abs(z3) / Math.SQRT2))), 0.025, 0.001);
 
 // ------------------------------------------------------------ what was excluded, and from where
 console.log('\nUnassessable instruments');

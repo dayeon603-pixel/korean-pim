@@ -41,6 +41,20 @@ DOCX = Path.home() / "Documents" / "Yakson" / "학회제출" / "KOSMI2026_admin_
 TABLE_ROW_MM = 5.5
 TABLE_PAD_MM = 6.0
 
+# A single line box is not the point size. For Times New Roman the hhea metrics give
+# (ascent - descent + lineGap) / unitsPerEm = 1.150 em, so 10pt text sets on an 11.5pt line before
+# leading is applied. The first version of this script used the point size itself and understated
+# every paragraph by fifteen per cent.
+LINE_BOX_EM = 1.150
+
+# Calibration against the only ground truth available: the manuscript at 22,884 characters measured
+# six pages in Word. Everything above is modelled; this factor absorbs what is not, chiefly that
+# justified text does not compress to the full 장평 and 자간 the specification asks for, and that
+# table rows carry more padding than the flat estimate. It is fitted to one observation and should
+# be refitted whenever a real page count is available. Solved as 6.00 / 5.08 = 1.18, where
+# 5.08 is what the model gives for this file before calibration.
+CALIBRATION = 1.18
+
 PT_TO_MM = 25.4 / 72
 
 
@@ -63,7 +77,8 @@ def paragraph_height_mm(text: str, size_pt: float, leading: float,
     width_pt += CHAR_SPACING * size_pt * len(text)
     width_mm = width_pt * PT_TO_MM
     lines = max(1, -(-width_mm // LINE_WIDTH_MM))     # ceiling division
-    return lines * size_pt * leading * PT_TO_MM + (before_pt + after_pt) * PT_TO_MM
+    line_mm = size_pt * LINE_BOX_EM * leading * PT_TO_MM
+    return lines * line_mm + (before_pt + after_pt) * PT_TO_MM
 
 
 def main() -> None:
@@ -93,16 +108,21 @@ def main() -> None:
 
     rows = sum(len(t.rows) for t in doc.tables)
     tables_mm = rows * TABLE_ROW_MM + len(doc.tables) * TABLE_PAD_MM
-    total_mm = text_mm + tables_mm
+    total_mm = (text_mm + tables_mm) * CALIBRATION
     pages = total_mm / USABLE_HEIGHT_MM
 
     print(f"text and spacing   {text_mm:8,.0f} mm")
     print(f"tables             {tables_mm:8,.0f} mm   ({len(doc.tables)} tables, {rows} rows)")
     print(f"total              {total_mm:8,.0f} mm   over {USABLE_HEIGHT_MM:.0f} mm per page")
-    print(f"\nestimate           {pages:.2f} pages")
-    print(f"with 8% slack for ragged lines and widows: {pages * 1.08:.2f} pages")
-    print("\nLimit is five pages. Latin text is measured with Times New Roman as a proxy for 신명조;")
-    print("a wider Latin face would raise this. Confirm in Word before submitting.")
+    print(f"                   (includes calibration factor {CALIBRATION})")
+    print(f"\nestimate           {pages:.2f} pages   limit is 5")
+    if pages > 5.0:
+        over = (pages - 4.9) / pages
+        doc = Document(str(DOCX))
+        chars = sum(len(p.text) for p in doc.paragraphs)
+        print(f"OVER by {pages - 5.0:.2f} pages. To reach 4.9, cut about {over:.0%} "
+              f"of the content, roughly {int(chars * over):,} characters.")
+    print("\nCalibrated against one measured page count. Re-measure in Word after any large edit.")
 
 
 if __name__ == "__main__":
