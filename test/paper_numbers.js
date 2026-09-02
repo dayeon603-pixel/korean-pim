@@ -57,7 +57,13 @@ check('drug items reaching the 2022 candidate list', reviewed, 61);
 check('  as a percentage', 100 * reviewed / pim.table1.length, 96.8, 0.05);
 check('conditions carried into the 2022 criteria', 0, 0);
 
-console.log('\nScope');
+// ---------------------------------------------------------------------------------------------
+// The sections from here to "Prose consistency" cover the multi-domain scan. That scan is no
+// longer cited in the conference manuscript, which now rests only on the five dataset field lists
+// and one agency's records. The checks are kept because the data and analyses remain in this
+// repository for a longer version, and because they must not silently rot. They are labelled so
+// that nobody mistakes them for claims the manuscript makes.
+console.log('\nMulti-domain scan — repository analyses, NOT cited in the current manuscript');
 check('criteria families audited', scan.domains.length, 8);
 // The manuscript names the jurisdictions and their instrument counts, so both are checked.
 // "ten jurisdictions" in an earlier draft was wrong; the normalised count is eight countries
@@ -108,6 +114,26 @@ const z = num / Math.sqrt(pbar * (1 - pbar) * (sxx - used.length * xbar * xbar))
 const pTrend = 2 * (1 - 0.5 * (1 + erf(Math.abs(z) / Math.SQRT2)));
 check('trend z', z, -0.58, 0.005);
 check('trend p', pTrend, 0.559, 0.001);
+// Crude adjustment for unequal units: the Korean antibiotic programme contributes several
+// instruments, so it is collapsed to one observation per layer and the trend recomputed.
+const isKrAbx = (i) => /korea/i.test(i.jurisdiction) && /antibiotic|항생제|respiratory|상기도|하기도/.test(i.instrument);
+check('Korean antibiotic instruments in the scan', rows.filter(isKrAbx).length, 7);
+const seenL = new Set();
+const collapsed = rows.filter((r) => {
+  if (!isKrAbx(r)) return true;
+  if (seenL.has(r.layer)) return false;
+  seenL.add(r.layer); return true;
+});
+check('  collapsed to layers', seenL.size, 3);
+check('  instruments remaining', collapsed.length, 99);
+const uc = collapsed.filter((r) => scores[r.layer] !== undefined);
+const pbc = uc.filter((r) => r.conditionAxisRetained).length / uc.length;
+const xbc = uc.reduce((a2, r) => a2 + scores[r.layer], 0) / uc.length;
+const numc = uc.reduce((a2, r) => a2 + (scores[r.layer] - xbc) * ((r.conditionAxisRetained ? 1 : 0) - pbc), 0);
+const sxxc = uc.reduce((a2, r) => a2 + scores[r.layer] * scores[r.layer], 0);
+const zc = numc / Math.sqrt(pbc * (1 - pbc) * (sxxc - uc.length * xbc * xbc));
+check('  collapsed trend z', zc, -0.63, 0.005);
+check('  collapsed trend p', 2 * (1 - 0.5 * (1 + erf(Math.abs(zc) / Math.SQRT2))), 0.530, 0.001);
 
 console.log('\nVerified data feeds');
 check('feeds read directly', feeds.VERIFIED.length, 5);
@@ -302,6 +328,10 @@ check('  from antipsychotics in dementia', anti, 3);
 check('  domains contributing none',
   scan.domains.filter((d) => !un.some((r) => r.d === d.domain)).length, 3);
 
+// A figure withdrawn from the manuscript must not reappear in it without being re-verified.
+console.log('\nWithdrawn figures stay out of the manuscript');
+const WITHDRAWN = ['61.2 per cent', '103 instruments', 'z = -0.58', 'z = -1.01', 'z = -2.25',
+  '19 of 58', '0.0000031'];
 console.log('\nProse consistency with the data');
 const fs = require('fs');
 const os = require('os');
@@ -335,6 +365,8 @@ if (!fs.existsSync(MS)) {
   const cites = new Set([...prose.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map((x) => parseInt(x, 10))));
   const bad = [...cites].filter((n) => n < 1 || n > refCount);
   check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
+  const back = WITHDRAWN.filter((w) => prose.includes(w));
+  check('withdrawn scan figures absent', back.length ? back.join(', ') : 'none present', 'none present');
 }
 
 console.log(`\n${failures ? `${failures} MISMATCH — the manuscript and the data disagree.` : 'All manuscript numbers reproduce.'}`);
