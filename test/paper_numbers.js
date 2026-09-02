@@ -122,6 +122,15 @@ check('  Part D monetary amount fields', pde.filter((f) => /_AMT$/.test(f)).leng
 check('patient-level among them', feeds.VERIFIED.filter((f) => f.patientLevel).length, 1);
 
 const drugOnly = new Set(['dispensing-only', 'aggregate-sales']);
+function verifiedFeedId(r) {
+  if (!drugOnly.has(r.substrate)) return null;
+  const s = `${r.jurisdiction} ${r.instrument}`.toLowerCase();
+  if (/esac-net|esac net/.test(s)) return 'ecdc';
+  if (/scotland/.test(s) && /therapeutic indicator|prescribing information system|prescribing data|quality prescribing/.test(s)) return 'scot';
+  if (/england/.test(s) && /nhsbsa|nhs bsa|business services|epact|prescribing comparator|prescribing dataset|quality premium|prescribing data/.test(s)) return 'eng';
+  if (/united states|usa/.test(s) && /part d|pqa|medication therapy management|star ratings|point-of-sale|point of sale/.test(s)) return 'pde';
+  return null;
+}
 function onVerifiedFeed(r) {
   if (!drugOnly.has(r.substrate)) return false;
   const s = `${r.jurisdiction} ${r.instrument}`.toLowerCase();
@@ -150,6 +159,52 @@ for (let i = 0; i <= ovk; i += 1) {
   pEx += ch * Math.pow(base, i) * Math.pow(1 - base, ov.length - i);
 }
 check('  exact binomial p', pEx, 0.0000031, 2e-7);
+// The 20 are not independent. They come from four datasets and 14 are British, so the manuscript
+// bounds the contrast rather than quoting the naive figure.
+const clusters = {};
+ov.forEach((r) => {
+  const f = verifiedFeedId(r);
+  clusters[f] = clusters[f] || { n: 0, kept: 0 };
+  clusters[f].n += 1;
+  if (r.retained) clusters[f].kept += 1;
+});
+check('  distinct feed clusters', Object.keys(clusters).length, 4);
+check('  of the 20 that are British',
+  ov.filter((r) => /scotland|england/i.test(r.jurisdiction)).length, 14);
+let pCl = 0;
+for (let i = 0; i <= 0; i += 1) pCl += Math.pow(1 - base, 4);
+check('  clustered bound p', pCl, 0.023, 0.001);
+// The base rate must not contain the subset it is compared with.
+const outside = sr.filter((r) => !onVerifiedFeed(r));
+check('base rate excluding the subset',
+  100 * outside.filter((r) => r.retained).length / outside.length, 73.5, 0.05);
+
+// Verification performance, which the manuscript now reports rather than gestures at.
+const fs2 = require('fs');
+const jr = path.join(process.env.HOME, '.claude', 'projects', '-Users-chloekang',
+  'dcc9310f-5ac3-4c71-9fad-bca2379a48f9', 'subagents', 'workflows', 'wf_06af2012-7e5', 'journal.jsonl');
+if (fs2.existsSync(jr)) {
+  let conf = 0, ref = 0, unv = 0, low = 0, nver = 0;
+  fs2.readFileSync(jr, 'utf8').split('\n').forEach((line) => {
+    if (!line.includes('"result"')) return;
+    let o; try { o = JSON.parse(line); } catch (e) { return; }
+    const v = o.value || o.result;
+    if (!v || typeof v !== 'object' || !('overallReliability' in v)) return;
+    nver += 1;
+    if (v.overallReliability === 'low') low += 1;
+    (v.checks || []).forEach((c) => {
+      if (c.verdict === 'confirmed') conf += 1;
+      else if (c.verdict === 'refuted') ref += 1;
+      else unv += 1;
+    });
+  });
+  check('verifier claims confirmed', conf, 19);
+  check('  refuted', ref, 31);
+  check('  unverifiable', unv, 8);
+  check('  families graded low reliability', `${low}/${nver}`, '7/8');
+} else {
+  console.log('  skip  verifier journal not present');
+}
 
 console.log('\nDiscussion figures');
 function pctBy(field, value) {
