@@ -90,6 +90,24 @@ const VERIFIED = [
     source: 'https://resdac.org/cms-data/files/pde/data-documentation',
   },
   {
+    id: 'au-pbs-item',
+    name: 'Pharmaceutical Benefits Scheme Item Report',
+    operator: 'Australian Government Department of Health',
+    fields: ['Year', 'Item_number', 'State', 'Scheme', 'Month', 'Patient_Category', 'Services', 'Benefits ($)'],
+    carriesCondition: false,
+    patientLevel: false,
+    howChecked:
+      'Header row read from the published CSV itself on data.gov.au. Eight columns, aggregated by '
+      + 'item, state, scheme and month. No patient identifier and no indication.',
+    source: 'https://data.gov.au/data/dataset/pharmaceutical-benefits-scheme-pbs-item-report',
+    // The same scheme carries the condition somewhere else. PBS Authority Required listings state
+    // an indication that the prescriber must assert at approval, and the antimicrobial audit
+    // recorded that restriction as retaining the condition axis. One scheme, two artefacts, two
+    // feeds, two outcomes - the same shape as the Korean contrast.
+    note: 'Authority Required restrictions in the same scheme do carry an indication, asserted at '
+        + 'approval rather than recorded in this statistical feed.',
+  },
+  {
     id: 'ecdc-esacnet',
     name: 'ESAC-Net antimicrobial consumption surveillance',
     operator: 'European Centre for Disease Prevention and Control',

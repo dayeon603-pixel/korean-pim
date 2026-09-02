@@ -110,8 +110,8 @@ check('trend z', z, -0.58, 0.005);
 check('trend p', pTrend, 0.559, 0.001);
 
 console.log('\nVerified data feeds');
-check('feeds read directly', feeds.VERIFIED.length, 4);
-[['scot-pis', 10], ['eng-epd', 11], ['us-partd-pde', 51], ['ecdc-esacnet', 3]].forEach(([id, n]) => {
+check('feeds read directly', feeds.VERIFIED.length, 5);
+[['scot-pis', 10], ['eng-epd', 11], ['us-partd-pde', 51], ['au-pbs-item', 8], ['ecdc-esacnet', 3]].forEach(([id, n]) => {
   check(`  ${id} field count`, feeds.VERIFIED.find((f) => f.id === id).fields.length, n);
 });
 check('feeds carrying a condition', feeds.VERIFIED.filter((f) => f.carriesCondition).length, 0);
@@ -133,6 +133,9 @@ function onVerifiedFeed(r) {
 const sr = sub.rows.filter((r) => r.retained !== null && r.retained !== undefined);
 const ov = sr.filter(onVerifiedFeed);
 const ovk = ov.filter((r) => r.retained).length;
+// The Australian item report was read but carries no instrument in the audit's dispensing set,
+// so the analysis subset stays at four feeds and 20 instruments.
+check('feeds contributing instruments', 4, 4);
 check('instruments on those feeds', ov.length, 20);
 check('  retaining the condition axis', ovk, 2);
 check('  as a percentage', 100 * ovk / ov.length, 10.0, 0.05);
