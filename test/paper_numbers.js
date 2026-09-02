@@ -188,6 +188,51 @@ check('payment adjustment widened in', abx.HISTORY.find((h) => /가감률 확대
 // The checks above compare numbers against numbers. They did not catch a manuscript that said
 // "four national datasets" while src/feeds.js held five, because the count was spelled as a word.
 // This section reads the manuscript source and checks the words too.
+// ------------------------------------------------- layer against feed, and the stratified trend
+// A reviewer pointed out that the two analyses are not independent: if the verified blind feeds sit
+// at particular layers, the layer table is confounded by them. They do, so both the cross-tab and
+// the stratified trend are checked here.
+console.log('\nLayer against feed');
+const blindRows = sr.filter(onVerifiedFeed);
+const otherRows = sr.filter((r) => !onVerifiedFeed(r));
+check('instruments on a verified blind feed', blindRows.length, 20);
+check('  of them at guideline or decision support',
+  blindRows.filter((r) => r.layer === 'guideline' || r.layer === 'decision-support').length, 0);
+check('  at measure specification', blindRows.filter((r) => r.layer === 'measure-specification').length, 12);
+check('  retained at measure specification',
+  blindRows.filter((r) => r.layer === 'measure-specification' && r.retained).length, 0);
+const msOther = otherRows.filter((r) => r.layer === 'measure-specification');
+check('measure specification excluding blind feeds',
+  `${msOther.filter((r) => r.retained).length}/${msOther.length}`, '17/19');
+check('  as a percentage', 100 * msOther.filter((r) => r.retained).length / msOther.length, 89.5, 0.05);
+
+// Cochran-Armitage among instruments not on a verified blind feed.
+const sc2 = {}; LAYERS.forEach((L, i) => { sc2[L] = i; });
+const u2 = otherRows.filter((r) => sc2[r.layer] !== undefined);
+const pb2 = u2.filter((r) => r.retained).length / u2.length;
+const xb2 = u2.reduce((a2, r) => a2 + sc2[r.layer], 0) / u2.length;
+const num2 = u2.reduce((a2, r) => a2 + (sc2[r.layer] - xb2) * ((r.retained ? 1 : 0) - pb2), 0);
+const sxx2 = u2.reduce((a2, r) => a2 + sc2[r.layer] * sc2[r.layer], 0);
+const z2 = num2 / Math.sqrt(pb2 * (1 - pb2) * (sxx2 - u2.length * xb2 * xb2));
+const p2 = 2 * (1 - 0.5 * (1 + erf(Math.abs(z2) / Math.SQRT2)));
+check('stratified n', u2.length, 83);
+check('stratified trend z', z2, -1.01, 0.005);
+check('stratified trend p', p2, 0.312, 0.001);
+
+// ------------------------------------------------------------ what was excluded, and from where
+console.log('\nUnassessable instruments');
+const un = [];
+scan.domains.forEach((d) => d.instruments.forEach((i) => {
+  if (i.conditionAxisRetained === null || i.conditionAxisRetained === undefined) un.push({ d: d.domain, ...i });
+}));
+check('unassessable total', un.length, 12);
+const paed = un.filter((r) => /[Pp]aediatric/.test(r.d)).length;
+const anti = un.filter((r) => /[Aa]ntipsychotic/.test(r.d)).length;
+check('  from paediatric and pregnancy', paed, 5);
+check('  from antipsychotics in dementia', anti, 3);
+check('  domains contributing none',
+  scan.domains.filter((d) => !un.some((r) => r.d === d.domain)).length, 3);
+
 console.log('\nProse consistency with the data');
 const fs = require('fs');
 const os = require('os');
@@ -212,7 +257,9 @@ if (!fs.existsSync(MS)) {
   /** The jurisdiction sentence must not have reverted to the old, wrong count. */
   check('no stale "ten jurisdictions"', /ten jurisdictions/.test(prose) ? 'present' : 'absent', 'absent');
   /** Spelled counts of criteria families must match the scan. */
-  const famPhrases = [...prose.matchAll(/(\w+) (?:criteria )?families/g)].map((m) => m[1].toLowerCase());
+  // Only phrases that mean the total. "three families contribute none" is a subset count, not the
+  // scope, and an earlier version of this check flagged it as a mismatch.
+  const famPhrases = [...prose.matchAll(/(\w+) (?:criteria families|families of medication)/g)].map((m) => m[1].toLowerCase());
   const wrongFam = famPhrases.filter((w) => WORDS[w] !== undefined && WORDS[w] !== scan.domains.length);
   check('spelled family counts agree with the scan', wrongFam.length ? wrongFam.join(',') : 'all agree', 'all agree');
   /** Every bracketed citation must resolve to a reference that exists. */
