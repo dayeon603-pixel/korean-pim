@@ -184,5 +184,42 @@ check('differential payment programme since', abx.HISTORY.find((h) => /가감지
 check('elderly indicator introduced', abx.INDICATORS.find((i) => i.id === 'elderly_caution').introduced, 2023);
 check('payment adjustment widened in', abx.HISTORY.find((h) => /가감률 확대/.test(h.ko)).year, 2017);
 
+// ---------------------------------------------------------------- prose consistency
+// The checks above compare numbers against numbers. They did not catch a manuscript that said
+// "four national datasets" while src/feeds.js held five, because the count was spelled as a word.
+// This section reads the manuscript source and checks the words too.
+console.log('\nProse consistency with the data');
+const fs = require('fs');
+const os = require('os');
+const MS = path.join(os.homedir(), 'Documents', 'Yakson', 'kosmi_paper_en.py');
+if (!fs.existsSync(MS)) {
+  console.log('  skip  manuscript not found at', MS);
+} else {
+  const whole = fs.readFileSync(MS, 'utf8');
+  // Scan only the prose constants. The typesetting engine above them contains array indices such
+  // as paragraphs[0], which a citation regex would otherwise read as a reference to item zero.
+  const from = whole.indexOf('ABSTRACT = (');
+  const to = whole.indexOf('def build(');
+  const raw = whole.slice(from > 0 ? from : 0, to > 0 ? to : whole.length);
+  // Count references before collapsing line breaks: the collapse destroys line starts.
+  const refCount = (raw.match(/^\s*"\d+\. /gm) || []).length;
+  const prose = raw.replace(/\s*"\n\s*"/g, ' ');
+  const WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+  /** Every "<word> national datasets" phrase must equal the number of verified feeds. */
+  const dsPhrases = [...prose.matchAll(/(\w+) national datasets/g)].map((m) => m[1].toLowerCase());
+  const wrongDs = dsPhrases.filter((w) => WORDS[w] !== feeds.VERIFIED.length);
+  check('"N national datasets" phrases agree with feeds.js', wrongDs.length ? wrongDs.join(',') : 'all agree', 'all agree');
+  /** The jurisdiction sentence must not have reverted to the old, wrong count. */
+  check('no stale "ten jurisdictions"', /ten jurisdictions/.test(prose) ? 'present' : 'absent', 'absent');
+  /** Spelled counts of criteria families must match the scan. */
+  const famPhrases = [...prose.matchAll(/(\w+) (?:criteria )?families/g)].map((m) => m[1].toLowerCase());
+  const wrongFam = famPhrases.filter((w) => WORDS[w] !== undefined && WORDS[w] !== scan.domains.length);
+  check('spelled family counts agree with the scan', wrongFam.length ? wrongFam.join(',') : 'all agree', 'all agree');
+  /** Every bracketed citation must resolve to a reference that exists. */
+  const cites = new Set([...prose.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map((x) => parseInt(x, 10))));
+  const bad = [...cites].filter((n) => n < 1 || n > refCount);
+  check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
+}
+
 console.log(`\n${failures ? `${failures} MISMATCH — the manuscript and the data disagree.` : 'All manuscript numbers reproduce.'}`);
 process.exit(failures ? 1 : 0);
