@@ -253,6 +253,15 @@ check('phi cell: feed lacks condition, lost', dd, 24);
 check('unadjudicable instruments', 115 - rows.length, 12);
 check('phi, substrate against retention', (a * dd - b * c) / Math.sqrt((a + b) * (c + dd) * (a + c) * (b + dd)), 0.60, 0.005);
 
+// Within-system comparisons carried in the manuscript.
+console.log('\nWithin-system comparisons');
+const ws = require('../src/within_system.js');
+check('systems compared', ws.SYSTEMS.length, 5);
+check('  where the feed differs', ws.feedDifference().length, 2);
+check('  where both artefacts share a feed', ws.sameFeed().length, 3);
+check('  every system contrasts one kept with one lost',
+  ws.SYSTEMS.every((s) => s.artefacts.filter((a) => a.conditionAxis).length === 1), true);
+
 console.log('\nThe Korean assessment programme');
 const bound = abx.INDICATORS.filter((i) => i.conditionBound);
 check('fielded indicators in the programme', abx.INDICATORS.length, 7);
