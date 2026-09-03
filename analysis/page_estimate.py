@@ -35,7 +35,9 @@ CHAR_SPACING = -0.05   # 자간 -5%, applied per character as a fraction of the 
 MEASURE_PT = 200       # measure large, then scale down, to keep rounding out of the result
 
 PROXY_FONT = "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
-DOCX = Path.home() / "Documents" / "Yakson" / "학회제출" / "KOSMI2026_admin_condition_axis.docx"
+import os
+DOCX = Path(os.environ.get("PAPER_DOCX",
+    Path.home() / "Documents" / "Yakson" / "학회제출" / "KOSMI2026_admin_condition_axis.docx"))
 
 # Row height and per-table padding, in mm. Measured from the generated tables at 9pt.
 TABLE_ROW_MM = 5.5
@@ -47,13 +49,45 @@ TABLE_PAD_MM = 6.0
 # every paragraph by fifteen per cent.
 LINE_BOX_EM = 1.150
 
-# Calibration against the only ground truth available: the manuscript at 22,884 characters measured
-# six pages in Word. Everything above is modelled; this factor absorbs what is not, chiefly that
-# justified text does not compress to the full 장평 and 자간 the specification asks for, and that
-# table rows carry more padding than the flat estimate. It is fitted to one observation and should
-# be refitted whenever a real page count is available. Solved as 6.00 / 5.08 = 1.18, where
-# 5.08 is what the model gives for this file before calibration.
-CALIBRATION = 1.18
+# Two page counts have now been measured in Word, and one scalar cannot fit both:
+#
+#   conference version  19,882 chars,  3 tables  ->  model 4.58,  Word 5 pages
+#   journal version     28,267 chars,  6 tables  ->  model 6.56,  Word 8 pages
+#
+# Probing the conference file with filler text put its true fill at 4.31 to 4.45 pages, which
+# implies a factor near 0.96, while the journal implies at least 1.07. The gap tracks table count,
+# so the flat TABLE_PAD_MM under-costs a table and no single factor absorbs it. The model is
+# therefore a fallback only. Word is the authority and is queried first; see word_pages().
+CALIBRATION = 1.0
+
+
+def word_pages(path: Path) -> int | None:
+    """Ask Word for the real page count. Returns None if Word is unavailable or refuses the file.
+
+    Word is sandboxed out of temporary directories, so this only works for a file under the
+    user's own document tree.
+    """
+    import subprocess
+    script = f'''tell application "Microsoft Word"
+        open POSIX file "{path}"
+        set d to active document
+        set pc to 0
+        repeat with i from 1 to 40
+            try
+                set pc to (compute statistics d statistic statistic pages)
+                if pc > 0 then exit repeat
+            end try
+            delay 0.25
+        end repeat
+        close d saving no
+        return pc
+    end tell'''
+    try:
+        out = subprocess.run(["osascript", "-e", script], capture_output=True,
+                             text=True, timeout=180)
+        return int(out.stdout.strip()) or None
+    except (subprocess.TimeoutExpired, ValueError, OSError):
+        return None
 
 PT_TO_MM = 25.4 / 72
 
@@ -122,7 +156,13 @@ def main() -> None:
         chars = sum(len(p.text) for p in doc.paragraphs)
         print(f"OVER by {pages - 5.0:.2f} pages. To reach 4.9, cut about {over:.0%} "
               f"of the content, roughly {int(chars * over):,} characters.")
-    print("\nCalibrated against one measured page count. Re-measure in Word after any large edit.")
+    real = word_pages(DOCX)
+    if real is None:
+        print("\nWord could not be queried; the number above is the fallback model and is not "
+              "reliable to better than a page.")
+    else:
+        print(f"\nWord reports {real} pages. That is the number that counts; the estimate above "
+              "is only the fallback model.")
 
 
 if __name__ == "__main__":

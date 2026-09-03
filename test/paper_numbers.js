@@ -40,6 +40,32 @@ function wilson(k, n, z = 1.96) {
   const s = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
   return [(c - s) / d, (c + s) / d];
 }
+function lgamma(x) {
+  const g = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+             -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x, tt = x + 5.5;
+  tt -= (x + 0.5) * Math.log(tt);
+  let s = 1.000000000190015;
+  for (let j = 0; j < 6; j += 1) { y += 1; s += g[j] / y; }
+  return -tt + Math.log(2.5066282746310005 * s / x);
+}
+/** Two-sided Fisher exact test on a 2x2 table, by summing every table no likelier than observed. */
+function fisher(a, b, c, d) {
+  const lchoose = (n, k) => lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1);
+  const n = a + b + c + d, r1 = a + b, r2 = c + d, c1 = a + c;
+  const prob = (k) => Math.exp(lchoose(r1, k) + lchoose(r2, c1 - k) - lchoose(n, c1));
+  const obs = prob(a);
+  let pv = 0;
+  for (let k = Math.max(0, c1 - r2); k <= Math.min(r1, c1); k += 1) {
+    const q = prob(k);
+    if (q <= obs * (1 + 1e-9)) pv += q;
+  }
+  return pv;
+}
+/** Phi coefficient for a 2x2 table. */
+function phi(a, b, c, d) {
+  return (a * d - b * c) / Math.sqrt((a + b) * (c + d) * (a + c) * (b + d));
+}
 function erf(x) {
   const t = 1 / (1 + 0.3275911 * x);
   return 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
@@ -56,6 +82,19 @@ const reviewed = require('./compare_ingredient_level.js').found;
 check('drug items reaching the 2022 candidate list', reviewed, 61);
 check('  as a percentage', 100 * reviewed / pim.table1.length, 96.8, 0.05);
 check('conditions carried into the 2022 criteria', 0, 0);
+
+// The 2x2 is a complete enumeration of one document's items, not a sample of them, so the test
+// below describes how sharp the split is inside that document. It licenses no inference to any
+// population of criteria sets, and the manuscript says so where it reports it.
+const ci63 = wilson(reviewed, pim.table1.length);
+const ci18 = wilson(0, pim.table2.length);
+check('  drug-only 95% CI low', 100 * ci63[0], 89.1, 0.05);
+check('  drug-only 95% CI high', 100 * ci63[1], 99.1, 0.05);
+check('  condition-dependent 95% CI low', 100 * ci18[0], 0.0, 0.05);
+check('  condition-dependent 95% CI high', 100 * ci18[1], 17.6, 0.05);
+const pExact = fisher(reviewed, pim.table1.length - reviewed, 0, pim.table2.length);
+check('  Fisher exact two-sided p < 1e-15', pExact < 1e-15, true);
+check('  phi coefficient', phi(reviewed, pim.table1.length - reviewed, 0, pim.table2.length), 0.934, 0.001);
 
 // ---------------------------------------------------------------------------------------------
 // The sections from here to "Prose consistency" cover the multi-domain scan. That scan is no
