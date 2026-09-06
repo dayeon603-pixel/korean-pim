@@ -83,18 +83,11 @@ check('drug items reaching the 2022 candidate list', reviewed, 61);
 check('  as a percentage', 100 * reviewed / pim.table1.length, 96.8, 0.05);
 check('conditions carried into the 2022 criteria', 0, 0);
 
-// The 2x2 is a complete enumeration of one document's items, not a sample of them, so the test
-// below describes how sharp the split is inside that document. It licenses no inference to any
-// population of criteria sets, and the manuscript says so where it reports it.
-const ci63 = wilson(reviewed, pim.table1.length);
-const ci18 = wilson(0, pim.table2.length);
-check('  drug-only 95% CI low', 100 * ci63[0], 89.1, 0.05);
-check('  drug-only 95% CI high', 100 * ci63[1], 99.1, 0.05);
-check('  condition-dependent 95% CI low', 100 * ci18[0], 0.0, 0.05);
-check('  condition-dependent 95% CI high', 100 * ci18[1], 17.6, 0.05);
-const pExact = fisher(reviewed, pim.table1.length - reviewed, 0, pim.table2.length);
-check('  Fisher exact two-sided p < 1e-15', pExact < 1e-15, true);
-check('  phi coefficient', phi(reviewed, pim.table1.length - reviewed, 0, pim.table2.length), 0.934, 0.001);
+// WITHDRAWN 2026-09-06. The 297-item candidate list is enumerated in drug-ingredient units, so a
+// condition-dependent rule has no representable entry in it. The zero on that side is forced by the
+// unit of enumeration, not produced by a decision, and a Fisher test or a phi coefficient on that
+// 2x2 measures the representation, not the behaviour. The counts stay because the manuscript states
+// them; the test statistics are gone and the guard below keeps them out.
 
 // ---------------------------------------------------------------------------------------------
 console.log('\nSubstrate ablation on real people (NHANES 2017-2018, unweighted)');
@@ -111,12 +104,12 @@ check('  share it does not name', 100 * (1 - abl.pooledXY / abl.pooledX), 79.2, 
 check('    95% CI low', 100 * alo, 77.0, 0.05);
 check('    95% CI high', 100 * ahi, 81.2, 0.05);
 check('  enlargement factor', abl.pooledX / abl.pooledXY, 4.8, 0.05);
-check('condition axis only', abl.onlyB, 133);
-check('  as a share of the cohort', 100 * abl.onlyB / abl.N, 9.9, 0.05);
-const [blo2, bhi2] = wilson(abl.onlyB, abl.N);
-check('    95% CI low', 100 * blo2, 8.4, 0.05);
-check('    95% CI high', 100 * bhi2, 11.6, 0.05);
-check('phi between the two axes', abl.phi, 0.154, 0.001);
+// WITHDRAWN 2026-09-06. Comparing the condition rules against the 2022 drug-only criteria does not
+// isolate the condition, because the two artefacts also carry different drug lists. Deleting the
+// condition entirely still leaves 482 people the drug-only axis misses, against the 133 attributed
+// to the condition, so that contrast measures drug coverage as much as the condition axis. The
+// clean comparison is the one above, which runs the same drug list on both arms.
+
 check('floor after removing the dominant pair', abl.survives, 25);
 check('  as a share of the cohort', 100 * abl.survives / abl.N, 1.9, 0.05);
 
@@ -430,7 +423,10 @@ check('  domains contributing none',
 // A figure withdrawn from the manuscript must not reappear in it without being re-verified.
 console.log('\nWithdrawn figures stay out of the manuscript');
 const WITHDRAWN = ['61.2 per cent', '103 instruments', 'z = -0.58', 'z = -1.01', 'z = -2.25',
-  '19 of 58', '0.0000031'];
+  '19 of 58', '0.0000031',
+  // Retired 2026-09-06 after the review; see the notes above each block.
+  'Fisher exact', 'phi = 0.93', 'phi = 0.154', '17.6 per cent', '96.8 per cent',
+  'close to independent', 'invisible to the drug-only axis'];
 console.log('\nProse consistency with the data');
 const fs = require('fs');
 const os = require('os');
