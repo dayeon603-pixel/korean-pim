@@ -141,6 +141,18 @@ check('    which rule', ci.ppv[0].label, 'Hyponatraemia');
 check('  highest predictive value', 100 * ci.ppv[ci.ppv.length - 1].ppv, 74.5, 0.05);
 check('    which rule', ci.ppv[ci.ppv.length - 1].label, 'Hypertension');
 
+// The pooled figure is a pair-level quantity and the manuscript says so. The person-level figure is
+// what "the named population" means, and the pair-level fold change is the reciprocal of the
+// pair-level share, so the manuscript reports one of the two, not both.
+check('people named as written', ci.personNamedAsWritten, 253);
+check('people named with the condition deleted', ci.personNamedDeleted, 866);
+check('  person-level enlargement', ci.personNamedDeleted / ci.personNamedAsWritten, 3.42, 0.005);
+check('  person-level share not carrying', 100 * ci.personShareNotNamed, 70.8, 0.05);
+check('    95% CI low', 100 * ci.personCI[0], 67.7, 0.05);
+check('    95% CI high', 100 * ci.personCI[1], 74.0, 0.05);
+check('  pair fold change is the reciprocal of the pair share',
+  Math.abs((ci.pooledX / ci.pooledXY) - 1 / (ci.pooledXY / ci.pooledX)) < 1e-9, true);
+
 console.log('\nReplication in an independent NHANES cycle (2015-2016)');
 const rep = require('../analysis/ablation_result_2015.json');
 check('cycle', rep.cycle || rep.source.slice(7, 16), '2015-2016');
@@ -157,6 +169,8 @@ check('design-based CI high', 100 * rep.designCI[1], 79.9, 0.05);
 check('survey-weighted point estimate', 100 * rep.weightedShare, 82.0, 0.05);
 check('leave-one-rule-out low', 100 * rep.looRange[0], 67.3, 0.05);
 check('leave-one-rule-out high', 100 * rep.looRange[1], 86.8, 0.05);
+check('person-level share not carrying', 100 * rep.personShareNotNamed, 71.4, 0.05);
+check('  person-level enlargement', rep.personNamedDeleted / rep.personNamedAsWritten, 3.49, 0.005);
 // Every headline figure falls inside the other cycle's interval.
 check('2017 estimate inside the 2015 interval',
   100 * ci.notNamed >= 100 * rep.notNamedCI[0] && 100 * ci.notNamed <= 100 * rep.notNamedCI[1] + 0.0, true);
@@ -449,7 +463,10 @@ const WITHDRAWN = ['61.2 per cent', '103 instruments', 'z = -0.58', 'z = -1.01',
   '19 of 58', '0.0000031',
   // Retired 2026-09-06 after the review; see the notes above each block.
   'Fisher exact', 'phi = 0.93', 'phi = 0.154', '17.6 per cent', '96.8 per cent',
-  'close to independent', 'invisible to the drug-only axis'];
+  'close to independent', 'invisible to the drug-only axis',
+  // Retired after the workflow review: 61/63 is a source list found inside the union that
+  // contains it, and the pair-level fold change is the reciprocal of the pair-level share.
+  '61 of 63', '61 of the 63', '4.8-fold', '4.6-fold'];
 console.log('\nProse consistency with the data');
 const fs = require('fs');
 const os = require('os');

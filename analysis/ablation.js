@@ -189,6 +189,17 @@ function weightedShareNotNamed(us) {
   return X ? 1 - XY / X : NaN;
 }
 
+// 사람 단위. 쌍 단위 4.8배는 20.8% 의 역수라 같은 값을 두 번 말하는 것이고, "지목된 인구"는
+// 쌍이 아니라 사람이다. 두 단위를 모두 계산해 어느 쪽을 말하는지 분명히 한다.
+const personShareNotNamed = (us) => {
+  const w = us.filter((u) => u.pairs.length).length;                 // 조건 삭제 시 지목되는 사람
+  const a = us.filter((u) => u.pairs.some((q) => q.hasCondition)).length; // 원문 규칙이 지목하는 사람
+  return w ? 1 - a / w : NaN;
+};
+const personNamedDeleted = units.filter((u) => u.pairs.length).length;
+const personNamedAsWritten = units.filter((u) => u.pairs.some((q) => q.hasCondition)).length;
+const [pLo, pHi] = clusterBootstrap(units, personShareNotNamed);
+
 const [dLo, dHi] = designBootstrap(units, shareNotNamed);
 const wShare = weightedShareNotNamed(units);
 
@@ -221,6 +232,9 @@ say(`     pair-level Wilson (assumes independence, too narrow)  ${pc(1 - phi_)}-
 say(`     person-level cluster bootstrap, ${bsB} draws           ${pc(bsLo)}-${pc(bsHi)}%  <- report this`);
 say(`     stratified PSU resampling (design-based)               ${pc(dLo)}-${pc(dHi)}%`);
 say(`     survey-weighted point estimate                          ${pc(wShare)}%`);
+say(`   Person level: ${personNamedAsWritten} named as written, ${personNamedDeleted} with the condition deleted`);
+say(`     ${(personNamedDeleted / personNamedAsWritten).toFixed(2)}-fold, share not carrying ${pc(1 - personNamedAsWritten / personNamedDeleted)}% (${pc(pLo)}-${pc(pHi)})`);
+say(`     The pair-level fold change is the reciprocal of the pair-level share, so only one is reported.`);
 say(`   Leave-one-rule-out range                                  ${pc(looLo)}-${pc(looHi)}%`);
 leaveOneOut.slice().sort((a, c) => a.share - c.share).forEach((x) => {
   say(`     without ${x.drop.padEnd(30)} ${pc(x.share).padStart(6)}%`);
@@ -299,6 +313,8 @@ const result = {
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
   ppv, ppvMinExposed: MIN_EXPOSED,
+  personNamedAsWritten, personNamedDeleted,
+  personShareNotNamed: 1 - personNamedAsWritten / personNamedDeleted, personCI: [pLo, pHi],
   looFloorRule: leaveOneOut.reduce((a, c) => (c.share < a.share ? c : a)).drop,
   looCeilingRule: leaveOneOut.reduce((a, c) => (c.share > a.share ? c : a)).drop,
   phiCI: [phiLo, phiHi], gapCI: [gapLo, gapHi],

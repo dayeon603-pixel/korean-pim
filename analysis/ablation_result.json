@@ -133,6 +133,13 @@
   }
  ],
  "ppvMinExposed": 50,
+ "personNamedAsWritten": 253,
+ "personNamedDeleted": 866,
+ "personShareNotNamed": 0.707852193995381,
+ "personCI": [
+  0.6770472895040369,
+  0.7395348837209302
+ ],
  "looFloorRule": "Hyponatraemia",
  "looCeilingRule": "Diabetes",
  "phiCI": [
