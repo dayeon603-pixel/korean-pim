@@ -94,6 +94,22 @@ const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxi
   'hydrocortisone', 'furosemide', 'hydrochlorothiazide', 'chlorthalidone', 'torsemide', 'bumetanide',
   'spironolactone', 'metoprolol', 'atenolol', 'carvedilol', 'propranolol', 'bisoprolol', 'nebivolol',
   'nadolol', 'sotalol'];
+// 복합제가 통째로 미해상 처리되면 두 축 모두에서 사라지고, 그러면 결과가 과소추정된다.
+// NHANES 는 복합제를 "성분A; 성분B" 로 적는다. 그 가정이 맞는지 다른 구분자를 찾아 확인한다.
+const combo = { rawStrings: 0, distinct: 0, semicolon: 0, otherSeparator: 0, constituents: 0 };
+{
+  const seen = new Set();
+  data.people.forEach((p) => p.drugs.forEach((d) => {
+    combo.rawStrings += 1;
+    seen.add(d);
+    if (d.includes(';')) { combo.semicolon += 1; combo.constituents += split(d).length; }
+    // 세미콜론 외의 구분자 후보. 성분명 내부의 하이픈(omega-3)과 "… - unspecified" 분류 라벨은
+    // 복합제가 아니므로 제외한다.
+    if (!/ - unspecified$/.test(d) && (/\/|\+/.test(d) || / and /.test(d))) combo.otherSeparator += 1;
+  }));
+  combo.distinct = seen.size;
+}
+
 const mentions = { total: 0, resolved: 0, unresolved: 0, unresolvedRuleRelevant: 0,
   distinctUnresolved: 0, hidingAResolvableName: 0, saltForms: 0 };
 const unresolvedStrings = {};
@@ -336,6 +352,9 @@ say('   reports very nearly the population figure and no longer distinguishes th
 say('   group from everyone else. It still returns a number; it has stopped measuring.\n');
 
 say('Drug-name resolution');
+say(`   ${combo.rawStrings} drug strings (${combo.distinct} distinct); ${combo.semicolon} name more than one`);
+say(`   ingredient and are split into ${combo.constituents} constituents, each matched separately.`);
+say(`   ${combo.otherSeparator} strings use any other separator, so no combination is left unparsed.`);
 say(`   ${mentions.resolved} of ${mentions.total} ingredient mentions resolved `
   + `(${pc(mentions.resolved / mentions.total)}%)`);
 say(`   of the ${mentions.unresolved} unresolved, ${mentions.unresolvedRuleRelevant} `
@@ -359,7 +378,7 @@ const result = {
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
-  ppv, ppvMinExposed: MIN_EXPOSED, mentions,
+  ppv, ppvMinExposed: MIN_EXPOSED, mentions, combo,
   personNamedAsWritten, personNamedDeleted,
   personShareNotNamed: 1 - personNamedAsWritten / personNamedDeleted, personCI: [pLo, pHi],
   looFloorRule: leaveOneOut.reduce((a, c) => (c.share < a.share ? c : a)).drop,

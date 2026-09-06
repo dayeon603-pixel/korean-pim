@@ -142,6 +142,13 @@
   "hidingAResolvableName": 2,
   "saltForms": 10
  },
+ "combo": {
+  "rawStrings": 6810,
+  "distinct": 473,
+  "semicolon": 342,
+  "otherSeparator": 0,
+  "constituents": 693
+ },
  "personNamedAsWritten": 280,
  "personNamedDeleted": 880,
  "personShareNotNamed": 0.6818181818181819,

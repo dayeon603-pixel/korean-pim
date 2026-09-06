@@ -149,6 +149,12 @@ check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleReleva
 check('  distinct unresolved strings, all examined', ci.mentions.distinctUnresolved, 332);
 check('    hiding a resolvable ingredient name', ci.mentions.hidingAResolvableName, 2);
 check('    carrying a salt suffix', ci.mentions.saltForms, 10);
+// A combination left unparsed would drop out of both arms and understate the result, so the
+// separator assumption is checked rather than asserted.
+check('  drug strings', ci.combo.rawStrings, 6810);
+check('    naming more than one ingredient', ci.combo.semicolon, 342);
+check('    constituents they split into', ci.combo.constituents, 693);
+check('    strings using any other separator', ci.combo.otherSeparator, 0);
 
 console.log('\nProspective screen of rules that are not yet indicators');
 const scr = require('../analysis/prescreen.js');
