@@ -13,6 +13,7 @@ const pim = require('../src/index.js');
 const hira = require('../src/hira2022.js');
 const abx = require('../src/hira_antibiotic.js');
 const feeds = require('../src/feeds.js');
+const kcd = require('../src/hira_kcd.js');
 const scan = require('../data/multidomain_scan.json');
 const sub = require('../data/substrate_classification.json');
 
@@ -147,6 +148,21 @@ check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleReleva
 // Examined in full rather than sampled, because a sample cannot establish that non-resolution is
 // not a parsing failure on salt, brand or combination strings.
 check('  distinct unresolved strings, all examined', ci.mentions.distinctUnresolved, 316);
+
+// Transportability is checked against the agency's own numbers rather than asserted. HIRA computed
+// these prevalences from its Table 22 KCD codes over 1.53 million patients; the cohort figures are
+// self-report over a different window, and the report itself warns that claims-coded chronic kidney
+// disease runs far below survey prevalence, which is what the comparison shows.
+const t25 = kcd.TABLE25.prevalence;
+check('HIRA cohort for the prevalence table', kcd.TABLE25.cohortSize, 1532000);
+check('  hypertension, Korea', 100 * t25['고혈압'], 67.6, 0.05);
+check('  diabetes, Korea', 100 * t25['당뇨'], 38.4, 0.05);
+check('  chronic kidney disease, Korea', 100 * t25['만성신질환'], 2.1, 0.05);
+const cohort = require('../analysis/nhanes_cohort.json');
+const share = (id) => 100 * cohort.people.filter((p) => p.conditions.includes(id)).length / cohort.people.length;
+check('  hypertension, cohort', share('htn'), 69.1, 0.05);
+check('  diabetes, cohort', share('dm'), 33.0, 0.05);
+check('  chronic kidney disease, cohort', share('ckd'), 9.0, 0.05);
 check('    hiding a resolvable ingredient name', ci.mentions.hidingAResolvableName, 4);
 check('    carrying a salt suffix', ci.mentions.saltForms, 10);
 // A combination left unparsed would drop out of both arms and understate the result, so the
