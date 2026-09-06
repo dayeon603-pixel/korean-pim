@@ -105,6 +105,14 @@
   0.6652360515021459,
   0.8685990338164251
  ],
+ "withoutDominant": {
+  "pairs": 935,
+  "share": 0.932620320855615,
+  "dropped": [
+   "Hypertension",
+   "Diabetes"
+  ]
+ },
  "ppv": [
   {
    "label": "Hyponatraemia",

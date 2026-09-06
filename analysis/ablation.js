@@ -292,6 +292,15 @@ const leaveOneOut = perRule.map((r) => ({
   drop: r.label,
   share: 1 - (sxy - r.xy) / (sx - r.x),
 }));
+/* 지적: 분모를 고혈압·당뇨 두 규칙이 지배하므로 통합값이 그 둘의 유병률에서 나온
+ * 인공물일 수 있다는 것. 그러면 둘을 함께 빼고 다시 계산하면 된다. 나머지 규칙만으로
+ * 남는 값이 무너지는지 아닌지는 세어 보면 알 수 있다. */
+const DOMINANT = ['Hypertension', 'Diabetes'];
+const dropped = perRule.filter((r) => DOMINANT.includes(r.label));
+const restX = sx - dropped.reduce((a, r) => a + r.x, 0);
+const restXY = sxy - dropped.reduce((a, r) => a + r.xy, 0);
+const withoutDominant = { pairs: restX, share: 1 - restXY / restX, dropped: dropped.map((r) => r.label) };
+
 const looLo = Math.min(...leaveOneOut.map((x) => x.share));
 const looHi = Math.max(...leaveOneOut.map((x) => x.share));
 const [phiLo, phiHi] = clusterBootstrap(units, phiOf);
@@ -406,6 +415,7 @@ const result = {
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
+  withoutDominant,
   ppv, ppvMinExposed: MIN_EXPOSED, mentions, combo, dedup,
   personNamedAsWritten, personNamedDeleted,
   personShareNotNamed: 1 - personNamedAsWritten / personNamedDeleted, personCI: [pLo, pHi],

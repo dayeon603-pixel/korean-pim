@@ -153,6 +153,29 @@ check('P4P trial, screening rate in the uncovered patient', `${cited.p4pUncovere
 
 // The resolution rate is scope, not attrition: the dictionary was written only for the classes the
 // rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
+// 병용 정제를 성분으로 쪼개면 보호 목적 병용의 임상 의도가 지워진다는 지적이 있었다.
+// 그 구조가 이 규칙집합에 있는지는 세어 보면 알 수 있다. 없다. 병용을 요구하는 target 은
+// 하나뿐이고 그것은 병용 자체가 위해인 아스피린+클로피도그렐이라, 분해가 오탐을 만드는
+// 것이 아니라 분해해야 탐지된다.
+{
+  const t2 = require('../src/index.js').table2;
+  const targets = t2.flatMap((r) => r.targets);
+  const combos = targets.filter((t) => t.all);
+  const guarded = targets.filter((t) => /unless|except|without|gastroprotect/i.test(JSON.stringify(t)));
+  check('condition-dependent rules', t2.length, 18);
+  check('  targets across them', targets.length, 59);
+  check('  targets requiring a co-prescription', combos.length, 1);
+  check('  that one is aspirin with clopidogrel', /aspirin/i.test(String(combos[0] && combos[0].all)), true);
+  check('  targets conditioned on a protective agent', guarded.length, 0);
+}
+
+// 통합값이 고혈압·당뇨의 유병률에서 나온 인공물이라는 지적이 있었다. 둘을 함께 빼고
+// 다시 계산하면 값이 무너지는 것이 아니라 올라간다. 그 둘이 예측도가 가장 높은 규칙이라
+// 통합값을 끌어내리고 있었기 때문이다.
+check('pair share without the two dominant rules', `${(100 * ci.withoutDominant.share).toFixed(1)}%`, '93.3%');
+check('  pairs remaining', ci.withoutDominant.pairs, 935);
+check('  which rules were dropped', ci.withoutDominant.dropped.join(', '), 'Hypertension, Diabetes');
+
 check('ingredient mentions', ci.mentions.total, 7161);
 check('  resolved', ci.mentions.resolved, 2502);
 check('    as a percentage', 100 * ci.mentions.resolved / ci.mentions.total, 34.9, 0.05);
