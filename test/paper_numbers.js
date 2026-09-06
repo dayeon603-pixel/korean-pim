@@ -172,6 +172,16 @@ check('    naming more than one ingredient', ci.combo.semicolon, 342);
 check('    constituents they split into', ci.combo.constituents, 693);
 check('    strings using any other separator', ci.combo.otherSeparator, 0);
 
+// Whether an incomplete dictionary biases the contrast is measured rather than assumed. Hiding
+// resolvable names at random removes a person from both arms at once, so the ratio should hold
+// while the interval widens. It does.
+const dict = require('../analysis/dict_sensitivity.js');
+check('  names that could be hidden', dict.hideable, 131);
+check('  replicates at each fraction', dict.replicates, 200);
+check('  shift when a fifth is hidden', 100 * dict.results[2].shift, 0.2, 0.05);
+check('  shift when two fifths are hidden', 100 * dict.results[3].shift, 0.5, 0.05);
+check('  every shift under one point', dict.results.every((r) => Math.abs(r.shift) < 0.01), true);
+
 console.log('\nProspective screen of rules that are not yet indicators');
 const scr = require('../analysis/prescreen.js');
 check('condition-dependent rules screened', scr.total, 18);
