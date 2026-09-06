@@ -118,6 +118,22 @@ const combo = { rawStrings: 0, distinct: 0, semicolon: 0, otherSeparator: 0, con
   combo.distinct = seen.size;
 }
 
+// 복합제를 성분으로 쪼개면 한 사람이 한 규칙에 여러 번 걸릴 수 있다. 쌍은 (규칙, 사람) 단위로
+// 세므로 그런 사람도 한 번만 들어간다. 그 중복 제거가 실제로 얼마나 걷어내는지 센다.
+const dedup = { rawMatches: 0, pairs: 0, maxPerRule: 0, comboPeopleAffected: 0 };
+data.people.forEach((p) => {
+  const hasCombo = p.drugs.some((d) => d.includes(';'));
+  const drugs = p.drugs.flatMap(split).map(toDrug).filter(Boolean);
+  const hits = bm.check({ drugs, conditions: ALL }).table2.filter((h) => OBSERVABLE.has(h.condition.id));
+  dedup.rawMatches += hits.length;
+  const byRule = {};
+  hits.forEach((h) => { byRule[h.condition.id] = (byRule[h.condition.id] || 0) + 1; });
+  dedup.pairs += Object.keys(byRule).length;
+  const mx = Math.max(0, ...Object.values(byRule));
+  if (mx > dedup.maxPerRule) dedup.maxPerRule = mx;
+  if (hasCombo && mx > 1) dedup.comboPeopleAffected += 1;
+});
+
 const mentions = { total: 0, resolved: 0, unresolved: 0, unresolvedRuleRelevant: 0,
   distinctUnresolved: 0, hidingAResolvableName: 0, saltForms: 0 };
 const unresolvedStrings = {};
@@ -359,6 +375,10 @@ say('   rate. Here the two differ by 0.3 to 10.5 percentage points, so the delet
 say('   reports very nearly the population figure and no longer distinguishes the condition');
 say('   group from everyone else. It still returns a number; it has stopped measuring.\n');
 
+say('Counting unit');
+say(`   ${dedup.rawMatches} rule-target matches reduce to ${dedup.pairs} pairs, one per rule and person;`);
+say(`   ${dedup.comboPeopleAffected} of those people take a combination that would otherwise have counted twice.\n`);
+
 say('Drug-name resolution');
 say(`   ${combo.rawStrings} drug strings (${combo.distinct} distinct); ${combo.semicolon} name more than one`);
 say(`   ingredient and are split into ${combo.constituents} constituents, each matched separately.`);
@@ -386,7 +406,7 @@ const result = {
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
-  ppv, ppvMinExposed: MIN_EXPOSED, mentions, combo,
+  ppv, ppvMinExposed: MIN_EXPOSED, mentions, combo, dedup,
   personNamedAsWritten, personNamedDeleted,
   personShareNotNamed: 1 - personNamedAsWritten / personNamedDeleted, personCI: [pLo, pHi],
   looFloorRule: leaveOneOut.reduce((a, c) => (c.share < a.share ? c : a)).drop,

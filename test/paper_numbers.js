@@ -183,6 +183,11 @@ check('  drug strings', ci.combo.rawStrings, 6810);
 check('    naming more than one ingredient', ci.combo.semicolon, 342);
 check('    constituents they split into', ci.combo.constituents, 693);
 check('    strings using any other separator', ci.combo.otherSeparator, 0);
+// Splitting a combination cannot weight a person twice, because the pair is (rule, person).
+check('  rule-target matches before de-duplication', ci.dedup.rawMatches, 1772);
+check('    pairs after, one per rule and person', ci.dedup.pairs, 1545);
+check('    agrees with the pooled denominator', ci.dedup.pairs === ci.pooledX, true);
+check('    people whose combination would have counted twice', ci.dedup.comboPeopleAffected, 67);
 
 // Whether an incomplete dictionary biases the contrast is measured rather than assumed. Hiding
 // resolvable names at random removes a person from both arms at once, so the ratio should hold

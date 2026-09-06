@@ -149,6 +149,12 @@
   "otherSeparator": 0,
   "constituents": 693
  },
+ "dedup": {
+  "rawMatches": 1772,
+  "pairs": 1545,
+  "maxPerRule": 4,
+  "comboPeopleAffected": 67
+ },
  "personNamedAsWritten": 285,
  "personNamedDeleted": 892,
  "personShareNotNamed": 0.6804932735426009,
