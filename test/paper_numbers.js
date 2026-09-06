@@ -149,6 +149,7 @@ const cited = require('../src/prior_work.js').CITED_FIGURES;
 check('kappa quoted for Korean claims diagnoses', cited.claimsDiagnosisKappa.join(' to '), '0.83 to 0.84');
 check('HIRA prevalence cohort as written', (cited.hiraPrevalenceCohort / 1e6).toFixed(2), '1.53');
 check('Korean common-data-model patients as written', (cited.koreanCdmPatients / 1e6).toFixed(2), '2.07');
+check('P4P trial, screening rate in the uncovered patient', `${cited.p4pUncoveredPatientPct}%`, '47%');
 
 // The resolution rate is scope, not attrition: the dictionary was written only for the classes the
 // rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
@@ -579,17 +580,13 @@ if (!fs.existsSync(MS)) {
   const orphan = [...refNums].filter((n) => !cites.has(n));
   check('every reference is cited', orphan.length ? orphan.join(',') : 'all cited', 'all cited');
   check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
-  // Vancouver numbering: references must run in order of first citation. build() renumbers at
-  // render time, so a failure here means the renumbering itself broke.
-  const seq = [];
-  for (const m of prose.matchAll(/\[([0-9,\s]+)\]/g)) {
-    for (const x of m[1].split(',')) {
-      const n = Number(x);
-      if (!seq.includes(n)) seq.push(n);
-    }
-  }
-  const jumps = seq.filter((n, i) => i && n < seq[i - 1]);
-  check('references cited in order of first appearance', jumps.length ? jumps.join(', ') : 'in order', 'in order');
+  // build() renumbers to order of first citation at render time, so the source order is free.
+  // What the source must guarantee is that no number is used twice: build() indexes references by
+  // number, so a repeat silently overwrites one and the manuscript loses a reference. That happened
+  // once, between the conference list and the journal extras, and cost two entries.
+  const nums = [...raw.matchAll(/^\s*"(\d+)\. /gm)].map((m) => Number(m[1]));
+  const dupes = nums.filter((n, i) => nums.indexOf(n) !== i);
+  check('reference numbers are unique in source', dupes.length ? dupes.join(', ') : 'unique', 'unique');
   // Rewrapping a paragraph can break a hyphenated word across two string literals, which renders
   // as "self- reported" in Word. Catch it here rather than in a reviewer's copy.
   const broken = [...new Set((prose.match(/\w+- \w+/g) || []))];

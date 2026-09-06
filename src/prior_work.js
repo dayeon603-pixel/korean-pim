@@ -137,6 +137,24 @@ const REFERENCES = {
         + 'Korean National Health Insurance claims database. Rheumatol Int 2013.',
     why: 'Operational definitions on Korean claims are routine practice.',
   },
+  green2020: {
+    pmid: '31907323',
+    cite: 'Green E, Peterson KS, Markiewicz K, O\'Brien J, Arring NM. Cautionary study on the '
+        + 'effects of pay for performance on quality of care: a pilot randomised controlled trial '
+        + 'using standardised patients. BMJ Qual Saf 2020;29(8):664-671.',
+    why: 'Randomised, and it moves the very population this study is about. The standardised '
+       + 'patient the measure did not cover received the incentivised screening in 47 per cent of '
+       + 'encounters against none in the control arm, and the covered patient received lower '
+       + 'overall standards of care. That is care changing for people the measure does not name, '
+       + 'which is what a denominator widened to the whole population aims pressure at.',
+  },
+  werner2005: {
+    pmid: '15755946',
+    cite: 'Werner RM, Asch DA. The unintended consequences of publicly reporting quality '
+        + 'information. JAMA 2005;293(10):1239-1244.',
+    why: 'Names the same class of response in review: avoiding sick patients to protect a ranking, '
+       + 'and pursuing target rates where they are inappropriate for the individual patient.',
+  },
   baek2023: {
     pmid: '36750233',
     cite: 'Baek JH, et al. Comparison of operational definition of type 2 diabetes mellitus based '
@@ -156,6 +174,7 @@ const CITED_FIGURES = {
   claimsDiagnosisKappa: [0.83, 0.84],   // Park & Choi 2016, 허혈성 뇌졸중·지주막하출혈 검증
   hiraPrevalenceCohort: 1532000,        // 심평원 2022 보고서 <표 25>
   koreanCdmPatients: 2070000,           // Yoon 2016, Healthc Inform Res 22(1):54-58
+  p4pUncoveredPatientPct: 47,           // Green 2020, 지표가 포함하지 않은 환자의 검진 시행률
 };
 
 module.exports = { REJECTED_CLAIMS, REFERENCES, CITED_FIGURES, usable };
