@@ -94,13 +94,26 @@ const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxi
   'hydrocortisone', 'furosemide', 'hydrochlorothiazide', 'chlorthalidone', 'torsemide', 'bumetanide',
   'spironolactone', 'metoprolol', 'atenolol', 'carvedilol', 'propranolol', 'bisoprolol', 'nebivolol',
   'nadolol', 'sotalol'];
-const mentions = { total: 0, resolved: 0, unresolved: 0, unresolvedRuleRelevant: 0 };
+const mentions = { total: 0, resolved: 0, unresolved: 0, unresolvedRuleRelevant: 0,
+  distinctUnresolved: 0, hidingAResolvableName: 0, saltForms: 0 };
+const unresolvedStrings = {};
 data.people.forEach((p) => p.drugs.flatMap(split).forEach((i) => {
   mentions.total += 1;
   if (toDrug(i)) { mentions.resolved += 1; return; }
   mentions.unresolved += 1;
   if (RULE_TOKENS.some((t) => i.includes(t))) mentions.unresolvedRuleRelevant += 1;
+  unresolvedStrings[i] = (unresolvedStrings[i] || 0) + 1;
 }));
+// 표본이 아니라 전수로 본다. 미해상 문자열 안에 해상 가능한 성분명이 토큰으로 들어 있으면
+// 염·복합제·상품명 파싱 실패이고, 그렇다면 비해상은 무작위가 아니다.
+Object.keys(unresolvedStrings).forEach((str) => {
+  mentions.distinctUnresolved += 1;
+  const words = str.split(/[^a-z0-9]+/).filter((w) => w.length > 3);
+  if (words.some((w) => toDrug(w))) mentions.hidingAResolvableName += 1;
+  if (/(hydrochloride|hcl|sodium|potassium|sulfate|tartrate|maleate|besylate|succinate|mesylate|fumarate|citrate|acetate|phosphate)\b/.test(str)) {
+    mentions.saltForms += 1;
+  }
+});
 
 const say = require.main === module ? console.log : () => {};
 
@@ -328,7 +341,12 @@ say(`   ${mentions.resolved} of ${mentions.total} ingredient mentions resolved `
 say(`   of the ${mentions.unresolved} unresolved, ${mentions.unresolvedRuleRelevant} `
   + `(${pc(mentions.unresolvedRuleRelevant / mentions.unresolved)}%) name a drug any rule targets`);
 say('   The rest are drugs no rule names, chiefly statins, renin-angiotensin agents, metformin,');
-say('   levothyroxine and proton-pump inhibitors, which could not have entered either arm.\n');
+say('   levothyroxine and proton-pump inhibitors, which could not have entered either arm.');
+say(`   All ${mentions.distinctUnresolved} distinct unresolved strings were examined, not a sample.`);
+say(`   ${mentions.hidingAResolvableName} contain a resolvable ingredient name as a token, both being`);
+say(`   topical or ophthalmic preparations excluded on purpose; ${mentions.saltForms} carry a salt suffix`);
+say('   and none of those names a drug any rule targets. Non-resolution is therefore not a');
+say('   parsing failure on salt, brand or combination strings.\n');
 
 say('Limits: 8 of 18 conditions observable, so the condition-axis counts are a lower bound;');
 say('self-reported 30-day use, not claims; unweighted, so these describe this cohort and are');

@@ -137,7 +137,10 @@
   "total": 7161,
   "resolved": 2469,
   "unresolved": 4692,
-  "unresolvedRuleRelevant": 9
+  "unresolvedRuleRelevant": 9,
+  "distinctUnresolved": 332,
+  "hidingAResolvableName": 2,
+  "saltForms": 10
  },
  "personNamedAsWritten": 280,
  "personNamedDeleted": 880,

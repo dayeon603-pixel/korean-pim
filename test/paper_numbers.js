@@ -144,6 +144,22 @@ check('  resolved', ci.mentions.resolved, 2469);
 check('    as a percentage', 100 * ci.mentions.resolved / ci.mentions.total, 34.5, 0.05);
 check('  unresolved that name a drug a rule targets', ci.mentions.unresolvedRuleRelevant, 9);
 check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleRelevant / ci.mentions.unresolved, 0.2, 0.05);
+// Examined in full rather than sampled, because a sample cannot establish that non-resolution is
+// not a parsing failure on salt, brand or combination strings.
+check('  distinct unresolved strings, all examined', ci.mentions.distinctUnresolved, 332);
+check('    hiding a resolvable ingredient name', ci.mentions.hidingAResolvableName, 2);
+check('    carrying a salt suffix', ci.mentions.saltForms, 10);
+
+console.log('\nProspective screen of rules that are not yet indicators');
+const scr = require('../analysis/prescreen.js');
+check('condition-dependent rules screened', scr.total, 18);
+check('  bound to KCD codes by the agency, so computable on claims', scr.boundCount, 9);
+check('  not bound, so blocked at question one', scr.blockedCount, 9);
+check('  measurable at question three in this cohort', scr.measured.length, 4);
+check('  of those, condition load-bearing (predictive value under 25%)', scr.loadBearing.length, 2);
+check('    which rules', scr.loadBearing.join(','), 'ckd,hf');
+check('  highest-risk candidate fails both questions', scr.worst && scr.worst.id, 'hyponatremia');
+check('    its predictive value', 100 * (scr.worst ? scr.worst.ppv : 0), 3.3, 0.05);
 
 // The pooled figure is a pair-level quantity and the manuscript says so. The person-level figure is
 // what "the named population" means, and the pair-level fold change is the reciprocal of the
