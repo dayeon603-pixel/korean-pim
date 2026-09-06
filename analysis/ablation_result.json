@@ -62,6 +62,49 @@
   0.8129126925898753
  ],
  "bootstrapDraws": 2000,
+ "designCI": [
+  0.7795379537953795,
+  0.8037156704361874
+ ],
+ "weightedShare": 0.826022758067666,
+ "leaveOneOut": [
+  {
+   "drop": "Insomnia",
+   "share": 0.7959479015918958
+  },
+  {
+   "drop": "Heart failure",
+   "share": 0.7826784282277466
+  },
+  {
+   "drop": "Hypertension",
+   "share": 0.8137621540762903
+  },
+  {
+   "drop": "Stroke, secondary prevention",
+   "share": 0.7917867435158501
+  },
+  {
+   "drop": "Chronic kidney disease",
+   "share": 0.7866868381240545
+  },
+  {
+   "drop": "Hyponatraemia",
+   "share": 0.6560509554140128
+  },
+  {
+   "drop": "COPD",
+   "share": 0.7933765298776098
+  },
+  {
+   "drop": "Diabetes",
+   "share": 0.8881431767337807
+  }
+ ],
+ "looRange": [
+  0.6560509554140128,
+  0.8881431767337807
+ ],
  "phiCI": [
   0.09703022596815729,
   0.2101987587024681

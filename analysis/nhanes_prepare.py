@@ -116,6 +116,11 @@ def build(cache: Path) -> dict:
             "conditions": sorted(conds.get(r.SEQN, [])),
             "died": None if pd.isna(mo.get("MORTSTAT")) else int(mo["MORTSTAT"]),
             "followupMonths": None if pd.isna(mo.get("PERMTH_EXM")) else int(mo["PERMTH_EXM"]),
+            # NHANES 는 층화 다단계 확률표본이다. 설계변수를 함께 실어 두면 개인 단위 재표집이
+            # 아니라 층 안에서 PSU 를 재표집하는 설계 기반 구간을 계산할 수 있다.
+            "stratum": None if pd.isna(r.SDMVSTRA) else int(r.SDMVSTRA),
+            "psu": None if pd.isna(r.SDMVPSU) else int(r.SDMVPSU),
+            "weight": None if pd.isna(r.WTMEC2YR) else float(r.WTMEC2YR),
         })
 
     return {

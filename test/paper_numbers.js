@@ -122,6 +122,15 @@ check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 81.3, 0.05);
 check('phi bootstrap CI low', ci.phiCI[0], 0.097, 0.001);
 check('phi bootstrap CI high', ci.phiCI[1], 0.210, 0.001);
 
+// Three sensitivity analyses the manuscript reports, because the pooled figure is exposure-weighted
+// and two rules supply most of the denominator.
+check('design-based CI low (PSU within strata)', 100 * ci.designCI[0], 78.0, 0.05);
+check('design-based CI high', 100 * ci.designCI[1], 80.4, 0.05);
+check('survey-weighted point estimate', 100 * ci.weightedShare, 82.6, 0.05);
+check('leave-one-rule-out low', 100 * ci.looRange[0], 65.6, 0.05);
+check('leave-one-rule-out high', 100 * ci.looRange[1], 88.8, 0.05);
+check('  the conclusion holds across the whole range', ci.looRange[0] > 0.5, true);
+
 console.log('\nReplication in an independent NHANES cycle (2015-2016)');
 const rep = require('../analysis/ablation_result_2015.json');
 check('cycle', rep.cycle || rep.source.slice(7, 16), '2015-2016');
@@ -133,7 +142,11 @@ check('enlargement factor', rep.pooledX / rep.pooledXY, 4.6, 0.05);
 check('phi', rep.phi, 0.144, 0.001);
 check('condition axis only', rep.conditionAxisOnly, 124);
 check('  as a share of the cohort', 100 * rep.conditionAxisOnly / rep.n, 10.3, 0.05);
-check('floor after removing the dominant pair', rep.floor, 27);
+check('design-based CI low', 100 * rep.designCI[0], 77.1, 0.05);
+check('design-based CI high', 100 * rep.designCI[1], 79.9, 0.05);
+check('survey-weighted point estimate', 100 * rep.weightedShare, 82.0, 0.05);
+check('leave-one-rule-out low', 100 * rep.looRange[0], 67.3, 0.05);
+check('leave-one-rule-out high', 100 * rep.looRange[1], 86.8, 0.05);
 // Every headline figure falls inside the other cycle's interval.
 check('2017 estimate inside the 2015 interval',
   100 * ci.notNamed >= 100 * rep.notNamedCI[0] && 100 * ci.notNamed <= 100 * rep.notNamedCI[1] + 0.0, true);

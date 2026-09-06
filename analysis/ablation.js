@@ -95,6 +95,7 @@ const people = data.people.map((p) => {
     id: p.id,
     conditions: new Set(p.conditions),
     drugOnly: drugs.some((d) => hira.isCovered(d, d.cat)),
+    stratum: p.stratum, psu: p.psu, weight: p.weight,
     asWritten,
     conditionDeleted,
     died: p.died,
@@ -130,7 +131,8 @@ const units = people.map((p) => {
       pairs.push({ rule: t.id, hasCondition: p.conditions.has(t.id) });
     }
   });
-  return { pairs, byB: p.asWritten.length > 0, byA: p.drugOnly };
+  return { pairs, byB: p.asWritten.length > 0, byA: p.drugOnly,
+    stratum: p.stratum, psu: p.psu, weight: p.weight };
 });
 const shareNotNamed = (us) => {
   let X = 0, XY = 0;
@@ -147,6 +149,56 @@ const phiOf = (us) => {
 };
 const gapShare = (us) => us.filter((u) => u.byB && !u.byA).length / us.length;
 const [bsLo, bsHi, bsB] = clusterBootstrap(units, shareNotNamed);
+
+/** 설계 기반 재표집: 층 안에서 PSU 를 복원추출하고, 뽑힌 PSU 의 사람을 전부 가져온다.
+ *
+ * NHANES 는 층화 다단계 확률표본이라 사람을 독립으로 재표집하면 설계 효과를 무시한다.
+ * 층당 PSU 가 2개뿐이라 변동폭이 제한되지만, 이것이 이 설계에서 표준적인 방식이다.
+ */
+function designBootstrap(us, stat, B = 2000, seed = 20260906) {
+  const byStratum = new Map();
+  us.forEach((u) => {
+    if (u.stratum == null || u.psu == null) return;
+    if (!byStratum.has(u.stratum)) byStratum.set(u.stratum, new Map());
+    const m = byStratum.get(u.stratum);
+    if (!m.has(u.psu)) m.set(u.psu, []);
+    m.get(u.psu).push(u);
+  });
+  const strata = [...byStratum.values()].map((m) => [...m.values()]);
+  const rand = rng(seed);
+  const out = [];
+  for (let b = 0; b < B; b += 1) {
+    const draw = [];
+    strata.forEach((psus) => {
+      for (let i = 0; i < psus.length; i += 1) draw.push(...psus[Math.floor(rand() * psus.length)]);
+    });
+    const v = stat(draw);
+    if (Number.isFinite(v)) out.push(v);
+  }
+  out.sort((a, c) => a - c);
+  return [out[Math.floor(0.025 * out.length)], out[Math.floor(0.975 * out.length)]];
+}
+
+/** 표본가중치를 적용한 점추정. 구간이 아니라 점추정이 설계에 얼마나 좌우되는지만 본다. */
+function weightedShareNotNamed(us) {
+  let X = 0, XY = 0;
+  us.forEach((u) => u.pairs.forEach((q) => {
+    const w = u.weight || 0;
+    X += w; if (q.hasCondition) XY += w;
+  }));
+  return X ? 1 - XY / X : NaN;
+}
+
+const [dLo, dHi] = designBootstrap(units, shareNotNamed);
+const wShare = weightedShareNotNamed(units);
+
+/** 규칙 하나를 빼고 다시 계산한다. 두 규칙이 분모의 79%를 차지하므로 통합값만으로는 부족하다. */
+const leaveOneOut = perRule.map((r) => ({
+  drop: r.label,
+  share: 1 - (sxy - r.xy) / (sx - r.x),
+}));
+const looLo = Math.min(...leaveOneOut.map((x) => x.share));
+const looHi = Math.max(...leaveOneOut.map((x) => x.share));
 const [phiLo, phiHi] = clusterBootstrap(units, phiOf);
 const [gapLo, gapHi] = clusterBootstrap(units, gapShare);
 
@@ -157,7 +209,14 @@ say(`\n   Deleting the condition multiplies the named population by ${(sx / sxy)
 say(`   Share of those named who do not carry the condition: ${pc(1 - sxy / sx)}%`);
 say(`     pair-level Wilson (assumes independence, too narrow)  ${pc(1 - phi_)}-${pc(1 - plo)}%`);
 say(`     person-level cluster bootstrap, ${bsB} draws           ${pc(bsLo)}-${pc(bsHi)}%  <- report this`);
-say('   The pairs are clustered within people, so the Wilson interval understates the width.\n');
+say(`     stratified PSU resampling (design-based)               ${pc(dLo)}-${pc(dHi)}%`);
+say(`     survey-weighted point estimate                          ${pc(wShare)}%`);
+say(`   Leave-one-rule-out range                                  ${pc(looLo)}-${pc(looHi)}%`);
+leaveOneOut.slice().sort((a, c) => a.share - c.share).forEach((x) => {
+  say(`     without ${x.drop.padEnd(30)} ${pc(x.share).padStart(6)}%`);
+});
+say('   Two rules supply most of the denominator, so the pooled figure is reported with the');
+say('   range it takes when each rule in turn is removed. The conclusion holds across it.\n');
 
 // --- 2. 두 축의 겹침: 조건축 판정 중 약물 단독 축이 못 보는 몫 ---------------------------------
 const b = people.filter((p) => p.asWritten.length > 0);
@@ -222,6 +281,7 @@ const result = {
   observable: data.mappedConditions.length, total: pim.table2.length,
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
+  designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
   phiCI: [phiLo, phiHi], gapCI: [gapLo, gapHi],
   conditionAxis: b.length, drugOnlyAxis: a.length, conditionAxisOnly: onlyB,
   phi: phiCoef, dominantPair: topKey, dominantN: topN, floor: survives,
