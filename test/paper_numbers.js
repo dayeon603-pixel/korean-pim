@@ -96,13 +96,13 @@ console.log('\nSubstrate ablation on real people (NHANES 2017-2018, unweighted)'
 // is patient-level and carries both axes, so the effect of deleting the condition can be measured.
 const abl = require('../analysis/ablation.js');
 check('cohort size', abl.N, 1345);
-check('rule-person pairs named once the condition is deleted', abl.pooledX, 1524);
-check('  named by the rules as written', abl.pooledXY, 326);
-check('  share the criterion actually names', 100 * abl.pooledXY / abl.pooledX, 21.4, 0.05);
+check('rule-person pairs named once the condition is deleted', abl.pooledX, 1545);
+check('  named by the rules as written', abl.pooledXY, 332);
+check('  share the criterion actually names', 100 * abl.pooledXY / abl.pooledX, 21.5, 0.05);
 const [alo, ahi] = wilson(abl.pooledX - abl.pooledXY, abl.pooledX);
-check('  share it does not name', 100 * (1 - abl.pooledXY / abl.pooledX), 78.6, 0.05);
-check('    95% CI low', 100 * alo, 76.5, 0.05);
-check('    95% CI high', 100 * ahi, 80.6, 0.05);
+check('  share it does not name', 100 * (1 - abl.pooledXY / abl.pooledX), 78.5, 0.05);
+check('    95% CI low', 100 * alo, 76.4, 0.05);
+check('    95% CI high', 100 * ahi, 80.5, 0.05);
 check('  enlargement factor', abl.pooledX / abl.pooledXY, 4.7, 0.05);
 // WITHDRAWN 2026-09-06. Comparing the condition rules against the 2022 drug-only criteria does not
 // isolate the condition, because the two artefacts also carry different drug lists. Deleting the
@@ -115,16 +115,16 @@ check('  enlargement factor', abl.pooledX / abl.pooledXY, 4.7, 0.05);
 // people, so it is also computed by resampling people. The two agree, which is the point of
 // reporting it: most people contribute one pair, so the clustering does not inflate the width.
 const ci = require('../analysis/ablation_result.json');
-check('cluster bootstrap CI low', 100 * ci.notNamedCI[0], 76.5, 0.05);
-check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 80.6, 0.05);
+check('cluster bootstrap CI low', 100 * ci.notNamedCI[0], 76.4, 0.05);
+check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 80.5, 0.05);
 
 // Three sensitivity analyses the manuscript reports, because the pooled figure is exposure-weighted
 // and two rules supply most of the denominator.
-check('design-based CI low (PSU within strata)', 100 * ci.designCI[0], 77.5, 0.05);
-check('design-based CI high', 100 * ci.designCI[1], 79.7, 0.05);
+check('design-based CI low (PSU within strata)', 100 * ci.designCI[0], 77.4, 0.05);
+check('design-based CI high', 100 * ci.designCI[1], 79.6, 0.05);
 check('survey-weighted point estimate', 100 * ci.weightedShare, 81.6, 0.05);
-check('leave-one-rule-out low', 100 * ci.looRange[0], 66.6, 0.05);
-check('leave-one-rule-out high', 100 * ci.looRange[1], 86.7, 0.05);
+check('leave-one-rule-out low', 100 * ci.looRange[0], 66.5, 0.05);
+check('leave-one-rule-out high', 100 * ci.looRange[1], 86.9, 0.05);
 check('  the conclusion holds across the whole range', ci.looRange[0] > 0.5, true);
 check('leave-one-out floor is driven by', ci.looFloorRule, 'Hyponatraemia');
 check('leave-one-out ceiling is driven by', ci.looCeilingRule, 'Diabetes');
@@ -140,14 +140,14 @@ check('    which rule', ci.ppv[ci.ppv.length - 1].label, 'Hypertension');
 // The resolution rate is scope, not attrition: the dictionary was written only for the classes the
 // rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
 check('ingredient mentions', ci.mentions.total, 7161);
-check('  resolved', ci.mentions.resolved, 2469);
-check('    as a percentage', 100 * ci.mentions.resolved / ci.mentions.total, 34.5, 0.05);
-check('  unresolved that name a drug a rule targets', ci.mentions.unresolvedRuleRelevant, 9);
-check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleRelevant / ci.mentions.unresolved, 0.2, 0.05);
+check('  resolved', ci.mentions.resolved, 2502);
+check('    as a percentage', 100 * ci.mentions.resolved / ci.mentions.total, 34.9, 0.05);
+check('  unresolved that name a drug a rule targets', ci.mentions.unresolvedRuleRelevant, 14);
+check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleRelevant / ci.mentions.unresolved, 0.3, 0.05);
 // Examined in full rather than sampled, because a sample cannot establish that non-resolution is
 // not a parsing failure on salt, brand or combination strings.
-check('  distinct unresolved strings, all examined', ci.mentions.distinctUnresolved, 332);
-check('    hiding a resolvable ingredient name', ci.mentions.hidingAResolvableName, 2);
+check('  distinct unresolved strings, all examined', ci.mentions.distinctUnresolved, 316);
+check('    hiding a resolvable ingredient name', ci.mentions.hidingAResolvableName, 4);
 check('    carrying a salt suffix', ci.mentions.saltForms, 10);
 // A combination left unparsed would drop out of both arms and understate the result, so the
 // separator assumption is checked rather than asserted.
@@ -174,12 +174,12 @@ check('  unbound though an ordinary diagnosis', scr.unboundDiagnoses, 5);
 // The pooled figure is a pair-level quantity and the manuscript says so. The person-level figure is
 // what "the named population" means, and the pair-level fold change is the reciprocal of the
 // pair-level share, so the manuscript reports one of the two, not both.
-check('people named as written', ci.personNamedAsWritten, 280);
-check('people named with the condition deleted', ci.personNamedDeleted, 880);
-check('  person-level enlargement', ci.personNamedDeleted / ci.personNamedAsWritten, 3.14, 0.005);
-check('  person-level share not carrying', 100 * ci.personShareNotNamed, 68.2, 0.05);
+check('people named as written', ci.personNamedAsWritten, 285);
+check('people named with the condition deleted', ci.personNamedDeleted, 892);
+check('  person-level enlargement', ci.personNamedDeleted / ci.personNamedAsWritten, 3.13, 0.005);
+check('  person-level share not carrying', 100 * ci.personShareNotNamed, 68.0, 0.05);
 check('    95% CI low', 100 * ci.personCI[0], 64.9, 0.05);
-check('    95% CI high', 100 * ci.personCI[1], 71.5, 0.05);
+check('    95% CI high', 100 * ci.personCI[1], 71.4, 0.05);
 check('  pair fold change is the reciprocal of the pair share',
   Math.abs((ci.pooledX / ci.pooledXY) - 1 / (ci.pooledXY / ci.pooledX)) < 1e-9, true);
 
@@ -189,15 +189,15 @@ check('cycle', rep.cycle || rep.source.slice(7, 16), '2015-2016');
 check('cohort size', rep.n, 1205);
 check('share not named', 100 * rep.notNamed, 78.1, 0.05);
 check('  95% CI low', 100 * rep.notNamedCI[0], 76.0, 0.05);
-check('  95% CI high', 100 * rep.notNamedCI[1], 80.3, 0.05);
+check('  95% CI high', 100 * rep.notNamedCI[1], 80.2, 0.05);
 check('enlargement factor', rep.pooledX / rep.pooledXY, 4.6, 0.05);
-check('design-based CI low', 100 * rep.designCI[0], 76.8, 0.05);
-check('design-based CI high', 100 * rep.designCI[1], 79.7, 0.05);
+check('design-based CI low', 100 * rep.designCI[0], 76.7, 0.05);
+check('design-based CI high', 100 * rep.designCI[1], 79.8, 0.05);
 check('survey-weighted point estimate', 100 * rep.weightedShare, 81.4, 0.05);
 check('leave-one-rule-out low', 100 * rep.looRange[0], 68.3, 0.05);
 check('leave-one-rule-out high', 100 * rep.looRange[1], 85.4, 0.05);
-check('person-level share not carrying', 100 * rep.personShareNotNamed, 69.6, 0.05);
-check('  person-level enlargement', rep.personNamedDeleted / rep.personNamedAsWritten, 3.29, 0.005);
+check('person-level share not carrying', 100 * rep.personShareNotNamed, 69.4, 0.05);
+check('  person-level enlargement', rep.personNamedDeleted / rep.personNamedAsWritten, 3.26, 0.005);
 // Every headline figure falls inside the other cycle's interval.
 check('2017 estimate inside the 2015 interval',
   100 * ci.notNamed >= 100 * rep.notNamedCI[0] && 100 * ci.notNamed <= 100 * rep.notNamedCI[1] + 0.0, true);

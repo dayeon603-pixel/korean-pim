@@ -93,7 +93,15 @@ const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxi
   'glyburide', 'chlorpropamide', 'prednisone', 'prednisolone', 'methylprednisolone', 'dexamethasone',
   'hydrocortisone', 'furosemide', 'hydrochlorothiazide', 'chlorthalidone', 'torsemide', 'bumetanide',
   'spironolactone', 'metoprolol', 'atenolol', 'carvedilol', 'propranolol', 'bisoprolol', 'nebivolol',
-  'nadolol', 'sotalol'];
+  'nadolol', 'sotalol',
+  // 2026-09-06: 계열 구성원 보강과 함께 감사 목록도 넓힌다. 좁은 목록으로 감사하면
+  // 사전에 없는 구성원을 감사도 놓친다.
+  'metolazone', 'indapamide', 'labetalol', 'acebutolol', 'etoricoxib', 'desipramine',
+  'imipramine', 'iloperidone', 'prochlorperazine', 'fludrocortisone', 'betamethasone',
+  'triamcinolone', 'desvenlafaxine', 'vilazodone', 'vortioxetine', 'milnacipran',
+  'duloxetine', 'venlafaxine', 'mirtazapine', 'trazodone', 'sertraline', 'citalopram',
+  'escitalopram', 'fluoxetine', 'quetiapine', 'olanzapine', 'risperidone', 'haloperidone',
+  'theophylline', 'pioglitazone', 'verapamil', 'diltiazem', 'clopidogrel', 'aspirin'];
 // 복합제가 통째로 미해상 처리되면 두 축 모두에서 사라지고, 그러면 결과가 과소추정된다.
 // NHANES 는 복합제를 "성분A; 성분B" 로 적는다. 그 가정이 맞는지 다른 구분자를 찾아 확인한다.
 const combo = { rawStrings: 0, distinct: 0, semicolon: 0, otherSeparator: 0, constituents: 0 };

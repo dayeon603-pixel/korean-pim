@@ -14,7 +14,7 @@
   {
    "id": "hf",
    "label": "Heart failure",
-   "x": 187,
+   "x": 189,
    "xy": 22
   },
   {
@@ -32,13 +32,13 @@
   {
    "id": "ckd",
    "label": "Chronic kidney disease",
-   "x": 115,
+   "x": 116,
    "xy": 9
   },
   {
    "id": "hyponatremia",
    "label": "Hyponatraemia",
-   "x": 607,
+   "x": 613,
    "xy": 20
   },
   {
@@ -50,81 +50,81 @@
   {
    "id": "dm",
    "label": "Diabetes",
-   "x": 498,
-   "xy": 190
+   "x": 510,
+   "xy": 196
   }
  ],
- "pooledX": 1524,
- "pooledXY": 326,
- "notNamed": 0.7860892388451444,
+ "pooledX": 1545,
+ "pooledXY": 332,
+ "notNamed": 0.7851132686084142,
  "notNamedCI": [
-  0.7650918635170604,
-  0.8059100067159167
+  0.7641693811074919,
+  0.8048624440179143
  ],
  "bootstrapDraws": 2000,
  "designCI": [
-  0.774637127578304,
-  0.7973684210526316
+  0.774330900243309,
+  0.7964148527528809
  ],
- "weightedShare": 0.8159236495571794,
+ "weightedShare": 0.8162805210935473,
  "leaveOneOut": [
   {
    "drop": "Insomnia",
-   "share": 0.7899603698811096
+   "share": 0.7889250814332247
   },
   {
    "drop": "Heart failure",
-   "share": 0.7726252804786836
+   "share": 0.7713864306784661
   },
   {
    "drop": "Hypertension",
-   "share": 0.8223314606741573
+   "share": 0.8207612456747405
   },
   {
    "drop": "Stroke, secondary prevention",
-   "share": 0.7861842105263158
+   "share": 0.7852044127190136
   },
   {
    "drop": "Chronic kidney disease",
-   "share": 0.7750177430801988
+   "share": 0.7739678096571029
   },
   {
    "drop": "Hyponatraemia",
-   "share": 0.6663031624863687
+   "share": 0.6652360515021459
   },
   {
    "drop": "COPD",
-   "share": 0.7876397107166337
+   "share": 0.7866407263294423
   },
   {
    "drop": "Diabetes",
-   "share": 0.8674463937621832
+   "share": 0.8685990338164251
   }
  ],
  "looRange": [
-  0.6663031624863687,
-  0.8674463937621832
+  0.6652360515021459,
+  0.8685990338164251
  ],
  "ppv": [
   {
    "label": "Hyponatraemia",
-   "x": 607,
-   "ppv": 0.032948929159802305
+   "x": 613,
+   "ppv": 0.03262642740619902
   },
   {
    "label": "Chronic kidney disease",
-   "x": 115,
-   "ppv": 0.0782608695652174
+   "x": 116,
+   "ppv": 0.07758620689655173
   },
   {
    "label": "Heart failure",
-   "x": 187,
-   "ppv": 0.11764705882352941
+   "x": 189,
+   "ppv": 0.1164021164021164
   },
   {
    "label": "Diabetes",
-   "x": 498,
-   "ppv": 0.3815261044176707
+   "x": 510,
+   "ppv": 0.3843137254901961
   },
   {
    "label": "Hypertension",
@@ -135,11 +135,11 @@
  "ppvMinExposed": 50,
  "mentions": {
   "total": 7161,
-  "resolved": 2469,
-  "unresolved": 4692,
-  "unresolvedRuleRelevant": 9,
-  "distinctUnresolved": 332,
-  "hidingAResolvableName": 2,
+  "resolved": 2502,
+  "unresolved": 4659,
+  "unresolvedRuleRelevant": 14,
+  "distinctUnresolved": 316,
+  "hidingAResolvableName": 4,
   "saltForms": 10
  },
  "combo": {
@@ -149,28 +149,28 @@
   "otherSeparator": 0,
   "constituents": 693
  },
- "personNamedAsWritten": 280,
- "personNamedDeleted": 880,
- "personShareNotNamed": 0.6818181818181819,
+ "personNamedAsWritten": 285,
+ "personNamedDeleted": 892,
+ "personShareNotNamed": 0.6804932735426009,
  "personCI": [
-  0.6490610328638498,
-  0.7145969498910676
+  0.6487119437939111,
+  0.7136612021857924
  ],
  "looFloorRule": "Hyponatraemia",
  "looCeilingRule": "Diabetes",
  "phiCI": [
-  0.11319810570618997,
-  0.22389345500264615
+  0.11577211870645929,
+  0.22529427359202475
  ],
  "gapCI": [
-  0.09144981412639405,
-  0.12565055762081784
+  0.09219330855018587,
+  0.12639405204460966
  ],
- "conditionAxis": 280,
- "drugOnlyAxis": 439,
- "conditionAxisOnly": 146,
- "phi": 0.16641031011817153,
+ "conditionAxis": 285,
+ "drugOnlyAxis": 445,
+ "conditionAxisOnly": 147,
+ "phi": 0.16900124332544741,
  "dominantPair": "당뇨 + 베타차단제",
  "dominantN": 115,
- "floor": 40
+ "floor": 42
 }

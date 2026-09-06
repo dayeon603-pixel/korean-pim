@@ -40,6 +40,30 @@ const MAP = {
   meloxicam: ['nsaid', 'nsaid'],
   nabumetone: ['nsaid', 'nsaid', 'nsaid_ns'],
   celecoxib: ['cox2', 'cox2'],
+  etoricoxib: ['cox2', 'cox2'],
+
+  // ── 2026-09-06 계열 구성원 보강 ────────────────────────────────────────────
+  // 사전은 온톨로지가 아니라 손으로 적은 평면 목록이라, 규칙이 지목하는 계열의 구성원이
+  // 빠질 수 있다. 미해상 문자열 332개를 전수로 훑어 관측 가능한 조건의 규칙이 쓰는 계열
+  // (이뇨제·베타차단제·COX-2·부신피질호르몬·항정신병약·항우울제·삼환계)에 속하는데
+  // 빠져 있던 것을 채운다. 국소·점안·귀 제제는 전신 노출이 다르므로 계속 제외한다.
+  // 이름 변이. 표1은 성분키를 glibenclamide 로 두었고 미국 자료는 glyburide 로 적는다.
+  // 표준 온톨로지를 썼다면 같은 개념으로 묶였을 것이고, 문자열 대조에서는 놓친다.
+  glyburide: ['su', 'sulfonylurea'],
+  metolazone: ['diuretic', 'diuretic'],
+  labetalol: ['bb', 'betablocker'],
+  acebutolol: ['bb', 'betablocker'],
+  hydrocortisone: ['cortico', 'corticosteroid'],
+  fludrocortisone: ['cortico', 'corticosteroid'],
+  betamethasone: ['cortico', 'corticosteroid'],
+  triamcinolone: ['cortico', 'corticosteroid'],
+  desvenlafaxine: ['snri', 'antidepressant'],
+  milnacipran: ['snri', 'antidepressant'],
+  vilazodone: ['antidep_other', 'antidepressant'],
+  vortioxetine: ['antidep_other', 'antidepressant'],
+  desipramine: ['tca', 'antidepressant', 'tca'],
+  iloperidone: ['antipsych', 'antipsychotic'],
+  prochlorperazine: ['antipsych', 'antipsychotic'],
 
   // ── 베타차단제 (표2: 당뇨 저혈당 은폐) ───────────────────────────────
   metoprolol: ['bb', 'betablocker'], carvedilol: ['bb', 'betablocker'],
