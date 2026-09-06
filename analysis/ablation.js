@@ -81,6 +81,27 @@ function clusterBootstrap(units, stat, B = 2000, seed = 20260906) {
   return [out[Math.floor(0.025 * out.length)], out[Math.floor(0.975 * out.length)], out.length];
 }
 
+// 해상되지 않은 성분명이 무엇인지 감사한다. "33.8% 만 해상됐다"는 소모(attrition)처럼 들리지만,
+// 사전은 규칙이 지목하는 계열만 담도록 의도적으로 좁게 만들었다. 남은 것이 어느 규칙도 지목하지
+// 않는 약이라면 그것은 소모가 아니라 범위다. 규칙이 지목하는 성분명 토큰을 미해상 목록에서 찾아 센다.
+const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxicam', 'ketorolac',
+  'sulindac', 'oxaprozin', 'diflunisal', 'alprazolam', 'lorazepam', 'clonazepam', 'diazepam',
+  'temazepam', 'triazolam', 'zolpidem', 'zaleplon', 'eszopiclone', 'oxycodone', 'hydrocodone',
+  'morphine', 'tramadol', 'codeine', 'fentanyl', 'hydromorphone', 'methadone', 'amitriptyline',
+  'nortriptyline', 'doxepin', 'imipramine', 'paroxetine', 'diphenhydramine', 'hydroxyzine',
+  'meclizine', 'promethazine', 'oxybutynin', 'tolterodine', 'solifenacin', 'verapamil', 'diltiazem',
+  'glyburide', 'chlorpropamide', 'prednisone', 'prednisolone', 'methylprednisolone', 'dexamethasone',
+  'hydrocortisone', 'furosemide', 'hydrochlorothiazide', 'chlorthalidone', 'torsemide', 'bumetanide',
+  'spironolactone', 'metoprolol', 'atenolol', 'carvedilol', 'propranolol', 'bisoprolol', 'nebivolol',
+  'nadolol', 'sotalol'];
+const mentions = { total: 0, resolved: 0, unresolved: 0, unresolvedRuleRelevant: 0 };
+data.people.forEach((p) => p.drugs.flatMap(split).forEach((i) => {
+  mentions.total += 1;
+  if (toDrug(i)) { mentions.resolved += 1; return; }
+  mentions.unresolved += 1;
+  if (RULE_TOKENS.some((t) => i.includes(t))) mentions.unresolvedRuleRelevant += 1;
+}));
+
 const say = require.main === module ? console.log : () => {};
 
 // ---------------------------------------------------------------------------------------------
@@ -301,6 +322,14 @@ say('   rate. Here the two differ by 0.3 to 10.5 percentage points, so the delet
 say('   reports very nearly the population figure and no longer distinguishes the condition');
 say('   group from everyone else. It still returns a number; it has stopped measuring.\n');
 
+say('Drug-name resolution');
+say(`   ${mentions.resolved} of ${mentions.total} ingredient mentions resolved `
+  + `(${pc(mentions.resolved / mentions.total)}%)`);
+say(`   of the ${mentions.unresolved} unresolved, ${mentions.unresolvedRuleRelevant} `
+  + `(${pc(mentions.unresolvedRuleRelevant / mentions.unresolved)}%) name a drug any rule targets`);
+say('   The rest are drugs no rule names, chiefly statins, renin-angiotensin agents, metformin,');
+say('   levothyroxine and proton-pump inhibitors, which could not have entered either arm.\n');
+
 say('Limits: 8 of 18 conditions observable, so the condition-axis counts are a lower bound;');
 say('self-reported 30-day use, not claims; unweighted, so these describe this cohort and are');
 say('not United States estimates; NHANES is not a substrate any national indicator runs on.');
@@ -312,7 +341,7 @@ const result = {
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
-  ppv, ppvMinExposed: MIN_EXPOSED,
+  ppv, ppvMinExposed: MIN_EXPOSED, mentions,
   personNamedAsWritten, personNamedDeleted,
   personShareNotNamed: 1 - personNamedAsWritten / personNamedDeleted, personCI: [pLo, pHi],
   looFloorRule: leaveOneOut.reduce((a, c) => (c.share < a.share ? c : a)).drop,

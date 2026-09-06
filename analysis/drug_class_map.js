@@ -32,7 +32,12 @@ const MAP = {
   // ── 말초 알파-1 차단제 (표2: 낙상) ───────────────────────────────────
   // 탐스로신·실로도신·나프토피딜은 요로선택적이라 제외한다. 아래 UROSELECTIVE 참조.
 
-  // ── NSAID (표2: 심부전·궤양·만성콩팥병 / 국가 기준: 비선택적 NSAID) ── etodolac: ['nsaid', 'nsaid', 'nsaid_ns'],
+  // ── NSAID (표2: 심부전·궤양·만성콩팥병 / 국가 기준: 비선택적 NSAID) ────────────
+  // 2026-09-06: etodolac 항목이 위 주석 줄에 삼켜져 비활성 상태였다. 줄을 나눠 되살린다.
+  etodolac: ['nsaid', 'nsaid', 'nsaid_ns'],
+  // meloxicam 은 선택적 COX-2 경향이 있어 nsaid_ns 태그는 주지 않는다. 궤양 규칙(비선택적
+  // NSAID)에는 걸리지 않고 심부전·고혈압·만성콩팥병 규칙(NSAID 일반)에만 걸린다.
+  meloxicam: ['nsaid', 'nsaid'],
   nabumetone: ['nsaid', 'nsaid', 'nsaid_ns'],
   celecoxib: ['cox2', 'cox2'],
 

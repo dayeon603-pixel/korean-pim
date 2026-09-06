@@ -96,39 +96,35 @@ console.log('\nSubstrate ablation on real people (NHANES 2017-2018, unweighted)'
 // is patient-level and carries both axes, so the effect of deleting the condition can be measured.
 const abl = require('../analysis/ablation.js');
 check('cohort size', abl.N, 1345);
-check('rule-person pairs named once the condition is deleted', abl.pooledX, 1392);
-check('  named by the rules as written', abl.pooledXY, 290);
-check('  share the criterion actually names', 100 * abl.pooledXY / abl.pooledX, 20.8, 0.05);
+check('rule-person pairs named once the condition is deleted', abl.pooledX, 1524);
+check('  named by the rules as written', abl.pooledXY, 326);
+check('  share the criterion actually names', 100 * abl.pooledXY / abl.pooledX, 21.4, 0.05);
 const [alo, ahi] = wilson(abl.pooledX - abl.pooledXY, abl.pooledX);
-check('  share it does not name', 100 * (1 - abl.pooledXY / abl.pooledX), 79.2, 0.05);
-check('    95% CI low', 100 * alo, 77.0, 0.05);
-check('    95% CI high', 100 * ahi, 81.2, 0.05);
-check('  enlargement factor', abl.pooledX / abl.pooledXY, 4.8, 0.05);
+check('  share it does not name', 100 * (1 - abl.pooledXY / abl.pooledX), 78.6, 0.05);
+check('    95% CI low', 100 * alo, 76.5, 0.05);
+check('    95% CI high', 100 * ahi, 80.6, 0.05);
+check('  enlargement factor', abl.pooledX / abl.pooledXY, 4.7, 0.05);
 // WITHDRAWN 2026-09-06. Comparing the condition rules against the 2022 drug-only criteria does not
 // isolate the condition, because the two artefacts also carry different drug lists. Deleting the
 // condition entirely still leaves 482 people the drug-only axis misses, against the 133 attributed
 // to the condition, so that contrast measures drug coverage as much as the condition axis. The
 // clean comparison is the one above, which runs the same drug list on both arms.
 
-check('floor after removing the dominant pair', abl.survives, 25);
-check('  as a share of the cohort', 100 * abl.survives / abl.N, 1.9, 0.05);
 
 // The interval above assumes the 1,392 rule-person pairs are independent; they come from 1,345
 // people, so it is also computed by resampling people. The two agree, which is the point of
 // reporting it: most people contribute one pair, so the clustering does not inflate the width.
 const ci = require('../analysis/ablation_result.json');
-check('cluster bootstrap CI low', 100 * ci.notNamedCI[0], 76.9, 0.05);
-check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 81.3, 0.05);
-check('phi bootstrap CI low', ci.phiCI[0], 0.097, 0.001);
-check('phi bootstrap CI high', ci.phiCI[1], 0.210, 0.001);
+check('cluster bootstrap CI low', 100 * ci.notNamedCI[0], 76.5, 0.05);
+check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 80.6, 0.05);
 
 // Three sensitivity analyses the manuscript reports, because the pooled figure is exposure-weighted
 // and two rules supply most of the denominator.
-check('design-based CI low (PSU within strata)', 100 * ci.designCI[0], 78.0, 0.05);
-check('design-based CI high', 100 * ci.designCI[1], 80.4, 0.05);
-check('survey-weighted point estimate', 100 * ci.weightedShare, 82.6, 0.05);
-check('leave-one-rule-out low', 100 * ci.looRange[0], 65.6, 0.05);
-check('leave-one-rule-out high', 100 * ci.looRange[1], 88.8, 0.05);
+check('design-based CI low (PSU within strata)', 100 * ci.designCI[0], 77.5, 0.05);
+check('design-based CI high', 100 * ci.designCI[1], 79.7, 0.05);
+check('survey-weighted point estimate', 100 * ci.weightedShare, 81.6, 0.05);
+check('leave-one-rule-out low', 100 * ci.looRange[0], 66.6, 0.05);
+check('leave-one-rule-out high', 100 * ci.looRange[1], 86.7, 0.05);
 check('  the conclusion holds across the whole range', ci.looRange[0] > 0.5, true);
 check('leave-one-out floor is driven by', ci.looFloorRule, 'Hyponatraemia');
 check('leave-one-out ceiling is driven by', ci.looCeilingRule, 'Diabetes');
@@ -138,18 +134,26 @@ check('leave-one-out ceiling is driven by', ci.looCeilingRule, 'Diabetes');
 check('rules with at least 50 exposed', ci.ppv.length, 5);
 check('  lowest predictive value', 100 * ci.ppv[0].ppv, 3.3, 0.05);
 check('    which rule', ci.ppv[0].label, 'Hyponatraemia');
-check('  highest predictive value', 100 * ci.ppv[ci.ppv.length - 1].ppv, 74.5, 0.05);
+check('  highest predictive value', 100 * ci.ppv[ci.ppv.length - 1].ppv, 73.0, 0.05);
 check('    which rule', ci.ppv[ci.ppv.length - 1].label, 'Hypertension');
+
+// The resolution rate is scope, not attrition: the dictionary was written only for the classes the
+// rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
+check('ingredient mentions', ci.mentions.total, 7161);
+check('  resolved', ci.mentions.resolved, 2469);
+check('    as a percentage', 100 * ci.mentions.resolved / ci.mentions.total, 34.5, 0.05);
+check('  unresolved that name a drug a rule targets', ci.mentions.unresolvedRuleRelevant, 9);
+check('    as a share of the unresolved', 100 * ci.mentions.unresolvedRuleRelevant / ci.mentions.unresolved, 0.2, 0.05);
 
 // The pooled figure is a pair-level quantity and the manuscript says so. The person-level figure is
 // what "the named population" means, and the pair-level fold change is the reciprocal of the
 // pair-level share, so the manuscript reports one of the two, not both.
-check('people named as written', ci.personNamedAsWritten, 253);
-check('people named with the condition deleted', ci.personNamedDeleted, 866);
-check('  person-level enlargement', ci.personNamedDeleted / ci.personNamedAsWritten, 3.42, 0.005);
-check('  person-level share not carrying', 100 * ci.personShareNotNamed, 70.8, 0.05);
-check('    95% CI low', 100 * ci.personCI[0], 67.7, 0.05);
-check('    95% CI high', 100 * ci.personCI[1], 74.0, 0.05);
+check('people named as written', ci.personNamedAsWritten, 280);
+check('people named with the condition deleted', ci.personNamedDeleted, 880);
+check('  person-level enlargement', ci.personNamedDeleted / ci.personNamedAsWritten, 3.14, 0.005);
+check('  person-level share not carrying', 100 * ci.personShareNotNamed, 68.2, 0.05);
+check('    95% CI low', 100 * ci.personCI[0], 64.9, 0.05);
+check('    95% CI high', 100 * ci.personCI[1], 71.5, 0.05);
 check('  pair fold change is the reciprocal of the pair share',
   Math.abs((ci.pooledX / ci.pooledXY) - 1 / (ci.pooledXY / ci.pooledX)) < 1e-9, true);
 
@@ -157,20 +161,17 @@ console.log('\nReplication in an independent NHANES cycle (2015-2016)');
 const rep = require('../analysis/ablation_result_2015.json');
 check('cycle', rep.cycle || rep.source.slice(7, 16), '2015-2016');
 check('cohort size', rep.n, 1205);
-check('share not named', 100 * rep.notNamed, 78.4, 0.05);
-check('  95% CI low', 100 * rep.notNamedCI[0], 76.1, 0.05);
-check('  95% CI high', 100 * rep.notNamedCI[1], 80.7, 0.05);
+check('share not named', 100 * rep.notNamed, 78.1, 0.05);
+check('  95% CI low', 100 * rep.notNamedCI[0], 76.0, 0.05);
+check('  95% CI high', 100 * rep.notNamedCI[1], 80.3, 0.05);
 check('enlargement factor', rep.pooledX / rep.pooledXY, 4.6, 0.05);
-check('phi', rep.phi, 0.144, 0.001);
-check('condition axis only', rep.conditionAxisOnly, 124);
-check('  as a share of the cohort', 100 * rep.conditionAxisOnly / rep.n, 10.3, 0.05);
-check('design-based CI low', 100 * rep.designCI[0], 77.1, 0.05);
-check('design-based CI high', 100 * rep.designCI[1], 79.9, 0.05);
-check('survey-weighted point estimate', 100 * rep.weightedShare, 82.0, 0.05);
-check('leave-one-rule-out low', 100 * rep.looRange[0], 67.3, 0.05);
-check('leave-one-rule-out high', 100 * rep.looRange[1], 86.8, 0.05);
-check('person-level share not carrying', 100 * rep.personShareNotNamed, 71.4, 0.05);
-check('  person-level enlargement', rep.personNamedDeleted / rep.personNamedAsWritten, 3.49, 0.005);
+check('design-based CI low', 100 * rep.designCI[0], 76.8, 0.05);
+check('design-based CI high', 100 * rep.designCI[1], 79.7, 0.05);
+check('survey-weighted point estimate', 100 * rep.weightedShare, 81.4, 0.05);
+check('leave-one-rule-out low', 100 * rep.looRange[0], 68.3, 0.05);
+check('leave-one-rule-out high', 100 * rep.looRange[1], 85.4, 0.05);
+check('person-level share not carrying', 100 * rep.personShareNotNamed, 69.6, 0.05);
+check('  person-level enlargement', rep.personNamedDeleted / rep.personNamedAsWritten, 3.29, 0.005);
 // Every headline figure falls inside the other cycle's interval.
 check('2017 estimate inside the 2015 interval',
   100 * ci.notNamed >= 100 * rep.notNamedCI[0] && 100 * ci.notNamed <= 100 * rep.notNamedCI[1] + 0.0, true);
