@@ -565,8 +565,14 @@ if (!fs.existsSync(MS)) {
   const wrongFam = famPhrases.filter((w) => WORDS[w] !== undefined && WORDS[w] !== scan.domains.length);
   check('spelled family counts agree with the scan', wrongFam.length ? wrongFam.join(',') : 'all agree', 'all agree');
   /** Every bracketed citation must resolve to a reference that exists. */
+  // build() renumbers by first appearance, so the source's own numbers need only be internally
+  // consistent: every citation must name a reference that exists, and every reference must be cited.
+  // Comparing against a count instead of the numbers themselves breaks the moment one is retired.
+  const refNums = new Set([...raw.matchAll(/^\s*"(\d+)\. /gm)].map((m) => parseInt(m[1], 10)));
   const cites = new Set([...prose.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map((x) => parseInt(x, 10))));
-  const bad = [...cites].filter((n) => n < 1 || n > refCount);
+  const bad = [...cites].filter((n) => !refNums.has(n));
+  const orphan = [...refNums].filter((n) => !cites.has(n));
+  check('every reference is cited', orphan.length ? orphan.join(',') : 'all cited', 'all cited');
   check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
   // Vancouver numbering: references must run in order of first citation. build() renumbers at
   // render time, so a failure here means the renumbering itself broke.
