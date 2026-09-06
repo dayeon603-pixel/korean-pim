@@ -503,7 +503,10 @@ if (!fs.existsSync(MS)) {
   const raw = whole.slice(from > 0 ? from : 0, to > 0 ? to : whole.length);
   // Count references before collapsing line breaks: the collapse destroys line starts.
   const refCount = (raw.match(/^\s*"\d+\. /gm) || []).length;
-  const prose = raw.replace(/\s*"\n\s*"/g, ' ');
+  // Python concatenates adjacent string literals with nothing between them, and each continued
+  // literal already carries its own trailing space. Joining with a space here would not be the
+  // text the reader sees, and would hide a hyphenated word broken across the wrap.
+  const prose = raw.replace(/\s*"\n\s*"/g, '');
   const WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
   /** Every "<word> national datasets" phrase must equal the number of verified feeds. */
   const dsPhrases = [...prose.matchAll(/(\w+) national datasets/g)].map((m) => m[1].toLowerCase());
@@ -521,6 +524,10 @@ if (!fs.existsSync(MS)) {
   const cites = new Set([...prose.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map((x) => parseInt(x, 10))));
   const bad = [...cites].filter((n) => n < 1 || n > refCount);
   check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
+  // Rewrapping a paragraph can break a hyphenated word across two string literals, which renders
+  // as "self- reported" in Word. Catch it here rather than in a reviewer's copy.
+  const broken = [...new Set((prose.match(/\w+- \w+/g) || []))];
+  check('no hyphenated word split across a wrap', broken.length ? broken.join(', ') : 'none', 'none');
   const back = WITHDRAWN.filter((w) => prose.includes(w));
   check('withdrawn scan figures absent', back.length ? back.join(', ') : 'none present', 'none present');
 }
