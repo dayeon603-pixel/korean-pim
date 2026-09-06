@@ -130,6 +130,16 @@ check('survey-weighted point estimate', 100 * ci.weightedShare, 82.6, 0.05);
 check('leave-one-rule-out low', 100 * ci.looRange[0], 65.6, 0.05);
 check('leave-one-rule-out high', 100 * ci.looRange[1], 88.8, 0.05);
 check('  the conclusion holds across the whole range', ci.looRange[0] > 0.5, true);
+check('leave-one-out floor is driven by', ci.looFloorRule, 'Hyponatraemia');
+check('leave-one-out ceiling is driven by', ci.looCeilingRule, 'Diabetes');
+// The deletion cost is one minus the drug's predictive value for the condition, so it is not a
+// constant: it is measured rule by rule rather than assumed. This is the answer to the objection
+// that drugs are proxies for their indications.
+check('rules with at least 50 exposed', ci.ppv.length, 5);
+check('  lowest predictive value', 100 * ci.ppv[0].ppv, 3.3, 0.05);
+check('    which rule', ci.ppv[0].label, 'Hyponatraemia');
+check('  highest predictive value', 100 * ci.ppv[ci.ppv.length - 1].ppv, 74.5, 0.05);
+check('    which rule', ci.ppv[ci.ppv.length - 1].label, 'Hypertension');
 
 console.log('\nReplication in an independent NHANES cycle (2015-2016)');
 const rep = require('../analysis/ablation_result_2015.json');

@@ -105,6 +105,36 @@
   0.6560509554140128,
   0.8881431767337807
  ],
+ "ppv": [
+  {
+   "label": "Hyponatraemia",
+   "x": 607,
+   "ppv": 0.032948929159802305
+  },
+  {
+   "label": "Chronic kidney disease",
+   "x": 70,
+   "ppv": 0.11428571428571428
+  },
+  {
+   "label": "Heart failure",
+   "x": 145,
+   "ppv": 0.1310344827586207
+  },
+  {
+   "label": "Diabetes",
+   "x": 498,
+   "ppv": 0.3815261044176707
+  },
+  {
+   "label": "Hypertension",
+   "x": 55,
+   "ppv": 0.7454545454545455
+  }
+ ],
+ "ppvMinExposed": 50,
+ "looFloorRule": "Hyponatraemia",
+ "looCeilingRule": "Diabetes",
  "phiCI": [
   0.09703022596815729,
   0.2101987587024681

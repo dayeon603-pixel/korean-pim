@@ -192,6 +192,16 @@ function weightedShareNotNamed(us) {
 const [dLo, dHi] = designBootstrap(units, shareNotNamed);
 const wShare = weightedShareNotNamed(units);
 
+// 삭제 비용은 상수가 아니다. |X and Y| / |X| 는 그 약물이 그 조건에 대해 갖는 양성예측도이고,
+// 조건을 지우는 비용은 1 에서 그것을 뺀 값이다. 약이 그 조건에 특이적이면 삭제가 싸고,
+// 여러 적응증에 두루 쓰이면 비싸다. 이것이 "적응증에 의한 교란"에 대한 답이다:
+// 두 축을 독립으로 가정하지 않고, 규칙마다 의존도를 측정해 보고한다.
+const MIN_EXPOSED = 50;
+const ppv = perRule.filter((r) => r.x >= MIN_EXPOSED)
+  .map((r) => ({ label: r.label, x: r.x, ppv: r.xy / r.x }))
+  .sort((a, c) => a.ppv - c.ppv);
+const ppvLo = ppv[0], ppvHi = ppv[ppv.length - 1];
+
 /** 규칙 하나를 빼고 다시 계산한다. 두 규칙이 분모의 79%를 차지하므로 통합값만으로는 부족하다. */
 const leaveOneOut = perRule.map((r) => ({
   drop: r.label,
@@ -217,6 +227,12 @@ leaveOneOut.slice().sort((a, c) => a.share - c.share).forEach((x) => {
 });
 say('   Two rules supply most of the denominator, so the pooled figure is reported with the');
 say('   range it takes when each rule in turn is removed. The conclusion holds across it.\n');
+say(`   The cost of deletion is one minus the drug's predictive value for the condition.`);
+say(`   Among the ${ppv.length} rules with at least ${MIN_EXPOSED} exposed it runs from`);
+say(`   ${pc(ppvLo.ppv)}% (${ppvLo.label}, n=${ppvLo.x}) to ${pc(ppvHi.ppv)}% (${ppvHi.label}, n=${ppvHi.x}).`);
+ppv.forEach((r) => say(`     ${r.label.padEnd(28)} n=${String(r.x).padStart(4)}  PPV ${pc(r.ppv).padStart(6)}%`));
+say('   Deletion is cheap where the drug is specific to the condition and ruinous where it is');
+say('   not, so the pooled figure reflects which drugs the criteria happen to name.\n');
 
 // --- 2. 두 축의 겹침: 조건축 판정 중 약물 단독 축이 못 보는 몫 ---------------------------------
 const b = people.filter((p) => p.asWritten.length > 0);
@@ -282,6 +298,9 @@ const result = {
   perRule, pooledX: sx, pooledXY: sxy,
   notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
   designCI: [dLo, dHi], weightedShare: wShare, leaveOneOut, looRange: [looLo, looHi],
+  ppv, ppvMinExposed: MIN_EXPOSED,
+  looFloorRule: leaveOneOut.reduce((a, c) => (c.share < a.share ? c : a)).drop,
+  looCeilingRule: leaveOneOut.reduce((a, c) => (c.share > a.share ? c : a)).drop,
   phiCI: [phiLo, phiHi], gapCI: [gapLo, gapHi],
   conditionAxis: b.length, drugOnlyAxis: a.length, conditionAxisOnly: onlyB,
   phi: phiCoef, dominantPair: topKey, dominantN: topN, floor: survives,
