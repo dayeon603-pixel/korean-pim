@@ -137,6 +137,18 @@ check('  lowest predictive value', 100 * ci.ppv[0].ppv, 3.3, 0.05);
 check('    which rule', ci.ppv[0].label, 'Hyponatraemia');
 check('  highest predictive value', 100 * ci.ppv[ci.ppv.length - 1].ppv, 73.0, 0.05);
 check('    which rule', ci.ppv[ci.ppv.length - 1].label, 'Hypertension');
+// The screen quotes two intermediate predictive values by name, so they are pinned by rule rather
+// than only at the extremes.
+const ppvOf = (id) => 100 * ci.ppv.find((r) => r.id === id || r.label.toLowerCase().includes(id)).ppv;
+check('  predictive value, chronic kidney disease', ppvOf('chronic kidney'), 7.8, 0.05);
+check('  predictive value, heart failure', ppvOf('heart failure'), 11.6, 0.05);
+
+// Figures read out of cited papers cannot be recomputed here, so they are pinned against the
+// record that holds them and checked against the manuscript text below.
+const cited = require('../src/prior_work.js').CITED_FIGURES;
+check('kappa quoted for Korean claims diagnoses', cited.claimsDiagnosisKappa.join(' to '), '0.83 to 0.84');
+check('HIRA prevalence cohort as written', (cited.hiraPrevalenceCohort / 1e6).toFixed(2), '1.53');
+check('Korean common-data-model patients as written', (cited.koreanCdmPatients / 1e6).toFixed(2), '2.07');
 
 // The resolution rate is scope, not attrition: the dictionary was written only for the classes the
 // rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
@@ -556,6 +568,17 @@ if (!fs.existsSync(MS)) {
   const cites = new Set([...prose.matchAll(/\[(\d+(?:\s*,\s*\d+)*)\]/g)].flatMap((m) => m[1].split(',').map((x) => parseInt(x, 10))));
   const bad = [...cites].filter((n) => n < 1 || n > refCount);
   check('citations resolve to an existing reference', bad.length ? bad.join(',') : 'all resolve', 'all resolve');
+  // Vancouver numbering: references must run in order of first citation. build() renumbers at
+  // render time, so a failure here means the renumbering itself broke.
+  const seq = [];
+  for (const m of prose.matchAll(/\[([0-9,\s]+)\]/g)) {
+    for (const x of m[1].split(',')) {
+      const n = Number(x);
+      if (!seq.includes(n)) seq.push(n);
+    }
+  }
+  const jumps = seq.filter((n, i) => i && n < seq[i - 1]);
+  check('references cited in order of first appearance', jumps.length ? jumps.join(', ') : 'in order', 'in order');
   // Rewrapping a paragraph can break a hyphenated word across two string literals, which renders
   // as "self- reported" in Word. Catch it here rather than in a reviewer's copy.
   const broken = [...new Set((prose.match(/\w+- \w+/g) || []))];

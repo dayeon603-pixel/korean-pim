@@ -150,4 +150,12 @@ function usable() {
   return REJECTED_CLAIMS.filter((c) => c.verdict !== 'not recoverable');
 }
 
-module.exports = { REJECTED_CLAIMS, REFERENCES, usable };
+/** 인용 문헌에서 직접 읽어 원고에 옮긴 수치. 우리 자료가 아니므로 재계산할 수 없고,
+ *  그래서 여기에 못 박아 두고 시험이 원고와 대조한다. 오타는 이 대조에서 걸린다. */
+const CITED_FIGURES = {
+  claimsDiagnosisKappa: [0.83, 0.84],   // Park & Choi 2016, 허혈성 뇌졸중·지주막하출혈 검증
+  hiraPrevalenceCohort: 1532000,        // 심평원 2022 보고서 <표 25>
+  koreanCdmPatients: 2070000,           // Yoon 2016, Healthc Inform Res 22(1):54-58
+};
+
+module.exports = { REJECTED_CLAIMS, REFERENCES, CITED_FIGURES, usable };
