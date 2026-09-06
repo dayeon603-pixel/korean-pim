@@ -120,6 +120,33 @@ check('phi between the two axes', abl.phi, 0.154, 0.001);
 check('floor after removing the dominant pair', abl.survives, 25);
 check('  as a share of the cohort', 100 * abl.survives / abl.N, 1.9, 0.05);
 
+// The interval above assumes the 1,392 rule-person pairs are independent; they come from 1,345
+// people, so it is also computed by resampling people. The two agree, which is the point of
+// reporting it: most people contribute one pair, so the clustering does not inflate the width.
+const ci = require('../analysis/ablation_result.json');
+check('cluster bootstrap CI low', 100 * ci.notNamedCI[0], 76.9, 0.05);
+check('cluster bootstrap CI high', 100 * ci.notNamedCI[1], 81.3, 0.05);
+check('phi bootstrap CI low', ci.phiCI[0], 0.097, 0.001);
+check('phi bootstrap CI high', ci.phiCI[1], 0.210, 0.001);
+
+console.log('\nReplication in an independent NHANES cycle (2015-2016)');
+const rep = require('../analysis/ablation_result_2015.json');
+check('cycle', rep.cycle || rep.source.slice(7, 16), '2015-2016');
+check('cohort size', rep.n, 1205);
+check('share not named', 100 * rep.notNamed, 78.4, 0.05);
+check('  95% CI low', 100 * rep.notNamedCI[0], 76.1, 0.05);
+check('  95% CI high', 100 * rep.notNamedCI[1], 80.7, 0.05);
+check('enlargement factor', rep.pooledX / rep.pooledXY, 4.6, 0.05);
+check('phi', rep.phi, 0.144, 0.001);
+check('condition axis only', rep.conditionAxisOnly, 124);
+check('  as a share of the cohort', 100 * rep.conditionAxisOnly / rep.n, 10.3, 0.05);
+check('floor after removing the dominant pair', rep.floor, 27);
+// Every headline figure falls inside the other cycle's interval.
+check('2017 estimate inside the 2015 interval',
+  100 * ci.notNamed >= 100 * rep.notNamedCI[0] && 100 * ci.notNamed <= 100 * rep.notNamedCI[1] + 0.0, true);
+check('2015 estimate inside the 2017 interval',
+  100 * rep.notNamed >= 100 * ci.notNamedCI[0] && 100 * rep.notNamed <= 100 * ci.notNamedCI[1], true);
+
 // ---------------------------------------------------------------------------------------------
 // The sections from here to "Prose consistency" cover the multi-domain scan. That scan is no
 // longer cited in the conference manuscript, which now rests only on the five dataset field lists

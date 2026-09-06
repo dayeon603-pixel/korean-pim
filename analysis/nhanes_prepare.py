@@ -27,11 +27,17 @@ from pathlib import Path
 
 import pandas as pd
 
-CYCLE = "2017"          # NHANES 2017-2018 (파일 접미사 _J)
-SUFFIX = "J"
+# 주기를 인자로 받는다. 같은 규칙을 독립 표본에 다시 돌려 복제 여부를 본다.
+CYCLES = {
+    "2017": ("J", "2017-2018", "NHANES_2017_2018_MORT_2019_PUBLIC.dat"),
+    "2015": ("I", "2015-2016", "NHANES_2015_2016_MORT_2019_PUBLIC.dat"),
+    "2013": ("H", "2013-2014", "NHANES_2013_2014_MORT_2019_PUBLIC.dat"),
+}
+CYCLE = next((a for a in sys.argv[1:] if a in CYCLES), "2017")
+SUFFIX, CYCLE_LABEL, MORT_FILE = CYCLES[CYCLE]
 BASE = f"https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/{CYCLE}/DataFiles"
 MORT = ("https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/"
-        "linked_mortality/NHANES_2017_2018_MORT_2019_PUBLIC.dat")
+        f"linked_mortality/{MORT_FILE}")
 FILES = ["DEMO", "RXQ_RX", "MCQ", "DIQ", "BPQ", "KIQ_U", "SLQ", "BIOPRO"]
 
 AGE_MIN = 65
@@ -66,15 +72,15 @@ def fetch(cache: Path) -> None:
         dst = cache / f"{f}_{SUFFIX}.xpt"
         if not dst.exists():
             urllib.request.urlretrieve(f"{BASE}/{f}_{SUFFIX}.xpt", dst)
-    if not (cache / "mort.dat").exists():
-        urllib.request.urlretrieve(MORT, cache / "mort.dat")
+    if not (cache / f"mort_{SUFFIX}.dat").exists():
+        urllib.request.urlretrieve(MORT, cache / f"mort_{SUFFIX}.dat")
 
 
 def build(cache: Path) -> dict:
     """65세 이상 코호트를 만든다."""
     load = lambda f: pd.read_sas(cache / f"{f}_{SUFFIX}.xpt", format="xport")
 
-    demo = load("DEMO")[["SEQN", "RIDAGEYR", "RIAGENDR"]]
+    demo = load("DEMO")[["SEQN", "RIDAGEYR", "RIAGENDR", "WTMEC2YR", "SDMVSTRA", "SDMVPSU"]]
     old = demo[demo.RIDAGEYR >= AGE_MIN].copy()
 
     rx = load("RXQ_RX")[["SEQN", "RXDDRUG"]].copy()
@@ -92,7 +98,7 @@ def build(cache: Path) -> dict:
             if test(val):
                 conds.setdefault(seqn, []).append(cid)
 
-    m = pd.read_fwf(cache / "mort.dat", colspecs=MORT_COLS, names=MORT_NAMES, dtype=str)
+    m = pd.read_fwf(cache / f"mort_{SUFFIX}.dat", colspecs=MORT_COLS, names=MORT_NAMES, dtype=str)
     for c in ["SEQN", "ELIGSTAT", "MORTSTAT", "PERMTH_EXM"]:
         m[c] = pd.to_numeric(m[c], errors="coerce")
     mort = m.set_index("SEQN")[["ELIGSTAT", "MORTSTAT", "PERMTH_EXM"]].to_dict("index")
@@ -113,7 +119,8 @@ def build(cache: Path) -> dict:
         })
 
     return {
-        "source": "NHANES 2017-2018 + NCHS Public-Use Linked Mortality File (2019)",
+        "source": f"NHANES {CYCLE_LABEL} + NCHS Public-Use Linked Mortality File (2019)",
+        "cycle": CYCLE_LABEL,
         "ageMin": AGE_MIN,
         "mappedConditions": sorted(CONDITION_MAP),
         "unmappedConditions": UNMAPPED,

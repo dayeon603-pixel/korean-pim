@@ -1,6 +1,6 @@
 {
- "source": "NHANES 2017-2018 + NCHS Public-Use Linked Mortality File (2019)",
- "n": 1345,
+ "source": "NHANES 2015-2016 + NCHS Public-Use Linked Mortality File (2019)",
+ "n": 1205,
  "ageMin": 65,
  "observable": 8,
  "total": 18,
@@ -8,73 +8,73 @@
   {
    "id": "insomnia",
    "label": "Insomnia",
-   "x": 10,
-   "xy": 8
+   "x": 11,
+   "xy": 3
   },
   {
    "id": "hf",
    "label": "Heart failure",
-   "x": 145,
-   "xy": 19
+   "x": 133,
+   "xy": 16
   },
   {
    "id": "htn",
    "label": "Hypertension",
-   "x": 55,
-   "xy": 41
+   "x": 52,
+   "xy": 42
   },
   {
    "id": "stroke_secondary",
    "label": "Stroke, secondary prevention",
-   "x": 4,
+   "x": 3,
    "xy": 1
   },
   {
    "id": "ckd",
    "label": "Chronic kidney disease",
-   "x": 70,
-   "xy": 8
+   "x": 63,
+   "xy": 7
   },
   {
    "id": "hyponatremia",
    "label": "Hyponatraemia",
-   "x": 607,
-   "xy": 20
+   "x": 484,
+   "xy": 29
   },
   {
    "id": "copd",
    "label": "COPD",
    "x": 3,
-   "xy": 3
+   "xy": 1
   },
   {
    "id": "dm",
    "label": "Diabetes",
-   "x": 498,
-   "xy": 190
+   "x": 421,
+   "xy": 154
   }
  ],
- "pooledX": 1392,
- "pooledXY": 290,
- "notNamed": 0.7916666666666666,
+ "pooledX": 1170,
+ "pooledXY": 253,
+ "notNamed": 0.7837606837606838,
  "notNamedCI": [
-  0.7693997071742313,
-  0.8129126925898753
+  0.7611438183347351,
+  0.8071161048689138
  ],
  "bootstrapDraws": 2000,
  "phiCI": [
-  0.09703022596815729,
-  0.2101987587024681
+  0.08387620816735408,
+  0.20541995645858388
  ],
  "gapCI": [
-  0.08327137546468401,
-  0.11598513011152416
+  0.08630705394190871,
+  0.12116182572614108
  ],
- "conditionAxis": 253,
- "drugOnlyAxis": 437,
- "conditionAxisOnly": 133,
- "phi": 0.15354715601762706,
+ "conditionAxis": 217,
+ "drugOnlyAxis": 349,
+ "conditionAxisOnly": 124,
+ "phi": 0.14355931270937786,
  "dominantPair": "당뇨 + 베타차단제",
- "dominantN": 115,
- "floor": 25
+ "dominantN": 105,
+ "floor": 27
 }

@@ -21,7 +21,11 @@ const bm = require('../src/bitmask.js');
 const hira = require('../src/hira2022.js');
 const { MAP } = require('./drug_class_map.js');
 
-const data = require('./nhanes_cohort.json');
+// 코호트 파일을 인자로 받는다. 같은 규칙을 독립 주기에 다시 돌려 복제 여부를 본다.
+//   node analysis/ablation.js                              (2017-2018)
+//   node analysis/ablation.js nhanes_cohort_2015.json      (2015-2016)
+const COHORT = process.argv[2] || 'nhanes_cohort.json';
+const data = require(path.join(__dirname, COHORT));
 
 /** 논문이 영문이므로 관측 가능한 8개 조건에만 영문 라벨을 붙인다. */
 const EN = {
@@ -50,6 +54,33 @@ function wilson(k, n, z = 1.96) {
 }
 const pc = (x) => (100 * x).toFixed(1);
 /** 이 파일은 하네스에서 require 되기도 한다. 직접 실행할 때만 보고서를 찍는다. */
+
+/** 재현 가능한 난수. 시드를 고정해 부트스트랩이 실행마다 같은 값을 내게 한다. */
+function rng(seed) {
+  let x = seed >>> 0;
+  return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+}
+
+/** 사람 단위 클러스터 부트스트랩.
+ *
+ * 규칙-사람 쌍 1,392건은 사람 1,345명에서 나오므로 서로 독립이 아니다. 한 사람이 여러 규칙에
+ * 걸리면 그 사람의 특성이 여러 쌍에 함께 실린다. 쌍을 독립으로 두고 Wilson 구간을 쓰면
+ * 구간이 실제보다 좁아진다. 사람을 복원추출해 통계량을 다시 계산한다.
+ */
+function clusterBootstrap(units, stat, B = 2000, seed = 20260906) {
+  const rand = rng(seed);
+  const n = units.length;
+  const out = [];
+  for (let b = 0; b < B; b += 1) {
+    const draw = new Array(n);
+    for (let i = 0; i < n; i += 1) draw[i] = units[Math.floor(rand() * n)];
+    const v = stat(draw);
+    if (Number.isFinite(v)) out.push(v);
+  }
+  out.sort((a, c) => a - c);
+  return [out[Math.floor(0.025 * out.length)], out[Math.floor(0.975 * out.length)], out.length];
+}
+
 const say = require.main === module ? console.log : () => {};
 
 // ---------------------------------------------------------------------------------------------
@@ -91,12 +122,42 @@ pim.table2.filter((t) => OBSERVABLE.has(t.id)).forEach((t) => {
   say(`   ${(EN[t.id] || t.label).padEnd(30)} ${String(X.length).padStart(8)} ${String(XY.length).padStart(10)}`
     + `   ${pc(XY.length / X.length).padStart(6)}%  (${pc(lo)}-${pc(hi)})`);
 });
+// 부트스트랩용 단위: 사람 한 명이 만든 (규칙, 조건보유) 쌍 전체를 한 덩어리로 묶는다.
+const units = people.map((p) => {
+  const pairs = [];
+  pim.table2.filter((t) => OBSERVABLE.has(t.id)).forEach((t) => {
+    if (p.conditionDeleted.some((h) => h.condition.id === t.id)) {
+      pairs.push({ rule: t.id, hasCondition: p.conditions.has(t.id) });
+    }
+  });
+  return { pairs, byB: p.asWritten.length > 0, byA: p.drugOnly };
+});
+const shareNotNamed = (us) => {
+  let X = 0, XY = 0;
+  us.forEach((u) => u.pairs.forEach((q) => { X += 1; if (q.hasCondition) XY += 1; }));
+  return X ? 1 - XY / X : NaN;
+};
+const phiOf = (us) => {
+  let bo = 0, oa = 0, ob = 0, ne = 0;
+  us.forEach((u) => {
+    if (u.byA && u.byB) bo += 1; else if (u.byA) oa += 1; else if (u.byB) ob += 1; else ne += 1;
+  });
+  const d = Math.sqrt((bo + oa) * (ob + ne) * (bo + ob) * (oa + ne));
+  return d === 0 ? NaN : (bo * ne - oa * ob) / d;
+};
+const gapShare = (us) => us.filter((u) => u.byB && !u.byA).length / us.length;
+const [bsLo, bsHi, bsB] = clusterBootstrap(units, shareNotNamed);
+const [phiLo, phiHi] = clusterBootstrap(units, phiOf);
+const [gapLo, gapHi] = clusterBootstrap(units, gapShare);
+
 const [plo, phi_] = wilson(sxy, sx);
 say(`   ${'pooled'.padEnd(30)} ${String(sx).padStart(8)} ${String(sxy).padStart(10)}`
   + `   ${pc(sxy / sx).padStart(6)}%  (${pc(plo)}-${pc(phi_)})`);
-say(`\n   Deleting the condition multiplies the named population by ${(sx / sxy).toFixed(1)},`);
-say(`   and ${pc(1 - sxy / sx)}% of whom the deleted rule names do not carry the condition`);
-say('   the criterion named. The deleted rule is not a weaker form of the same rule.\n');
+say(`\n   Deleting the condition multiplies the named population by ${(sx / sxy).toFixed(1)}.`);
+say(`   Share of those named who do not carry the condition: ${pc(1 - sxy / sx)}%`);
+say(`     pair-level Wilson (assumes independence, too narrow)  ${pc(1 - phi_)}-${pc(1 - plo)}%`);
+say(`     person-level cluster bootstrap, ${bsB} draws           ${pc(bsLo)}-${pc(bsHi)}%  <- report this`);
+say('   The pairs are clustered within people, so the Wilson interval understates the width.\n');
 
 // --- 2. 두 축의 겹침: 조건축 판정 중 약물 단독 축이 못 보는 몫 ---------------------------------
 const b = people.filter((p) => p.asWritten.length > 0);
@@ -113,7 +174,9 @@ say(`   condition axis fires        ${String(b.length).padStart(5)}  ${pc(b.leng
 say(`   drug-only axis fires        ${String(a.length).padStart(5)}  ${pc(a.length / N)}%`);
 say(`   condition axis only         ${String(onlyB).padStart(5)}  ${pc(onlyB / N)}%  (95% CI ${pc(blo)}-${pc(bhi)})`);
 say(`   as a share of the condition axis   ${pc(onlyB / b.length)}%`);
-say(`   phi between the two axes    ${phiCoef.toFixed(3)}   (the axes are close to independent)\n`);
+say(`   condition axis only, bootstrap CI  ${pc(gapLo)}-${pc(gapHi)}%`);
+say(`   phi between the two axes    ${phiCoef.toFixed(3)}  (bootstrap CI ${phiLo.toFixed(3)}-${phiHi.toFixed(3)})`);
+say('   The axes are close to independent, so the drug-only rule is not a noisy proxy.\n');
 
 // --- 3. 지배 규칙 민감도: 결과가 한 규칙에 걸려 있는가 ------------------------------------------
 const gap = {};
@@ -158,11 +221,15 @@ const result = {
   source: data.source, n: N, ageMin: data.ageMin,
   observable: data.mappedConditions.length, total: pim.table2.length,
   perRule, pooledX: sx, pooledXY: sxy,
+  notNamed: 1 - sxy / sx, notNamedCI: [bsLo, bsHi], bootstrapDraws: bsB,
+  phiCI: [phiLo, phiHi], gapCI: [gapLo, gapHi],
   conditionAxis: b.length, drugOnlyAxis: a.length, conditionAxisOnly: onlyB,
   phi: phiCoef, dominantPair: topKey, dominantN: topN, floor: survives,
 };
 if (require.main === module) {
-  require('fs').writeFileSync(path.join(__dirname, 'ablation_result.json'),
+  require('fs').writeFileSync(path.join(__dirname,
+    COHORT === 'nhanes_cohort.json' ? 'ablation_result.json'
+      : `ablation_result_${COHORT.replace(/[^0-9]/g, '')}.json`),
     JSON.stringify(result, null, 1) + '\n');
   say('Wrote analysis/ablation_result.json for the manuscript generator.');
 }
