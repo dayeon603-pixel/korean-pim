@@ -1,0 +1,66 @@
+{
+ "source": "NHANES 2017-2018 + NCHS Public-Use Linked Mortality File (2019)",
+ "n": 1345,
+ "ageMin": 65,
+ "observable": 8,
+ "total": 18,
+ "perRule": [
+  {
+   "id": "insomnia",
+   "label": "Insomnia",
+   "x": 10,
+   "xy": 8
+  },
+  {
+   "id": "hf",
+   "label": "Heart failure",
+   "x": 145,
+   "xy": 19
+  },
+  {
+   "id": "htn",
+   "label": "Hypertension",
+   "x": 55,
+   "xy": 41
+  },
+  {
+   "id": "stroke_secondary",
+   "label": "Stroke, secondary prevention",
+   "x": 4,
+   "xy": 1
+  },
+  {
+   "id": "ckd",
+   "label": "Chronic kidney disease",
+   "x": 70,
+   "xy": 8
+  },
+  {
+   "id": "hyponatremia",
+   "label": "Hyponatraemia",
+   "x": 607,
+   "xy": 20
+  },
+  {
+   "id": "copd",
+   "label": "COPD",
+   "x": 3,
+   "xy": 3
+  },
+  {
+   "id": "dm",
+   "label": "Diabetes",
+   "x": 498,
+   "xy": 190
+  }
+ ],
+ "pooledX": 1392,
+ "pooledXY": 290,
+ "conditionAxis": 253,
+ "drugOnlyAxis": 437,
+ "conditionAxisOnly": 133,
+ "phi": 0.15354715601762706,
+ "dominantPair": "당뇨 + 베타차단제",
+ "dominantN": 115,
+ "floor": 25
+}
