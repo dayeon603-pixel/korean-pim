@@ -160,6 +160,10 @@ check('  of those, condition load-bearing (predictive value under 25%)', scr.loa
 check('    which rules', scr.loadBearing.join(','), 'ckd,hf');
 check('  highest-risk candidate fails both questions', scr.worst && scr.worst.id, 'hyponatremia');
 check('    its predictive value', 100 * (scr.worst ? scr.worst.ppv : 0), 3.3, 0.05);
+// The nine that fail question one do not all fail for the same reason, and the split matters:
+// four could not be carried by any diagnosis code, five are ordinary diagnoses left unbound.
+check('  unbound because not a diagnosis at all', scr.unboundNotDiagnosis, 4);
+check('  unbound though an ordinary diagnosis', scr.unboundDiagnoses, 5);
 
 // The pooled figure is a pair-level quantity and the manuscript says so. The person-level figure is
 // what "the named population" means, and the pair-level fold change is the reciprocal of the

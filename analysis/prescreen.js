@@ -61,6 +61,22 @@ say(`    so they are computable on claims as they stand: ${buildable.map((r) => 
 say(`    ${blocked.length} are not bound and cannot be computed on claims without new work:`);
 say(`    ${blocked.map((r) => r.label).join(', ')}.\n`);
 
+// 결속되지 않은 9개가 왜 실패했는지 나눈다. 전부 같은 이유로 실패한 것이 아니다.
+// 원천 기준이 조건마다 유형을 적어 두었으므로(진단·병력·증상·연령·상태) 그것으로 가른다.
+const KIND_EN = { '진단': 'diagnosis', '병력': 'history', '증상': 'symptom', '연령': 'age', '상태': 'situation' };
+const unboundByKind = {};
+pim.table2.filter((t) => !bound.has(t.id)).forEach((t) => {
+  const k = KIND_EN[t.kind] || t.kind;
+  (unboundByKind[k] = unboundByKind[k] || []).push(EN[t.id] || t.label);
+});
+const notDiagnosis = Object.entries(unboundByKind).filter(([k]) => k !== 'diagnosis');
+const diagUnbound = unboundByKind.diagnosis || [];
+say('    Why the nine fail divides the same way the study\'s main finding does.');
+notDiagnosis.forEach(([k, v]) => say(`      ${v.length} are not a diagnosis at all (${k}): ${v.join(', ')}`));
+say(`      ${notDiagnosis.reduce((a, [, v]) => a + v.length, 0)} therefore cannot be carried by any diagnosis code; the limit is representational.`);
+say(`      ${diagUnbound.length} are ordinary diagnoses for which no code set was authored: ${diagUnbound.join(', ')}.`);
+say('      There the limit is elective, not a ceiling of the coding system.\n');
+
 say('Q3  If the condition were deleted, would the rule still measure the harm it named?');
 say('    The drug\'s predictive value for the condition answers it. Lower means the condition');
 say('    is more load-bearing, so deleting it changes the rule rather than weakening it.\n');
@@ -97,5 +113,7 @@ say('  the population prescribing rate for its drug, not the criterion it was dr
 module.exports = {
   total: rows.length, boundCount: buildable.length, blockedCount: blocked.length,
   measured, loadBearing: loadBearing.map((r) => r.id), rows,
+  unboundNotDiagnosis: notDiagnosis.reduce((a, [, v]) => a + v.length, 0),
+  unboundDiagnoses: diagUnbound.length,
   worst: worst[0] || null,
 };
