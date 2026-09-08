@@ -11,7 +11,7 @@ j.LAYER_ORDER.forEach((layer) => {
   console.log(`── ${j.LAYER_EN[layer]} (${layer}) ` + '─'.repeat(Math.max(0, 52 - j.LAYER_KO[layer].length * 2)));
   rows.forEach((r) => {
     const cnt = r.conditionCount === null ? 'unknown' : `${r.conditionCount}`;
-    console.log(`  [${mark(r.axisRetained)}] ${j.REGION_EN[r.region].padEnd(9)} conditions ${cnt.padStart(7)}   ${r.instrument}`);
+    console.log(`  [${mark(r.axisRetained)}] ${r.region.padEnd(9)} conditions ${cnt.padStart(7)}   ${r.instrument}`);
   });
   console.log('');
 });
@@ -34,12 +34,12 @@ console.log('\n── counterexamples to the hypothesis ' + '─'.repeat(46));
 console.log('The claim that the condition axis is always dropped on the way to a national');
 console.log('operating standard is refuted.\n');
 j.counterExamples().forEach((r) => {
-  console.log(`  · ${j.REGION_EN[r.region]} — ${r.instrument}`);
+  console.log(`  · ${r.region} — ${r.instrument}`);
   console.log(`    ${r.conditionCount} conditions · layer: ${j.LAYER_EN[r.layer]}`);
 });
 
 console.log('\n── not adjudicable, or no comparator exists ' + '─'.repeat(32));
-j.NOT_ASSESSABLE.forEach((r) => console.log(`  · ${j.REGION_EN[r.region]}: ${r.reason}`));
+j.NOT_ASSESSABLE.forEach((r) => console.log(`  · ${r.region}: ${r.reason}`));
 
 console.log('\nNote: item counts are not directly comparable across jurisdictions. The unit of counting');
 console.log('      differs (ingredient / ingredient group / drug class / condition statement / measure rate).');

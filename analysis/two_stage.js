@@ -111,7 +111,7 @@ function observations() {
     const layer = i.reachesPayment ? 'payment' : i.publiclyGraded ? 'rating' : 'measure';
     rows.push({
       id: `kr-abx-${i.id}`,
-      region: '한국',
+      region: 'Korea',
       layer,
       retained: true,
       verifiedBy: 'read',
