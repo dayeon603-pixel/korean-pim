@@ -1,22 +1,23 @@
-/* φ가 우리가 가정한 분포에만 성립하는 값인지 확인한다 — node test/sensitivity.js [건수]
+/* Testing whether phi holds only under the distribution assumed here — node test/sensitivity.js [n]
  *
- * ── 왜 이걸 해야 하는가 ────────────────────────────────────────────────────
- * NCQA 명제 검정의 핵심 수치 φ는 **두 판정 축의 결합분포에 의존하는 값**이지 논리적 성질이 아니다.
- * 그런데 우리 코호트의 동반질환 조건부 상승률(LIFT)은 측정치가 아니라 가정이다.
- * 그렇다면 φ = 0.302 는 "우리가 가정한 분포의 φ"일 뿐이라는 반론이 성립한다.
- * 이 반론은 정당하고, 방어가 아니라 측정으로 답해야 한다.
+ * ── why this is necessary ─────────────────────────────────────────────────
+ * Phi, the figure the NCQA claim is tested on, depends on the joint distribution of the two axes.
+ * It is not a logical property. The conditional lift between comorbidities (LIFT) in this cohort is
+ * an assumption rather than a measurement, so the objection that phi = 0.302 is merely the phi of
+ * an assumed distribution is a fair one. It deserves an answer by measurement, not by argument.
  *
- * ── 방법 ──────────────────────────────────────────────────────────────────
- * 가정한 파라미터를 넓은 범위로 흔들면서 결론이 뒤집히는 지점이 있는지 찾는다.
- *   liftScale 0.0  질환 간 상관을 완전히 없앤 극단 (동반질환이 서로 독립)
- *             1.0  본 측정에 쓴 값
- *             2.0  상승률을 두 배로 (질환이 강하게 뭉치는 극단)
- *   condScale 0.5~2.0  전체 기저질환 유병률
- *   sizeShift -1~+1    처방 약물 수 분포 (소수 처방 ↔ 다제약물)
+ * ── method ────────────────────────────────────────────────────────────────
+ * The assumed parameters are swept over a wide range to find any point where the conclusion flips.
+ *   liftScale 0.0  correlation between conditions removed entirely (comorbidities independent)
+ *             1.0  the value used for the headline measurement
+ *             2.0  lift doubled (conditions cluster strongly)
+ *   condScale 0.5-2.0  overall comorbidity prevalence
+ *   sizeShift -1 to +1 distribution of drugs per prescription (few drugs to polypharmacy)
  *
- * ── 무엇이 결론인가 ────────────────────────────────────────────────────────
- * 지켜야 하는 것은 φ의 특정 값이 아니라 **"φ가 강한 상관의 기준선 0.5를 넘지 않는다"**는 결론이다.
- * 전 범위에서 넘지 않으면 결론은 가정에 의존하지 않는다. 넘는 구간이 있으면 그 구간을 밝혀 적는다.
+ * ── what the conclusion actually is ───────────────────────────────────────
+ * What has to hold is not a particular value of phi but the finding that phi never reaches 0.5, the
+ * conventional threshold for a strong association. If it holds across the whole range, the finding
+ * does not depend on the assumption. If any region breaches it, that region is reported.
  */
 'use strict';
 const { run } = require('./cohort.js');
@@ -26,37 +27,38 @@ const N = parseInt(process.argv[2] || '100000', 10);
 const SEEDS = [20260902, 20268821, 20276740];
 const THRESHOLD = 0.5;
 
-/** 파라미터 한 조합을 시드 여러 개로 돌려 평균을 낸다. */
+/** Runs one parameter combination over several seeds and averages. */
 function probe(opt) {
   const raw = SEEDS.map((s) => run(s, N, opt));
   const r = raw.map(stats);
   const avg = (k) => r.reduce((a, x) => a + x[k], 0) / r.length;
-  // 기저율 P(A). 중복률을 해석하려면 반드시 이 값과 함께 봐야 한다.
-  // 두 축이 독립이어도 중복률은 P(A) 만큼 나오므로, 중복률 - P(A) 가 실제 연관의 크기다.
+  // The base rate P(A). Overlap cannot be interpreted without it: two independent axes still
+  // overlap at P(A), so the size of the real association is overlap minus P(A).
   const pA = raw.reduce((a, x) => a + (x.both + x.onlyHira) / N, 0) / raw.length;
   return { phi: avg('phi'), overlap: avg('overlap'), marginal: avg('marginal'), kappa: avg('kappa'),
            pA, lift: avg('overlap') - pA };
 }
 
-/** 전체 격자를 훑어 보고서를 출력한다. test.js 가 probe() 만 쓸 때는 돌지 않아야 한다. */
+/** Sweeps the whole grid and prints the report. Must not run when test.js imports probe() only. */
 function main() {
   const GRID = [];
   [0, 0.5, 1, 1.5, 2].forEach((liftScale) => GRID.push({ liftScale }));
   [0.5, 0.75, 1.5, 2].forEach((condScale) => GRID.push({ condScale }));
   [-1, -0.5, 0.5, 1].forEach((sizeShift) => GRID.push({ sizeShift }));
-// 국가 기준 포괄 약물의 선택 빈도. 기본 코호트의 P(A)=81.8% 는 심평원 실측 44.7% 보다 1.83배 높다.
-// 계열 단위 구현이라 성분 단위보다 넓게 잡히는 것이 주된 이유로 보인다.
-// 실측 쪽으로 보정했을 때 결론이 어느 방향으로 움직이는지 확인한다.
+// How often drugs covered by the national standard are drawn. The default cohort's P(A) of 81.8%
+// is 1.83 times the 44.7% measured by HIRA. The main reason appears to be that the implementation
+// works at class level, which catches more than an ingredient-level one would. This checks which
+// way the conclusion moves when the cohort is calibrated toward the measured rate.
 [0.5, 0.25, 0.1].forEach((pimWeight) => GRID.push({ pimWeight }));
-GRID.push({ sizeShift: -1.8, pimWeight: 0.1 });   // 도달 가능한 최저 기저율
-  // 극단 조합. 한 축씩 흔드는 것으로는 놓치는 구석을 본다.
+GRID.push({ sizeShift: -1.8, pimWeight: 0.1 });   // the lowest reachable base rate
+  // Extreme combinations, to reach corners that moving one axis at a time does not.
   GRID.push({ liftScale: 0, condScale: 0.5, sizeShift: -1 });
   GRID.push({ liftScale: 2, condScale: 2, sizeShift: 1 });
   GRID.push({ liftScale: 0, condScale: 2, sizeShift: 1 });
   GRID.push({ liftScale: 2, condScale: 0.5, sizeShift: -1 });
 
-  console.log(`φ 민감도 분석 — 조합 ${GRID.length + 1}개 × ${N.toLocaleString()}건 × 시드 ${SEEDS.length}개\n`);
-  console.log('lift  cond  size |     φ      κ    중복률   한계수확  | 0.5 초과?');
+  console.log(`Sensitivity of phi — ${GRID.length + 1} combinations x ${N.toLocaleString()} prescriptions x ${SEEDS.length} seeds\n`);
+  console.log('lift  cond  size |   phi   kappa  overlap  marginal  | over 0.5?');
   console.log('─'.repeat(72));
 
   const rows = [];
@@ -65,10 +67,10 @@ GRID.push({ sizeShift: -1.8, pimWeight: 0.1 });   // 도달 가능한 최저 기
     const tag = `${(opt.liftScale === undefined ? 1 : opt.liftScale).toFixed(1)}   `
               + `${(opt.condScale === undefined ? 1 : opt.condScale).toFixed(2)}  `
               + `${(opt.sizeShift === undefined ? 0 : opt.sizeShift).toFixed(1).padStart(5)}`;
-    const base = Object.keys(opt).length === 0 ? '  ← 본 측정' : '';
+    const base = Object.keys(opt).length === 0 ? '  <- headline' : '';
     console.log(`${tag} | ${r.phi.toFixed(3).padStart(6)} ${r.kappa.toFixed(3).padStart(6)} `
       + `${(r.overlap * 100).toFixed(1).padStart(7)}% ${(r.marginal * 100).toFixed(2).padStart(8)}%  | `
-      + `${r.phi >= THRESHOLD ? '★ 초과' : '아니오'}${base}`);
+      + `${r.phi >= THRESHOLD ? '* over' : 'no'}${base}`);
     rows.push({ opt, ...r });
   });
 
@@ -79,27 +81,28 @@ GRID.push({ sizeShift: -1.8, pimWeight: 0.1 });   // 도달 가능한 최저 기
   const maxOv = Math.max(...rows.map((r) => r.overlap));
 
   console.log('\n' + '─'.repeat(72));
-  console.log(`φ 범위          ${minPhi.toFixed(3)} ~ ${maxPhi.toFixed(3)}   (기준선 ${THRESHOLD})`);
-  console.log(`중복률 최대     ${(maxOv * 100).toFixed(1)}%`);
-  console.log(`한계수확 최소   ${(minMarg * 100).toFixed(2)}%`);
+  console.log(`phi range        ${minPhi.toFixed(3)} - ${maxPhi.toFixed(3)}   (threshold ${THRESHOLD})`);
+  console.log(`overlap, max     ${(maxOv * 100).toFixed(1)}%`);
+  console.log(`marginal, min    ${(minMarg * 100).toFixed(2)}%`);
 const byPA = rows.slice().sort((a, b) => a.pA - b.pA);
 const lo = byPA[0], hi = byPA[byPA.length - 1];
-console.log(`\n기저율 P(A) 범위 ${(lo.pA * 100).toFixed(1)}% ~ ${(hi.pA * 100).toFixed(1)}%  (심평원 실측 44.7%)`);
-console.log(`  기저율이 낮아질수록: 중복률 ${(hi.overlap * 100).toFixed(1)}% → ${(lo.overlap * 100).toFixed(1)}%, `
-  + `한계수확 ${(hi.marginal * 100).toFixed(2)}% → ${(lo.marginal * 100).toFixed(2)}%`);
-console.log('  즉 실측 기저율 쪽으로 보정하면 NCQA 주장에 유리한 중복률이 떨어지고 한계수확은 커진다.');
-console.log('  본문에 쓴 92.0% / 4.54% 는 우리 결론에 **불리한 쪽**의 보수적인 값이다.');
-  console.log(`\n결론 — φ가 강한 상관 기준선을 넘는 조합: ${breached.length}개 / ${rows.length}개`);
+console.log(`\nbase rate P(A) range ${(lo.pA * 100).toFixed(1)}% - ${(hi.pA * 100).toFixed(1)}%  (HIRA measured 44.7%)`);
+console.log(`  as the base rate falls: overlap ${(hi.overlap * 100).toFixed(1)}% -> ${(lo.overlap * 100).toFixed(1)}%, `
+  + `marginal yield ${(hi.marginal * 100).toFixed(2)}% -> ${(lo.marginal * 100).toFixed(2)}%`);
+console.log('  Calibrating toward the measured base rate lowers the overlap that favours the NCQA');
+console.log('  claim and raises the marginal yield. The 92.0% and 4.54% quoted in the manuscript are');
+console.log('  therefore the conservative values, the ones least favourable to the finding here.');
+  console.log(`\nConclusion — combinations where phi reaches the strong-association threshold: ${breached.length} / ${rows.length}`);
   if (!breached.length) {
-    console.log('  가정을 넓게 흔들어도 φ는 0.5에 이르지 않는다.');
-    console.log('  "두 축이 서로를 대체하지 못한다"는 결론은 LIFT 가정에 의존하지 않는다.');
-    console.log(`  한계수확도 최악의 조합에서 ${(minMarg * 100).toFixed(2)}%로 0이 되지 않는다.`);
+    console.log('  Phi does not reach 0.5 anywhere in the swept range.');
+    console.log('  The finding that neither axis substitutes for the other does not depend on LIFT.');
+    console.log(`  Marginal yield stays above zero too, at ${(minMarg * 100).toFixed(2)}% in the worst combination.`);
   } else {
-    console.log('  아래 조합에서 결론이 뒤집힌다. 논문에 이 구간을 명시해야 한다:');
+    console.log('  The conclusion flips in the combinations below. This region must be stated in the paper:');
     breached.forEach((r) => console.log(`   ${JSON.stringify(r.opt)} → φ ${r.phi.toFixed(3)}`));
   }
-  console.log('\n※ 흔든 것은 우리가 가정한 파라미터지 실제 청구 분포가 아니다.');
-  console.log('  이 분석은 결론이 가정에 얼마나 민감한지를 보일 뿐, 외부 타당도를 대신하지 않는다.');
+  console.log('\nNote: what was swept is the assumed parameters, not a real claims distribution. This shows');
+  console.log('      how sensitive the conclusion is to the assumptions. It is not external validity.');
 }
 
 if (require.main === module) main();
