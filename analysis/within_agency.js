@@ -47,9 +47,14 @@ console.log(`  reaching public rating or payment: ${split.unbound.filter((i) => 
 
 console.log('\nThe one indicator without a condition denominator is the elderly-medication');
 console.log('indicator. Its denominator is stated as every diagnosis:');
-console.log(`  "${abx.INDICATORS.find((i) => i.id === 'elderly_caution').quote}"`);
+const ec = abx.INDICATORS.find((i) => i.id === 'elderly_caution');
+console.log(`  "${ec.quote}"`);
+console.log(`   -> ${ec.quoteEn}`);
 console.log('\nThe payment mechanism it is absent from has existed since 2013:');
-abx.HISTORY.filter((h) => /가감지급/.test(h.ko)).forEach((h) => console.log(`  ${h.year}  ${h.ko}`));
+abx.HISTORY.filter((h) => /가감지급/.test(h.ko)).forEach((h) => {
+  console.log(`  ${h.year}  ${h.ko}`);
+  console.log(`         -> ${h.en}`);
+});
 
 // ---------------------------------------------- feasibility tier vs condition dependence
 console.log(`\n\n2. CANDIDATE INDICATORS, 2021 DEVELOPMENT STUDY`);
