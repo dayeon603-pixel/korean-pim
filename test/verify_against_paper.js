@@ -56,28 +56,30 @@ const REF_TABLE2 = [
 let pass = 0, fail = 0; const failed = [];
 const check = (n, c) => { if (c) pass++; else { fail++; failed.push(n); console.log(`  ✗ ${n}`); } };
 
-console.log('원문 대조 — Ann Geriatr Med Res 2018;22(3):121-129 (2026-08-26 e-agmr.org 확인)\n');
+console.log('Verification against the source — Ann Geriatr Med Res 2018;22(3):121-129 (checked at e-agmr.org, 2026-08-26)\n');
 
 console.log('[Table 1]');
 const ours1 = pim.table1.map((x) => x.drug);
-check(`항목 수 63 (원문 ${REF_TABLE1.length} / 우리 ${ours1.length})`, REF_TABLE1.length === 63 && ours1.length === 63);
-check('항목 집합 완전일치', JSON.stringify(ours1) === JSON.stringify(REF_TABLE1));
-REF_TABLE1.forEach((d) => check(`원문 항목 존재: ${d}`, ours1.includes(d)));
-ours1.forEach((d) => check(`원문에 없는 항목 없음: ${d}`, REF_TABLE1.includes(d)));
+check(`63 items (source ${REF_TABLE1.length} / here ${ours1.length})`, REF_TABLE1.length === 63 && ours1.length === 63);
+check('item sets match exactly', JSON.stringify(ours1) === JSON.stringify(REF_TABLE1));
+REF_TABLE1.forEach((d) => check(`present in the source: ${d}`, ours1.includes(d)));
+ours1.forEach((d) => check(`no item absent from the source: ${d}`, REF_TABLE1.includes(d)));
 
 console.log('[Table 2]');
-check(`조건 수 18 (원문 ${REF_TABLE2.length} / 우리 ${pim.table2.length})`, REF_TABLE2.length === 18 && pim.table2.length === 18);
-check('조건 id 순서 일치', JSON.stringify(pim.table2.map((c) => c.id)) === JSON.stringify(REF_TABLE2.map((c) => c.id)));
+check(`18 conditions (source ${REF_TABLE2.length} / here ${pim.table2.length})`, REF_TABLE2.length === 18 && pim.table2.length === 18);
+check('condition ids appear in the same order', JSON.stringify(pim.table2.map((c) => c.id)) === JSON.stringify(REF_TABLE2.map((c) => c.id)));
 REF_TABLE2.forEach((ref) => {
   const ours = pim.byCondition.get(ref.id);
-  if (!ours) { check(`조건 존재: ${ref.id}`, false); return; }
+  if (!ours) { check(`condition present: ${ref.id}`, false); return; }
   const tokens = ours.targets.map((t) => t.token);
-  ref.paperGroups.forEach((g) => check(`${ref.id} 원문 약물군 존재: ${g}`, tokens.includes(g)));
+  ref.paperGroups.forEach((g) => check(`${ref.id} source drug group present: ${g}`, tokens.includes(g)));
   const extra = tokens.filter((t) => !ref.paperGroups.includes(t));
   const allowed = ref.expanded || [];
-  check(`${ref.id} 원문에 없는 대상은 매핑 계층 확장분뿐 (${extra.length}건)`, extra.every((e) => allowed.includes(e)));
+  check(`${ref.id} targets beyond the source are mapping-layer expansions only (${extra.length})`, extra.every((e) => allowed.includes(e)));
 });
 
-console.log(`\n원문 대조: ${pass} 통과 / ${fail} 실패 (총 ${pass + fail}건)`);
-if (fail) { console.log('실패:\n - ' + failed.join('\n - ')); process.exit(1); }
-console.log('\n※ 항목 집합과 조건 구성은 원문과 일치. 사유 문구·용량 임계값의 자구 대조는 미완료(VERIFICATION.md 참조).');
+console.log(`\nverification against the source: ${pass} passed / ${fail} failed (${pass + fail} checks)`);
+if (fail) { console.log('failed:\n - ' + failed.join('\n - ')); process.exit(1); }
+console.log('\nNote: the item set and the structure of the conditions match the source. A word-for-word');
+console.log('      comparison of the rationale text and the dose thresholds is not yet complete. See');
+console.log('      VERIFICATION.md.');
