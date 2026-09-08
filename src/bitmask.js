@@ -7,7 +7,7 @@
  * Approach: fix the 18 conditions at bit positions 0 to 17 and precompute, per drug, an 18-bit mask
  *       of the conditions it matches. Evaluation is then a single AND against the patient's mask.
  *
- *   drugMask & patientMask  →  0이 아니면 판정, 켜진 비트가 곧 성립한 조건
+ *   drugMask & patientMask  ->  non-zero means a hit, and each set bit is a matching condition
  *
  * A mask is computed once per drug and cached, so screening large prescription sets, where the same
  * drug recurs, no longer walks the conditions at all. Co-prescription rules such as aspirin with

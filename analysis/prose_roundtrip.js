@@ -1,26 +1,31 @@
-/* 산문으로 내려간 판정 규칙을 생성형 모델이 되살릴 수 있는가
- *   node analysis/prose_roundtrip.js [모델] [반복]
+/* Can a generative model recover a rule that was demoted into prose?
+ *   node analysis/prose_roundtrip.js [model] [repeats]
  *
- * ── 왜 이 실험인가 ────────────────────────────────────────────────────────
- * 일본 국가 지침은 학회 기준의 「対象となる患者群」 전용 열을 없애고 그 조건을
- * 「推奨される使用法」 산문 안에 남겼다. 사람은 읽을 수 있으나 기계가 읽는 열에서는 사라졌다.
- * 본 연구는 이를 "삭제가 아니라 판정 축에서 문장으로의 강등"이라고 서술했다.
+ * ── Why this experiment ───────────────────────────────────────────────────
+ * Japan's national guidance removed the society criteria's dedicated 「対象となる患者群」 column and
+ * left the condition inside the 「推奨される使用法」 prose. A person can still read it; the column a
+ * machine reads is gone. This study describes that as demotion from an axis to a sentence rather
+ * than deletion.
  *
- * 그렇다면 당연한 반문이 따라온다. **대규모 언어모델로 산문에서 규칙을 다시 뽑으면 되지 않는가.**
- * 이 반문은 정당하고, 답은 측정으로만 할 수 있다.
+ * The obvious objection follows: why not extract the rule back out of the prose with a large
+ * language model? The objection is fair, and only a measurement can answer it.
  *
- * ── 설계 ──────────────────────────────────────────────────────────────────
- * 구조화된 (조건 → 대상약물) 규칙을 일본 지침과 같은 형식의 **산문으로 렌더링**한 뒤,
- * 모델에게 그 산문만 주고 구조를 복원시킨다. 원본 구조가 정답이다.
- *   구조 → 산문 → (모델) → 구조'      구조와 구조'를 비교한다.
+ * ── Design ────────────────────────────────────────────────────────────────
+ * A structured (condition to target drug) rule is rendered into prose in the same shape as the
+ * Japanese guidance, and the model is given only that prose and asked to recover the structure. The
+ * original structure is the ground truth.
+ *   structure -> prose -> (model) -> structure'   and the two structures are compared.
  *
- * 정답의 근거: 이 저장소의 표2 구조는 원문 대조 197건으로 검증돼 있다.
- * 모델의 사전지식이 아니라 **산문에 실제로 담긴 정보만으로** 복원 가능한지를 본다.
+ * The ground truth is sound because this repository's Table 2 structure passes 197 source-agreement
+ * checks.
+ * The question is whether recovery is possible from what the prose actually carries, not from the
+ * model's prior knowledge.
  *
- * ── 이 실험이 말할 수 있는 것과 없는 것 ───────────────────────────────────
- *  - 말할 수 있음: 산문이 판정 규칙의 무손실 전달 매체인가.
- *  - 말할 수 없음: 실제 일본 지침 원문에 대한 추출 성능. 우리가 만든 산문은 원문이 아니다.
- *  - 모델 한 종의 결과다. 다른 모델·다른 프롬프트에서 값이 달라질 수 있다.
+ * ── What this experiment can and cannot say ───────────────────────────────
+ *  - Can say: whether prose is a lossless carrier for a decision rule.
+ *  - Cannot say: extraction performance against the actual Japanese guidance. The prose here is ours,
+ *    not theirs.
+ *  - This is one model. Another model or another prompt may give a different figure.
  */
 'use strict';
 const pim = require('../src/index.js');
@@ -28,8 +33,8 @@ const pim = require('../src/index.js');
 const MODEL = process.argv[2] || 'qwen2.5:14b';
 const REPS = parseInt(process.argv[3] || '1', 10);
 
-/** 구조화된 규칙을 일본 지침과 같은 산문 형식으로 바꾼다.
- *  전용 열을 없애고 조건을 문장 안에 녹이는 것이 핵심이다. */
+/** Render a structured rule into prose in the shape of the Japanese guidance. The essential move is
+ *  removing the dedicated column and dissolving the condition into a sentence. */
 function toProse(c) {
   const names = c.targets.map((t) => t.nameKo);
   return `${names.join(', ')}은(는) ${c.condition} 환자에게는 가능한 한 사용을 피한다. `
@@ -44,16 +49,16 @@ const PROMPT = (prose) => `다음은 노인 약물요법 지침의 한 항목이
 반드시 아래 형식의 JSON만 출력하라. 설명을 붙이지 마라.
 {"condition":"환자 상태","drugs":["약물1","약물2"]}`;
 
-/** 모델에 묻는다. **반드시 HTTP API를 쓴다. CLI 를 쓰면 안 된다.**
+/** Query the model. Use the HTTP API. Do not use the CLI.
  *
- * 처음에는 `ollama run` 을 파이프로 호출했는데 파싱 실패율이 44%로 나왔다.
- * 원출력을 열어 보니 모델 출력은 정상이었고, CLI 가 (1) 스피너·줄지우기 제어문자를 섞고
- * (2) 터미널 폭에 맞춰 **JSON 문자열 안쪽에 줄바꿈을 삽입**하고 있었다.
- * 출력이 길수록 심해져서 대상 약물이 많은 조건만 실패했고, 그대로 보고했다면
- * "규칙이 복잡할수록 모델이 실패한다"는 **없는 발견**을 만들 뻔했다.
- * 측정값을 보고하기 전에 원출력을 확인해야 하는 이유가 이것이다.
+ * An early version piped `ollama run` and reported a 44% parse failure rate. Opening the raw output
+ * showed the model was fine and the CLI was (1) mixing in spinner and line-erase control characters
+ * and (2) inserting line breaks inside JSON strings to fit the terminal width.
+ * The effect grew with output length, so only conditions with many target drugs failed. Reported as
+ * it stood, it would have manufactured a finding that does not exist: that models fail as rules grow
+ * complex. This is why raw output must be inspected before any measurement is reported.
  *
- * HTTP API는 제어문자도 줄바꿈 삽입도 없고, format:"json" 으로 형식을 강제할 수 있다.
+ * The HTTP API adds no control characters and no line breaks, and format:"json" enforces the shape.
  */
 async function ask(prose) {
   const res = await fetch('http://localhost:11434/api/generate', {
@@ -61,7 +66,7 @@ async function ask(prose) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: MODEL, prompt: PROMPT(prose), stream: false, format: 'json',
-      options: { temperature: 0 },   // 재현성을 위해 고정
+      options: { temperature: 0 },   // fixed for reproducibility
     }),
   });
   if (!res.ok) return null;
@@ -72,7 +77,7 @@ async function ask(prose) {
 console.log(`산문 왕복 복원 — 모델 ${MODEL}, 조건 ${pim.table2.length}개 × ${REPS}회\n`);
 console.log('조건                     대상  복원  정확  누락  오생성');
 
-/** 약물명 비교. 표기 흔들림은 흡수하되 서로 다른 약을 같다고 하지 않는다. */
+/** Compare drug names. Absorb spelling variation without ever calling two different drugs the same. */
 const norm = (s) => String(s).replace(/\s|\(.*?\)|·/g, '').toLowerCase();
 
 console.log(`산문 왕복 복원 — 모델 ${MODEL}, 조건 ${pim.table2.length}개 × ${REPS}회\n`);
@@ -95,7 +100,8 @@ for (let r = 0; r < REPS; r++) {
     const fn = gold.size - tp;
     const fp = Math.max(0, pred.size - tp);
     TP += tp; FN += fn; FP += fp;
-    // 조건 자체가 복원됐는가. 약물만 맞고 조건을 놓치면 판정에 쓸 수 없다.
+    // Was the condition itself recovered? Getting the drugs right while losing the condition leaves
+    // nothing usable as a rule.
     const ok = norm(got.condition || '').includes(norm(c.label).slice(0, 3))
             || norm(c.condition).includes(norm(got.condition || '').slice(0, 3));
     if (ok) condOk++;

@@ -1,20 +1,21 @@
-/* 실제 사람에게 두 판정 축을 적용한다 — node analysis/nhanes.js
+/* Applying both axes to real people — node analysis/nhanes.js
  *
- * 본 연구의 가장 큰 한계는 두 축의 비교를 합성 코호트에서 했다는 점이다.
- * NHANES 2017-2018은 자격 심사 없이 공개되고 처방·기저질환·사망이 한 사람 단위로 연결되므로
- * 같은 비교를 실제 사람에게 다시 할 수 있다.
+ * The study's largest limitation was that the two axes were compared on a synthetic cohort. NHANES
+ * 2017-2018 is released without an access review and links prescriptions, conditions, and mortality
+ * at the person level, so the same comparison can be repeated on real people.
  *
- * ── 공정성을 위한 설계 ────────────────────────────────────────────────────
- * 두 축을 **같은 약물 사전**을 통과한 동일 입력에 적용한다. 사전에 없는 약물은 어느 축에도
- * 기여하지 않는다. 한쪽 축만 넓은 사전을 쓰면 비교가 성립하지 않는다.
+ * ── Design choices that keep the comparison fair ──────────────────────────
+ * Both axes are applied to the same input, passed through the same drug dictionary. A drug absent
+ * from the dictionary contributes to neither axis. Giving one axis a wider dictionary would void the
+ * comparison.
  *
- * ── 결과 해석에 반드시 병기할 것 ──────────────────────────────────────────
- *  - 미국 자료이고 한국의 처방 분포가 아니다.
- *  - 처방은 자기보고 30일 사용분이며 청구자료가 아니다.
- *  - 표2 18개 조건 중 8개만 확인 가능하다. 따라서 조건부 축의 판정량은
- *    **추정치가 아니라 하한**이다. 나머지 10개 조건이 관측되면 값은 올라간다.
- *  - 사망은 기술통계로만 보고한다. 추적 2년 내외로 짧고, PIM 노출은 동반질환 부담과
- *    강하게 얽혀 있어 보정 없는 연관을 인과로 읽으면 안 된다.
+ * ── Must accompany any reported figure ────────────────────────────────────
+ *  - This is US data, not the Korean prescribing distribution.
+ *  - Prescriptions are self-reported 30-day use, not claims.
+ *  - Only 8 of Table 2's 18 conditions are observable, so the condition axis count is a lower bound
+ *    rather than an estimate. Observing the other 10 would raise it.
+ *  - Mortality is reported descriptively only. Follow-up is about two years, and exposure is heavily
+ *    entangled with comorbidity burden, so an unadjusted association must not be read causally.
  */
 'use strict';
 const fs = require('fs');
@@ -31,13 +32,13 @@ if (!fs.existsSync(COHORT)) {
 }
 const data = JSON.parse(fs.readFileSync(COHORT, 'utf8'));
 
-/** 성분명을 판정 입력으로 바꾼다.
+/** Turn an ingredient name into evaluation input.
  *
- * 표1 성분은 엔진이 직접 해석하고, 표1 밖 성분은 보조 사전(drug_class_map)으로 해석한다.
- * 어느 쪽으로도 해석되지 않으면 null 을 돌려 **두 축 모두에서** 제외한다.
- * 한쪽 축에만 넓은 사전을 쓰면 비교가 성립하지 않는다.
+ * Table 1 ingredients are resolved by the engine; anything outside it is resolved by the auxiliary
+ * dictionary in drug_class_map. Anything neither resolves returns null and is excluded from both
+ * axes. Giving one axis a wider dictionary would void the comparison.
  *
- * NHANES 는 복합제를 "성분A; 성분B" 로 적으므로 분리해 각각 해석한다.
+ * NHANES writes combinations as "ingredient A; ingredient B", so they are split and resolved apart.
  */
 function toDrug(ing) {
   const k = pim.checkIngredient(ing);
@@ -47,10 +48,12 @@ function toDrug(ing) {
   return null;
 }
 
-/** 복합제·제형 표기를 성분 단위로 편다. 예: "acetaminophen; hydrocodone" → 두 성분 */
+/** Expand combination and formulation strings into ingredients, so "acetaminophen; hydrocodone"
+ * becomes two. */
 function splitIngredients(name) {
   return name.split(';').map((x) => x.trim())
-    // 투여 경로 표기를 떼어낸다. 전신 노출이 다른 국소·안과 제제는 그대로 두어 사전에서 걸러지게 한다.
+    // Strip route-of-administration labels. Topical and ophthalmic preparations are left in place so
+    // the dictionary filters them out, since systemic exposure differs.
     .filter(Boolean);
 }
 
@@ -65,8 +68,8 @@ data.people.forEach((p) => {
   resolvedDrugs += drugs.length;
   if (drugs.length) withAnyDrug++;
 
-  const byA = drugs.some((d) => hira.isCovered(d, d.cat));            // 약물 단독 축
-  const t2 = bm.check({ drugs, conditions: p.conditions }).table2;    // 조건부 축
+  const byA = drugs.some((d) => hira.isCovered(d, d.cat));            // drug-only axis
+  const t2 = bm.check({ drugs, conditions: p.conditions }).table2;    // condition axis
   const byB = t2.length > 0;
 
   if (byA) a++;
@@ -108,10 +111,10 @@ console.log(`  중복률 P(A|B)      ${(overlap * 100).toFixed(1)}%   기저율 
 console.log(`  φ 계수             ${phi.toFixed(3)}`);
 console.log(`  한계수확 P(B∧¬A)   ${(marginal * 100).toFixed(2)}%   조건부 축 판정의 ${(onlyB / b * 100).toFixed(1)}%`);
 
-// 어떤 조건이 실제로 공백을 만드는가
+// Which conditions actually create the gap
 const gap = {};
 rows.filter((r) => r.byB && !r.byA).forEach((r) => {
-  // 한 사람이 같은 조건으로 여러 번 걸릴 수 있으므로 조건 단위로 중복을 제거한다.
+  // One person can match the same condition more than once, so hits are deduplicated per condition.
   new Set(r.hits.map((h) => `${h.condition.label} + ${h.target.nameKo}`))
     .forEach((k) => { gap[k] = (gap[k] || 0) + 1; });
 });
@@ -119,11 +122,11 @@ console.log('\n국가 기준이 놓친 판정을 만든 (조건 + 대상) 조합
 Object.entries(gap).sort((x, y) => y[1] - x[1]).slice(0, 12)
   .forEach(([k, v]) => console.log(`  ${String(v).padStart(4)}명  ${k}`));
 
-// 사망은 기술통계로만
+// Mortality, descriptive only
 const elig = rows.filter((r) => r.died === 0 || r.died === 1);
 const rate = (f) => { const s = elig.filter(f); return s.length ? `${s.filter((r) => r.died === 1).length}/${s.length} (${(s.filter((r) => r.died === 1).length / s.length * 100).toFixed(1)}%)` : '-'; };
-// 한 규칙이 결과를 지배하면 그 결과는 그 규칙의 타당성에 통째로 걸린다.
-// 지배 규칙을 찾아 빼고 다시 계산해 결론이 버티는지 본다.
+// If one rule dominates the result, the result rests entirely on that rule's validity. Find the
+// dominant rule, remove it, recompute, and see whether the conclusion holds.
 const top = Object.entries(gap).sort((x, y) => y[1] - x[1])[0];
 if (top) {
   const [topKey, topN] = top;

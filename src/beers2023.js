@@ -2,7 +2,7 @@
  * AGS Beers Criteria 2023, Table 3, drug-disease and drug-syndrome interactions, structured for
  * comparison.
  *
- * 출처: 2023 American Geriatrics Society Beers Criteria® Update Expert Panel.
+ * Source: 2023 American Geriatrics Society Beers Criteria® Update Expert Panel.
  *   American Geriatrics Society 2023 updated AGS Beers Criteria for potentially
  *   inappropriate medication use in older adults.
  *   J Am Geriatr Soc. 2023;71(7):2052-2081. DOI: 10.1111/jgs.18372
