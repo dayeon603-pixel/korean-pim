@@ -27,7 +27,7 @@ const { MAP } = require('./drug_class_map.js');
 
 const COHORT = path.join(__dirname, 'nhanes_cohort.json');
 if (!fs.existsSync(COHORT)) {
-  console.error('코호트 파일이 없다. 먼저 실행: python3 analysis/nhanes_prepare.py');
+  console.error('cohort file not found. Run first: python3 analysis/nhanes_prepare.py');
   process.exit(1);
 }
 const data = JSON.parse(fs.readFileSync(COHORT, 'utf8'));
@@ -91,25 +91,25 @@ const phi = (() => {
 const overlap = both / (both + onlyB);
 const marginal = onlyB / N;
 
-console.log(`실제 진료자료 적용 — ${data.source}\n`);
-console.log(`대상 ${N}명 (${data.ageMin}세 이상, 처방 보유)`);
-console.log(`성분명 ${totalDrugs}건 중 사전 해석 ${resolvedDrugs}건 (${(resolvedDrugs / totalDrugs * 100).toFixed(1)}%)`);
-console.log(`확인 가능한 조건 ${data.mappedConditions.length}/18 — ${data.mappedConditions.join(', ')}`);
-console.log(`미확인 ${data.unmappedConditions.length}개 — ${data.unmappedConditions.join(', ')}\n`);
+console.log(`Applied to real records — ${data.source}\n`);
+console.log(`${N} people (aged ${data.ageMin}+, holding a prescription)`);
+console.log(`${resolvedDrugs} of ${totalDrugs} ingredient names resolved by the dictionary (${(resolvedDrugs / totalDrugs * 100).toFixed(1)}%)`);
+console.log(`conditions ascertainable ${data.mappedConditions.length}/18 — ${data.mappedConditions.join(', ')}`);
+console.log(`not ascertainable ${data.unmappedConditions.length} — ${data.unmappedConditions.join(', ')}\n`);
 
-console.log('두 판정 축의 분할표');
-console.log(`  약물 단독 축 판정 A      ${String(a).padStart(5)}명  ${pct(a)}`);
-console.log(`  조건부 축 판정   B      ${String(b).padStart(5)}명  ${pct(b)}`);
-console.log(`  둘 다                  ${String(both).padStart(5)}명`);
-console.log(`  A만                    ${String(onlyA).padStart(5)}명`);
-console.log(`  **B만 (국가 기준 공백)** ${String(onlyB).padStart(5)}명  ${pct(onlyB)}`);
-console.log(`  판정 없음               ${String(neither).padStart(5)}명`);
+console.log('Contingency table of the two axes');
+console.log(`  flagged by the drug-only axis A   ${String(a).padStart(5)}  ${pct(a)}`);
+console.log(`  flagged by the condition axis B   ${String(b).padStart(5)}  ${pct(b)}`);
+console.log(`  both                              ${String(both).padStart(5)}`);
+console.log(`  A only                            ${String(onlyA).padStart(5)}`);
+console.log(`  B only (the gap in the standard)  ${String(onlyB).padStart(5)}  ${pct(onlyB)}`);
+console.log(`  neither                           ${String(neither).padStart(5)}`);
 
-console.log('\n연관 지표');
-console.log(`  기저 발화율 P(A)   ${(a / N * 100).toFixed(1)}%   ← 중복률의 기준선`);
-console.log(`  중복률 P(A|B)      ${(overlap * 100).toFixed(1)}%   기저율 초과분 ${((overlap - a / N) * 100).toFixed(1)}%p`);
-console.log(`  φ 계수             ${phi.toFixed(3)}`);
-console.log(`  한계수확 P(B∧¬A)   ${(marginal * 100).toFixed(2)}%   조건부 축 판정의 ${(onlyB / b * 100).toFixed(1)}%`);
+console.log('\nAssociation');
+console.log(`  base rate P(A)      ${(a / N * 100).toFixed(1)}%   <- the baseline the overlap is read against`);
+console.log(`  overlap P(A|B)      ${(overlap * 100).toFixed(1)}%   exceeds the base rate by ${((overlap - a / N) * 100).toFixed(1)} points`);
+console.log(`  phi                 ${phi.toFixed(3)}`);
+console.log(`  marginal P(B,notA)  ${(marginal * 100).toFixed(2)}%   ${(onlyB / b * 100).toFixed(1)}% of everything the condition axis flags`);
 
 // Which conditions actually create the gap
 const gap = {};
@@ -118,9 +118,9 @@ rows.filter((r) => r.byB && !r.byA).forEach((r) => {
   new Set(r.hits.map((h) => `${h.condition.label} + ${h.target.nameKo}`))
     .forEach((k) => { gap[k] = (gap[k] || 0) + 1; });
 });
-console.log('\n국가 기준이 놓친 판정을 만든 (조건 + 대상) 조합');
+console.log('\n(condition + target) combinations behind the findings the standard misses');
 Object.entries(gap).sort((x, y) => y[1] - x[1]).slice(0, 12)
-  .forEach(([k, v]) => console.log(`  ${String(v).padStart(4)}명  ${k}`));
+  .forEach(([k, v]) => console.log(`  ${String(v).padStart(4)}  ${k}`));
 
 // Mortality, descriptive only
 const elig = rows.filter((r) => r.died === 0 || r.died === 1);
@@ -133,21 +133,26 @@ if (top) {
   const survives = rows.filter((r) => r.byB && !r.byA)
     .filter((r) => [...new Set(r.hits.map((h) => `${h.condition.label} + ${h.target.nameKo}`))]
       .some((k) => k !== topKey));
-  console.log(`\n지배 규칙 제거 검사`);
-  console.log(`  최다 조합 "${topKey}" ${topN}명 (공백 ${onlyB}명의 ${(topN / onlyB * 100).toFixed(1)}%)`);
-  console.log(`  이 조합을 빼면 공백은 ${survives.length}명 (${(survives.length / N * 100).toFixed(2)}%)로 줄어든다.`);
-  console.log(`  ※ 결과가 한 규칙에 크게 의존한다면 그 규칙의 임상적 타당성이 결론의 전제가 된다.`);
-  console.log(`  ※ 당뇨-베타차단제는 Kim 2018에는 있으나 Beers 2023 Table 3에는 없는 한국형 기준 고유 항목이다.`);
+  console.log(`\nLeave-out check for a dominant rule`);
+  console.log(`  largest combination "${topKey}" ${topN} people (${(topN / onlyB * 100).toFixed(1)}% of the ${onlyB} in the gap)`);
+  console.log(`  Removing it leaves a gap of ${survives.length} (${(survives.length / N * 100).toFixed(2)}%).`);
+  console.log(`  Note: if the result leaned heavily on one rule, that rule's clinical validity would`);
+  console.log(`        become a premise of the conclusion.`);
+  console.log(`  Note: diabetes with a beta blocker is unique to Kim 2018. Beers 2023 Table 3 does not`);
+  console.log(`        carry it.`);
 }
 
-console.log(`\n사망 (추적 중앙값 약 2년, 보정 없음) — 추적 적격 ${elig.length}명`);
-console.log(`  판정 없음        ${rate((r) => !r.byA && !r.byB)}`);
-console.log(`  약물 단독 축만    ${rate((r) => r.byA && !r.byB)}`);
-console.log(`  조건부 축만      ${rate((r) => !r.byA && r.byB)}`);
-console.log(`  두 축 모두       ${rate((r) => r.byA && r.byB)}`);
+console.log(`\nMortality (median follow-up about 2 years, unadjusted) — ${elig.length} eligible for follow-up`);
+console.log(`  flagged by neither      ${rate((r) => !r.byA && !r.byB)}`);
+console.log(`  drug-only axis only     ${rate((r) => r.byA && !r.byB)}`);
+console.log(`  condition axis only     ${rate((r) => !r.byA && r.byB)}`);
+console.log(`  both axes               ${rate((r) => r.byA && r.byB)}`);
 
-console.log('\n※ 미국 자료이며 한국의 처방 분포가 아니다. 처방은 자기보고 30일 사용분이다.');
-console.log('※ 18개 조건 중 8개만 확인 가능하므로 조건부 축의 판정량은 추정치가 아니라 **하한**이다.');
-console.log('※ 사망은 보정하지 않은 기술통계다. PIM 노출은 동반질환 부담과 얽혀 있어 인과로 읽으면 안 된다.');
+console.log('\nNote: US data, not a Korean prescribing distribution. Prescriptions are self-reported');
+console.log('      use over 30 days.');
+console.log('Note: only 8 of the 18 conditions can be ascertained here, so the volume the condition');
+console.log('      axis flags is a lower bound rather than an estimate.');
+console.log('Note: mortality is unadjusted descriptive statistics. PIM exposure is entangled with');
+console.log('      comorbidity burden, so none of it may be read causally.');
 
 module.exports = { N, a, b, both, onlyA, onlyB, neither, phi, overlap, marginal, rows };
