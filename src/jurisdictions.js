@@ -1,43 +1,52 @@
 /**
- * 국가 운영 계층별 조건부 판정 축 존치표 — 6개 관할.
+ * Retention of the condition-dependent axis by operating layer, across six jurisdictions.
  *
- * 배경: 이 저장소는 처음에 "학술 기준의 조건부 축은 국가 운영 기준으로 갈 때 탈락한다"를
- *   한국 사례(표2 18개 조건 → 심평원 0개)로 관찰했다. 그러나 N=1은 국가 특수성과 구별되지 않는다.
- *   그래서 1차 원문으로 판정 가능한 관할을 모아 같은 질문을 던졌다.
+ * Background: this repository first observed, from the Korean case alone, that the condition axis of
+ *   an academic criterion is dropped on the way to a national operating standard (18 conditions in
+ *   Table 2, none at HIRA). But N=1 cannot be distinguished from a national peculiarity, so the same
+ *   question was put to every jurisdiction that could be adjudicated from primary documents.
  *
- * 결과: **가설은 반증됐다.** 조건부 축을 판정 가능한 형태로 유지한 국가 운영 사례가 실재한다
- *   (스코틀랜드·잉글랜드). 대신 두 개의 규칙성이 관찰됐고, 이쪽이 설명력이 더 높다.
+ * Result: the hypothesis was refuted. National operating instruments that keep the condition axis in
+ *   computable form do exist (Scotland, England). Two regularities were observed instead, and they
+ *   explain more.
  *
- *   (i) 데이터 조건 — 지표가 얹히는 데이터에 진단정보가 있는가.
- *   (ii) 계층 기울기 — 지표가 지불에 얼마나 가까운가. 지불에 가까울수록 조건부 축이 사라진다.
+ *   (i) The data condition: does the data the indicator runs on carry a diagnosis?
+ *   (ii) A layer gradient: the closer an indicator sits to payment, the more often the condition
+ *        axis disappears.
  *
- * 계층(layer)의 정의. 같은 나라 안에서도 계층에 따라 답이 갈리므로 나라가 아니라 계층이 단위다.
- *   guideline  : 국가 발행 지침. 지불과 직결되지 않는다.
- *   cds        : 전국 임상시스템에 탑재된 판정 로직.
- *   measure    : 품질지표 기술사양. 산출은 되지만 그 자체로 돈이 움직이지는 않는다.
- *   rating     : 공개 등급평가. 결과가 공표된다.
- *   payment    : 진료비 지불·재정 인센티브 규칙.
+ * Layer definitions. Within one country the answer varies by layer, so the unit of analysis is the
+ * layer, not the country.
+ *   guideline  : nationally issued guidance, not tied to payment.
+ *   cds        : decision logic embedded in a national clinical system.
+ *   measure    : a quality-indicator specification. It is computed, but no money moves by itself.
+ *   rating     : public rating. The result is published.
+ *   payment    : reimbursement and financial-incentive rules.
  *
- * 표기 원칙
- *   conditionCount : 1차 원문에서 **실제로 센** 조건부 항목 수. 세지 못했으면 null.
- *   axisRetained   : 그 계층의 판정 로직에 약물-질환 축이 있는가. 판정 불가면 null.
- *   verified       : 1차 원문(정부·발행기관 문서)에 근거하는가.
- *   verifiedBy     : 근거의 등급. 이 둘은 성격이 달라 구분해 적는다.
- *                    'read'  = 2026-08-27 원문을 직접 열어 해당 문장·행을 눈으로 확인했다.
- *                    'agent' = 조사 단계에서 1차 원문 URL과 직접 인용문을 함께 받았으나
- *                              사람이 원문을 열어보지는 않았다. 인용문이 정확하다는 보장이 없다.
- *                    논문에 싣는 문장이 얹히는 항목은 'read' 여야 한다.
+ * Recording conventions
+ *   conditionCount : the number of condition-dependent items actually counted in the primary
+ *                    document. null where it could not be counted.
+ *   axisRetained   : whether the drug-disease axis is present in that layer's logic. null where it
+ *                    cannot be adjudicated.
+ *   verified       : whether the entry rests on a primary document from the government or issuing
+ *                    body.
+ *   verifiedBy     : the grade of that evidence. The two are different in kind and recorded apart.
+ *                    'read'  = on 2026-08-27 the document was opened and the sentence or row read
+ *                              directly.
+ *                    'agent' = a primary-document URL and a direct quotation were obtained during
+ *                              research, but no person opened the document. The quotation is not
+ *                              guaranteed accurate.
+ *                    Anything a sentence in the manuscript rests on must be 'read'.
  *
- * 절대 하지 않는 것: 관할 간 항목 수의 직접 비교. 세는 단위가 나라마다 다르다
- *   (성분/성분군/약효군/조건 statement/지표 rate). 비교 가능한 것은 축의 존재 여부와
- *   그것이 사라지는 계층뿐이다.
+ * Never done here: comparing item counts across jurisdictions. The counting unit differs by country
+ *   (ingredient, ingredient group, drug class, condition statement, indicator rate). What can be
+ *   compared is whether the axis is present, and at which layer it disappears.
  */
 'use strict';
 
 /** @typedef {'guideline'|'cds'|'measure'|'rating'|'payment'} Layer */
 
 const JURISDICTIONS = [
-  // ── 한국 ────────────────────────────────────────────────────────────────
+  // ── Korea ───────────────────────────────────────────────────────────────
   {
     id: 'kr-hira', region: '한국', layer: 'payment',
     instrument: '심평원 「노인의 부적절한 다약제 사용 관리 기준」 (2022)',
@@ -46,12 +55,12 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
-    verifiedBy: 'read',   // 부록 원문을 직접 대조했다 (test/compare_ingredient_level.js, 61/63)
+    verifiedBy: 'read',   // checked against the appendix itself (test/compare_ingredient_level.js, 61/63)
     note: '후보 297개 중 77성분·14계열 확정. 후보 출처표의 "Korea PIM 63"은 표1이며 '
         + '표2 18개 조건은 후보 목록에조차 없다. 성분 축은 61/63(96.8%) 검토, 조건 축은 0%.',
   },
 
-  // ── 일본 ────────────────────────────────────────────────────────────────
+  // ── Japan ───────────────────────────────────────────────────────────────
   {
     id: 'jp-mhlw', region: '일본', layer: 'guideline',
     instrument: '厚生労働省「高齢者の医薬品適正使用の指針(総論編)」別表2 (2018-05)',
@@ -60,7 +69,7 @@ const JURISDICTIONS = [
                  + '(별표 말미에 「より改変引用」으로 명기)',
     conditionCount: 0,
     axisRetained: false,
-    verifiedBy: 'read',   // 2026-08-27 별표2 전문 및 문서 전체 직접 확인
+    verifiedBy: 'read',   // 2026-08-27, appendix 2 in full and the whole document read directly
     verified: true,
     note: '학회 기준이 갖고 있던 「対象となる患者群」 전용 열이 국가 지침에서 사라진다. '
         + '별표2의 열 구성은 「分類 / 薬物(クラス又は一般名) / 推奨される使用法 / 主な薬物有害事象・理由」 '
@@ -86,7 +95,7 @@ const JURISDICTIONS = [
         + '「〜等を参考にすること」 참조문구로만 연결된다. 2026 개정에서도 축은 불변(100点→160点).',
   },
 
-  // ── 미국 ────────────────────────────────────────────────────────────────
+  // ── United States ───────────────────────────────────────────────────────
   {
     id: 'us-hedis-dde', region: '미국', layer: 'measure',
     instrument: 'NCQA HEDIS 「Potentially Harmful Drug-Disease Interactions in Older Adults (DDE)」',
@@ -95,7 +104,8 @@ const JURISDICTIONS = [
     conditionCount: 3,
     axisRetained: true,
     verified: true,
-    verifiedBy: 'read',   // 2026-08-27 MY2025 사양 직접 열람. 3 rate·분모분자 구조 확인
+    verifiedBy: 'read',   // 2026-08-27, MY2025 specification read directly; three rates and their numerator and
+                          // denominator structure confirmed
     note: '낙상력·치매·만성콩팥병 3개 조건. 질환=적격모집단(분모) / 약물=분자 구조로, '
         + 'Beers Table 3형 판정을 청구데이터 위에서 그대로 구현한다. '
         + '2023 Beers 개정에 맞춰 낙상 rate에 항콜린제를 **추가**(확장)했고 MY2025 확정본에 존속한다. '
@@ -110,7 +120,7 @@ const JURISDICTIONS = [
     conditionCount: 0,
     axisRetained: false,
     verified: true,
-    verifiedBy: 'read',   // 2026-08-27 두 문서 모두 직접 열람. 아래 인용문은 축자 대조를 마쳤다.
+    verifiedBy: 'read',   // 2026-08-27, both documents read directly; the quotation below was checked word for word
     note: '최종본 개정이력: "Removed the Potentially Harmful Drug-Disease Interactions in Older Adults '
         + '(DDE) and Follow-Up After High-Intensity Care for Substance Use Disorder (FUI) measures from '
         + 'the Medicare measure list." 잔존은 약물 단독 지표 DAE(가중치 1)뿐. '
@@ -136,7 +146,7 @@ const JURISDICTIONS = [
         + '존속해 단 한 해도 별점에 반영된 적이 없다.',
   },
 
-  // ── 잉글랜드 ────────────────────────────────────────────────────────────
+  // ── England ─────────────────────────────────────────────────────────────
   {
     id: 'eng-pincer', region: '잉글랜드', layer: 'cds',
     instrument: 'PINCER National Prescribing Safety Indicators (13개)',
@@ -145,7 +155,7 @@ const JURISDICTIONS = [
     conditionCount: 5,
     axisRetained: true,
     verified: true,
-    verifiedBy: 'read',   // 2026-08-27 Appendix 1 지표 전량 직접 대조
+    verifiedBy: 'read',   // 2026-08-27, every indicator in Appendix 1 checked directly
     note: '13개 중 5개가 진단코드를 분모로 요구한다(B2·B3 소화성궤양 Read code + NSAID/항혈소판제, '
         + 'F2 심부전 진단 + 경구 NSAID, G2 만성신부전 + 경구 NSAID, H2 천식 Read code + 비선택성 β차단제). '
         + '부록 표는 14행이지만 J2(FBC)·J3(LFT)이 한 지표의 두 검사라 원문 본문은 "13 evidence-based '
@@ -160,7 +170,8 @@ const JURISDICTIONS = [
     academicBasis: 'PINCER 지표군',
     conditionCount: 0,
     axisRetained: false,
-    verifiedBy: 'read',   // 2026-08-27 SMR-01A 분모 9항목 및 SMR-02A~D 정의 직접 대조
+    verifiedBy: 'read',   // 2026-08-27, the nine SMR-01A denominator items and the SMR-02A to D definitions
+                          // checked directly
     verified: true,
     note: '**같은 재정 인센티브 안에서 단계별로 갈린다.** 대상자 식별 지표 SMR-01A의 분모는 9개 항목이고 '
         + '그중 5개가 조건부다(소화성궤양 병력 + NSAID / 소화성궤양 병력 + 항혈소판제 / '
@@ -172,7 +183,7 @@ const JURISDICTIONS = [
         + '어느 분모에도 진단이 없다. 조건부 축은 대상자를 고를 때까지만 쓰이고 돈이 걸리는 단계에서 사라진다.',
   },
 
-  // ── 스코틀랜드 ──────────────────────────────────────────────────────────
+  // ── Scotland ────────────────────────────────────────────────────────────
   {
     id: 'sct-poly', region: '스코틀랜드', layer: 'cds',
     instrument: 'Scottish Government 「Polypharmacy Guidance 2026–2029」 Appendix D1 Table 40',
@@ -182,7 +193,7 @@ const JURISDICTIONS = [
     conditionCount: 6,
     axisRetained: true,
     verified: true,
-    verifiedBy: 'read',   // 2026-08-27 Table 40 데이터 19행 전량 대조
+    verifiedBy: 'read',   // 2026-08-27, all 19 data rows of Table 40 checked
     note: '**가장 강한 반례.** 데이터 19행 중 질환 진단을 분모 조건으로 요구하는 항목 6행'
         + '(치매+HbA1c<53, 천식 진단+비선택성 β차단제, CKD4/5 또는 eGFR<30+metformin, '
         + 'CKD5 또는 eGFR<10+colchicine, 유방암/에스트로겐의존암 기왕력+에스트로겐, '
@@ -192,7 +203,7 @@ const JURISDICTIONS = [
         + '(d)전국 임상시스템 탑재 — 네 조건을 모두 만족하는 유일한 확인 사례다.',
   },
 
-  // ── 스웨덴 ──────────────────────────────────────────────────────────────
+  // ── Sweden ──────────────────────────────────────────────────────────────
   {
     id: 'se-indicator', region: '스웨덴', layer: 'rating',
     instrument: 'Socialstyrelsen 국가지표 「Äldre med läkemedel som bör undvikas」',
@@ -208,7 +219,7 @@ const JURISDICTIONS = [
         + '(2017년판 PDF 원문 미확보로 diagnosspecifika 축의 항목 수는 미확인.)',
   },
 
-  // ── 대만 ────────────────────────────────────────────────────────────────
+  // ── Taiwan ──────────────────────────────────────────────────────────────
   {
     id: 'tw-nhia-pim', region: '대만', layer: 'measure',
     instrument: 'NHIA 「醫院以病人為中心門診整合照護計畫」 監測指標4',
@@ -240,7 +251,8 @@ const JURISDICTIONS = [
   },
 ];
 
-/** 판정 불가·비교 대상 부재 관할. 표본을 부풀리지 않기 위해 분리해 기록한다. */
+/** Jurisdictions that could not be adjudicated, or that have no comparable instrument. Recorded
+ * separately so the sample is not inflated. */
 const NOT_ASSESSABLE = [
   { region: '프랑스', reason: 'AMI-Alzheimer 국가 경보지표와 ROSP 노인 약물지표 양쪽 모두 1차 원문 접근 실패(has-sante.fr stream aborted, ameli.fr 봇 차단). 지불 연동 계층에서 조건부 축을 유지한 사례일 가능성이 남아 있다.' },
   { region: '네덜란드', reason: 'STOP-NL V2(2026-02-16)는 임상 주제별로 재편됐으나 국가 품질지표 세트를 조사하지 않았다.' },
@@ -254,11 +266,13 @@ const LAYER_KO = {
   rating: '공개 등급평가', payment: '지불·재정 인센티브',
 };
 
-/** 계층별 조건부 축 존치 집계. 판정 불가(null)는 분모에서 뺀다.
+/** Retention of the condition axis tallied by layer. Entries that could not be adjudicated (null)
+ * are excluded from the denominator.
  *
- * @param {{readOnly?: boolean}} [opt] readOnly=true 면 사람이 원문을 직접 열어 확인한 항목만 센다.
- *   전체 집계는 에이전트 보고분을 포함하므로, 기울기가 근거 등급에 의존하지 않는지
- *   확인하려면 두 집계를 비교해야 한다. 결론이 갈리면 그 사실을 논문에 적어야 한다.
+ * @param {{readOnly?: boolean}} [opt] With readOnly=true, only entries a person read directly are
+ *   counted. The full tally includes agent-reported entries, so comparing the two is how to check
+ *   that the gradient does not depend on the grade of evidence. If they disagree, the manuscript must
+ *   say so.
  */
 function byLayer(opt) {
   const pool = opt && opt.readOnly ? JURISDICTIONS.filter((j) => j.verifiedBy === 'read') : JURISDICTIONS;
@@ -276,7 +290,8 @@ function byLayer(opt) {
   });
 }
 
-/** 가설("조건부 축은 국가 운영화에서 반드시 탈락한다")의 반례. */
+/** Counterexamples to the hypothesis that the condition axis is always dropped on the way to a
+ * national operating standard. */
 function counterExamples() {
   return JURISDICTIONS.filter((j) => j.axisRetained === true);
 }
@@ -284,7 +299,7 @@ function counterExamples() {
 module.exports = {
   JURISDICTIONS, NOT_ASSESSABLE, LAYER_ORDER, LAYER_KO,
   byLayer, counterExamples,
-  /** 판정 가능한 관할 계층 수 = 표본 크기. 논문에 N으로 쓰는 값. */
+  /** Number of adjudicable jurisdiction-layers, which is the sample size reported as N. */
   get assessableCount() { return JURISDICTIONS.filter((j) => j.axisRetained !== null).length; },
   get regionCount() { return new Set(JURISDICTIONS.map((j) => j.region)).size; },
 };

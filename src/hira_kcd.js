@@ -1,27 +1,31 @@
 /**
- * 심평원 2022 보고서가 이미 저작한 KCD 결속과 국내 코호트 동반질환 실측치.
+ * KCD bindings the 2022 HIRA report had already authored, and the comorbidity figures it computed
+ * on a domestic cohort.
  *
- * ── 이 파일이 뒤집는 것 ────────────────────────────────────────────────────
- * 본 연구는 처음에 "학술 기준이 조건에 코드를 주지 않아 운영 주체가 값집합을 저작해야 하고,
- * 그 부담이 배분되지 않아 조건부 축이 배제되었다"고 보았다. 그러나 심평원 보고서 원문을
- * 직접 열람한 결과 더 정확한 사실이 확인되었다.
+ * ── What this file overturns ──────────────────────────────────────────────
+ * This study first held that the academic criteria give no codes for their conditions, so an
+ * operating body must author the value sets itself, and that the unallocated burden explained the
+ * exclusion of the condition axis. Reading the HIRA report directly established something more
+ * precise.
  *
- *   **결속은 이미 존재한다.** 같은 보고서의 <표 22>「동반질환 현황분석을 위한 질환명 및
- *   KCD 코드」가 13개 질환군에 KCD 코드를 지정하고 있으며, <표 25>에서 그 코드로
- *   다약제 노인 코호트의 동반질환 현황을 실제로 산출하였다.
+ *   The bindings already exist. Table 22 of that same report, listing disease names and KCD codes
+ *   for comorbidity analysis, assigns KCD codes to 13 disease groups, and Table 25 uses those codes
+ *   to compute the comorbidity profile of a polypharmacy cohort of older adults.
  *
- * 즉 자료도 있었고 결속도 있었다. 없었던 것은 **그 결속을 판정 기준에 적용하는 단계**다.
- * 조건부 축은 후보 목록에조차 오르지 않았고(검토율 0%), 확정된 기준은 약물 단독 축뿐이다.
- * 따라서 배제를 설명하는 것은 결속의 부재가 아니라 결속의 미적용이다.
+ * So both the data and the bindings were present. What was missing is the step of applying those
+ * bindings to the criteria themselves. The condition axis never entered the candidate pool at all,
+ * and the criteria that were adopted carry the drug-only axis. What explains the exclusion is not the
+ * absence of a binding but its non-application.
  *
- * ── 출처 ──────────────────────────────────────────────────────────────────
- * 건강보험심사평가원. 노인의 부적절한 다약제 사용 관리 기준 마련. 2022.
- * 발간등록번호 G000F8Q-2022-170. <표 22>(59쪽), <표 25>(63쪽), 본문 66쪽.
- * 2026-08-31 저자가 원문 PDF를 직접 열람하여 전사하였다.
+ * ── Source ────────────────────────────────────────────────────────────────
+ * Health Insurance Review and Assessment Service. Management Criteria for Inappropriate
+ * Polypharmacy in Older Adults. 2022.
+ * Publication number G000F8Q-2022-170. Table 22 (p. 59), Table 25 (p. 63), text p. 66.
+ * Transcribed by the author from the source PDF on 2026-08-31.
  */
 'use strict';
 
-/** <표 22> 동반질환 현황분석을 위한 질환명 및 KCD 코드. 원문 표기를 그대로 옮겼다. */
+/** Table 22: disease names and KCD codes used for comorbidity analysis, transcribed as printed. */
 const TABLE22 = [
   { no: 1, ko: '고혈압', en: 'Hypertension', kcd: ['I10', 'I11', 'I12', 'I13', 'I14', 'I15'] },
   { no: 2, ko: '고지혈증', en: 'Lipidemia', kcd: ['E78'] },
@@ -43,9 +47,10 @@ const TABLE22 = [
   { no: 13, ko: '우울증', en: 'Depressive disorders', kcd: ['F32', 'F33', 'F38', 'F39', 'F341', 'F348', 'F349', 'F412'] },
 ];
 
-/** <표 25> 2017년 다약제 사용 노인 코호트의 동반질환 현황. 환자수 단위는 천명. */
+/** Table 25: comorbidity profile of the 2017 polypharmacy cohort of older adults. Patient counts are
+ * in thousands. */
 const TABLE25 = {
-  cohortSize: 1532000,        // 1,036천명 / 67.6% 로 역산. 684,538 / 44.7% 와 일치한다.
+  cohortSize: 1532000,        // back-computed from 1,036 thousand at 67.6%; agrees with 684,538 at 44.7%
   prevalence: {
     암: 0.058, 고혈압: 0.676, 고지혈증: 0.356, 당뇨: 0.384, 심뇌혈관질환: 0.155,
     위궤양: 0.151, 만성신질환: 0.021, 간부전: 0.089, 호흡기계질환: 0.142,
@@ -57,10 +62,11 @@ const TABLE25 = {
       + '국민건강영양조사의 65세 이상 추정치는 이보다 크게 높다. 진단·코딩된 것만 잡히기 때문이다.',
 };
 
-/** 다약제 노인 중 약물 단독 축(77성분)에 해당한 환자. 보고서 본문 66쪽. */
+/** Patients in the polypharmacy cohort matched by the drug-only axis of 77 ingredients. Report
+ * text, p. 66. */
 const DRUG_AXIS_FLAGGED = { n: 684538, share: 0.447 };
 
-/** 표2의 18개 조건 중 <표 22>가 이미 코드를 지정한 것. */
+/** Those of Table 2's 18 conditions for which Table 22 had already assigned codes. */
 const BOUND_BY_TABLE22 = {
   htn: ['I10', 'I11', 'I12', 'I13', 'I14', 'I15'],
   dm: ['E10', 'E11', 'E12', 'E13', 'E14'],
@@ -73,27 +79,29 @@ const BOUND_BY_TABLE22 = {
   falls: ['S02', 'S12', 'S22', 'S32', 'S42', 'S52', 'S62', 'S72', 'S82', 'S92'],
 };
 
-/** 표2 조건 중 <표 22>에 없어 본 연구가 새로 결속해야 했던 것. */
+/** Table 2 conditions absent from Table 22, which this study had to bind itself. */
 const NOT_BOUND = ['insomnia', 'parkinson', 'arrhythmia', 'age80_primary',
   'constipation', 'bph', 'hyponatremia', 'bleeding', 'glaucoma'];
 
 
-/** <표 35>·<표 37> 부적절 다약제 사용에 따른 부정적 건강결과.
+/** Tables 35 and 37: adverse health outcomes associated with inappropriate polypharmacy.
  *
- * 이 표들이 중요한 이유는 결과 수치 자체보다 **모형의 보정변수**에 있다.
- * Model2·Model3 은 동반질환(암·심뇌혈관질환·만성 신질환·호흡기계질환·치매·우울증)을
- * 교란변수로 보정한다. 즉 <표 22>의 KCD 결속은 이 보고서 안에서 세 번 사용되었다.
- *   (1) 코호트 동반질환 현황 기술 <표 25>
- *   (2) 부적절 다약제 그룹별 특성 비교
- *   (3) 건강결과 모형의 보정변수 <표 37>
- * 그러나 **판정 기준에는 사용되지 않았다.** 결속의 부재가 아니라 적용 범위의 문제다.
+ * These tables matter less for their outcome figures than for the covariates in the models. Models 2
+ * and 3 adjust for comorbidity (cancer, cardio-cerebrovascular disease, chronic kidney disease,
+ * respiratory disease, dementia, depression) as confounders. The KCD bindings of Table 22 are
+ * therefore used three times within this report.
+ *   (1) describing the cohort's comorbidity profile, Table 25
+ *   (2) comparing characteristics across inappropriate-polypharmacy groups
+ *   (3) as covariates in the health-outcome models, Table 37
+ * They are not used in the criteria themselves. The issue is where the binding was applied, not
+ * whether one existed.
  */
 const OUTCOMES = {
-  rates: {   // <표 35> 부적절 다약제 사용 여부별 발생률
+  rates: {   // Table 35: incidence by inappropriate-polypharmacy status
     inappropriate: { 입원: 0.318, 응급실: 0.184, 사망: 0.025 },
     appropriate: { 입원: 0.235, 응급실: 0.129, 사망: 0.018 },
   },
-  aOR: {     // <표 37> Model3 (성별·연령·의료보장·동반질환·ECI·외래방문 보정)
+  aOR: {     // Table 37, Model 3, adjusted for sex, age, insurance type, comorbidity, ECI, outpatient visits
     입원: { est: 1.32, ci: [1.31, 1.34] },
     응급실: { est: 1.34, ci: [1.32, 1.35] },
     사망: { est: 1.35, ci: [1.30, 1.39] },
@@ -104,7 +112,7 @@ const OUTCOMES = {
       + '인정한 동반질환이, 판정 기준에서는 후보에도 오르지 않았다.',
 };
 
-/** 보정변수 6개 중 표2 조건과 대응하는 것. */
+/** Those of the six covariates that correspond to a Table 2 condition. */
 const ADJUSTED_MATCHING_TABLE2 = {
   심뇌혈관질환: ['hf', 'stroke_secondary'],
   '만성 신질환': ['ckd'],
