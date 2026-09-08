@@ -269,16 +269,18 @@ check('합산 항목을 분할한 경우 hira-split 으로 구분',
   ['hf', 'stroke_secondary', 'copd'].every((k) => KOREA_SOURCE[k] === 'hira-split'));
 
 section('14. 결속 선택의 판정 변동 (설계 무결성)');
-// 이 실험은 "결속이 저작자마다 달라진다"를 재는 것이므로, 두 변형이 모두 원문에서
-// 방어 가능해야 성립한다. 한쪽을 일부러 엉터리로 만들면 큰 차이가 나오는 게 당연해진다.
+// The experiment measures whether a binding varies by author, so it holds only if both variants are
+// defensible from the source. Making one deliberately bad would guarantee a large gap.
 const sensSrc = require('fs').readFileSync('./analysis/binding_sensitivity.js', 'utf8');
-check('두 변형 모두 원문에서 방어 가능함을 명시', /둘 다 방어 가능/.test(sensSrc));
-check('어느 결속이 옳은지 판정하지 않음을 명시', /어느 결속이 옳은지 판정하지 않는다/.test(sensSrc));
+check('both variants stated to be defensible from the source', /defensible from the source/.test(sensSrc));
+check('states that neither binding is declared correct', /no correct answer/.test(sensSrc));
 check('변형 근거(why)를 항목마다 기록', (sensSrc.match(/why:/g) || []).length >= 10);
-check('저자가 만든 변형이며 실제 기관 값집합이 아님을 명시',
-  /다른 기관이 실제 저작한 값집합이 아니다/.test(sensSrc));
+check('variants stated to be the author\'s, not an institution\'s value set',
+  /value set authored by another institution/.test(sensSrc));
 // 절대 비율을 유병률로 읽지 못하도록 경고가 남아 있어야 한다
-check('중환자실 표본 경고 유지', /일반 노인 유병률로 읽으면 안 된다/.test(sensSrc));
+// The phrase wraps across comment lines, so the pattern tolerates the wrap and its leading asterisk.
+check('intensive care sample caveat retained',
+  /not the prevalence of[\s*]+a general older population/.test(sensSrc));
 
 section('13. 용어 결속 측정');
 const bind = require('../src/binding.js');
