@@ -1,28 +1,30 @@
 /**
- * ICD-9-CM / ICD-10-CM 진단코드 → 한국형 PIM 2018 표2 조건 매핑.
+ * ICD-9-CM and ICD-10-CM diagnosis codes mapped to the Table 2 conditions of the Korean PIM 2018.
  *
- * 목적: 실제 진료기록의 진단코드를 표2의 18개 조건으로 옮겨 조건부 판정을 돌리기 위한 계층.
+ * Purpose: the layer that turns diagnosis codes in real records into Table 2's 18 conditions so the
+ * condition axis can be evaluated.
  *
- * ⚠ 이 매핑은 논문에 없다. 표2는 조건을 임상 용어("낙상·골절 병력")로만 기술하고
- *   코드 범위를 지정하지 않는다. 아래 코드 범위는 **우리가 정한 조작적 정의**이며,
- *   범위를 넓히거나 좁히면 판정 건수가 달라진다. 임상 검토를 받지 않았다.
+ * This mapping is not in the article. Table 2 states its conditions in clinical prose, such as a
+ *   history of falls or fracture, and specifies no code ranges. The ranges below are our operational
+ *   definition. Widening or narrowing them changes the counts. They have had no clinical review.
  *
- * 원칙
- *  - 접두 일치(prefix match)를 쓴다. I50이면 I50.9, I5043 등이 모두 걸린다.
- *  - 병력(history) 조건은 현 진단과 병력 코드(Z/V)를 함께 본다.
- *  - 애매한 조건은 좁게 잡는다. 넓게 잡으면 판정이 과대추정되기 때문이다.
- *  - 연령 조건(80세 이상 1차 예방)은 진단이 아니므로 여기서 다루지 않고 호출자가 넣는다.
+ * Rules
+ *  - Prefix matching. I50 matches I50.9, I5043, and so on.
+ *  - History conditions look at both current diagnoses and history codes (Z and V).
+ *  - Ambiguous conditions are drawn narrowly, since drawing them widely over-counts.
+ *  - The age condition, primary prevention at 80 and over, is not a diagnosis and is supplied by the
+ *    caller rather than handled here.
  */
 'use strict';
 
 const MAP = {
-  // 섬망·치매·인지장애 — Kim 표2는 셋을 한 항목으로 묶는다
+  // delirium, dementia, cognitive impairment — Kim's Table 2 bundles all three into one item
   dementia: {
     icd10: ['F00', 'F01', 'F02', 'F03', 'F05', 'G30', 'G31'],
     icd9:  ['290', '2941', '2942', '2948', '3310', '2930'],
     note: '치매(F00-F03, G30), 섬망(F05, 293.0), 기타 인지장애 포함',
   },
-  // 낙상·골절·실신·기립성 저혈압 병력
+  // history of falls, fracture, syncope, orthostatic hypotension
   falls: {
     icd10: ['W00', 'W01', 'W06', 'W07', 'W08', 'W10', 'W18', 'W19', 'Z9181', 'S72', 'R55', 'I951'],
     icd9:  ['E880', 'E881', 'E884', 'E885', 'E888', 'V1588', '820', '7802', '4580'],
@@ -43,10 +45,10 @@ const MAP = {
   bleeding:      { icd10: ['D68', 'D69', 'K922', 'I60', 'I61', 'I62', 'K920'], icd9: ['286', '287', '5789', '430', '431', '432'], note: '응고장애·출혈(현증)' },
   dm:            { icd10: ['E10', 'E11', 'E13'],       icd9: ['250'],            note: '당뇨' },
   glaucoma:      { icd10: ['H40'],                     icd9: ['365'],            note: '녹내장' },
-  // age80_primary 는 진단이 아니라 연령 조건이므로 제외
+  // age80_primary is an age condition, not a diagnosis, so it is excluded
 };
 
-/** 진단코드 목록 → 표2 조건 id 배열 */
+/** Diagnosis codes to an array of Table 2 condition ids. */
 function conditionsFromIcd(codes) {
   const on = new Set();
   (codes || []).forEach(({ code, version }) => {

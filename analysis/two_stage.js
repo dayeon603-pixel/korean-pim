@@ -2,7 +2,7 @@
  *
  * What changed. The earlier reading of this repository was a single gradient: the
  * condition-dependent axis is lost as a specification moves toward payment. The HIRA
- * antibiotic indicators refute that as stated. 급성상기도감염 항생제처방률 carries a KCD
+ * antibiotic indicators refute that as stated. the acute upper respiratory infection antibiotic prescribing rate carries a KCD
  * denominator (J00-J06) into a differential-payment adjustment of up to five percent.
  * Payment proximity therefore does not force the loss.
  *

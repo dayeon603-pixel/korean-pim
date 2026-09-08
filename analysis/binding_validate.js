@@ -1,18 +1,19 @@
-/* 우리가 저작한 조건 결속을 실제 코드화 자료에 대고 검증한다.
- *   node analysis/binding_validate.js <MIMIC demo hosp 디렉터리>
+/* Check the condition bindings we authored against real coded data.
+ *   node analysis/binding_validate.js <MIMIC demo hosp directory>
  *
- * ── 무엇을 검증하는가 ─────────────────────────────────────────────────────
- * 이 저장소의 icd_map 은 학술 기준이 임상 용어로만 쓴 조건을 진단코드 범위로 옮긴 것이다.
- * 원문에 없는 결속이므로 **우리가 정한 조작적 정의**이고, 그대로 내놓으면 근거가 없다.
- * 최소한 두 가지는 확인할 수 있다.
- *   (1) 해석 가능성 — 지정한 코드 범위가 실제 코드화된 진료기록에 실제로 걸리는가.
- *       걸리지 않는 범위는 오타이거나 실무에서 쓰이지 않는 코드다.
- *   (2) 상대 빈도 — 걸리는 조건들의 상대 순위가 임상적으로 납득 가능한가.
+ * ── What is checked ───────────────────────────────────────────────────────
+ * The icd_map in this repository turns conditions the academic criteria state in clinical prose into
+ * diagnosis-code ranges. That binding is absent from the source, so it is our operational definition
+ * and carries no authority on its own. Two things can at least be checked.
+ *   (1) Resolvability: whether the specified ranges actually match coded records. A range that
+ *       matches nothing is either a typo or a code unused in practice.
+ *   (2) Relative frequency: whether the ranking of matched conditions is clinically plausible.
  *
- * ── 무엇을 검증하지 못하는가 ──────────────────────────────────────────────
- * 정확도(민감도·특이도)는 검증하지 못한다. 정답 라벨이 없기 때문이다.
- * MIMIC-IV Demo 는 미국 중환자실 100명이므로 여기 빈도를 일반 노인 유병률로 읽으면 안 된다.
- * ICU 코호트는 급성기 진단이 과대표되고 만성 경증 조건이 과소표된다.
+ * ── What cannot be checked ────────────────────────────────────────────────
+ * Accuracy, meaning sensitivity and specificity, cannot be checked. There are no ground-truth labels.
+ * The MIMIC-IV demo is 100 US intensive care patients, so these frequencies must not be read as the
+ * prevalence of a general older population. An ICU cohort over-represents acute diagnoses and
+ * under-represents mild chronic conditions.
  */
 'use strict';
 const fs = require('fs');
@@ -24,7 +25,7 @@ const icd = require('./icd_map.js');
 const dir = process.argv[2];
 if (!dir) { console.error('사용법: node analysis/binding_validate.js <hosp 디렉터리>'); process.exit(1); }
 
-/** gz csv 를 읽어 헤더 기준 객체 배열로 돌려준다. */
+/** Read a gzipped CSV and return an array of objects keyed by the header row. */
 function readCsv(name) {
   const raw = zlib.gunzipSync(fs.readFileSync(path.join(dir, name))).toString('utf8');
   const rows = raw.trim().split('\n');
@@ -39,7 +40,7 @@ const dx = readCsv('diagnoses_icd.csv.gz');
 const pts = readCsv('patients.csv.gz');
 const age = Object.fromEntries(pts.map((p) => [p.subject_id, parseInt(p.anchor_age, 10)]));
 
-// 65세 이상만 본다. 표2는 노인 기준이다.
+// Aged 65 and over only. Table 2 is criteria for older adults.
 const old = new Set(Object.entries(age).filter(([, a]) => a >= 65).map(([s]) => s));
 const byPt = {};
 dx.forEach((d) => {

@@ -1,22 +1,23 @@
 /**
- * 실제 진료기록에 대한 조건부 판정 시연 — MIMIC-IV Clinical Database Demo v2.2
+ * Condition-axis evaluation demonstrated on real records — MIMIC-IV Clinical Database Demo v2.2
  *
- * 실행: node analysis/mimic_demo.js <MIMIC demo hosp 디렉터리>
+ * Run: node analysis/mimic_demo.js <MIMIC demo hosp directory>
  *
- * 데이터: MIMIC-IV Clinical Database Demo v2.2 (환자 100명).
- *   PhysioNet 공개 배포본이며 **자격 심사 없이 접근 가능**하다(ODC-BY 1.0).
+ * Data: MIMIC-IV Clinical Database Demo v2.2, 100 patients.
+ *   A PhysioNet open release, accessible without a credentialing review (ODC-BY 1.0).
  *   Johnson A, Bulgarelli L, Pollard T, Horng S, Celi LA, Mark R.
  *   MIMIC-IV Clinical Database Demo (version 2.2). PhysioNet. 2023.
  *
- * ⚠ 이것이 무엇이고 무엇이 아닌가
- *   맞다: 한국형 PIM 2018 판정 엔진이 **실제 진료기록**에서 동작함을 보이는 시연.
- *   아니다: 한국 노인의 PIM 노출률 추정. MIMIC은 **미국 중환자실 입원 기록**이고
- *          환자 100명 규모다. 여기서 나온 비율을 한국 역학 수치로 읽으면 안 된다.
+ * What this is and is not
+ *   It is: a demonstration that the Korean PIM 2018 engine runs on real clinical records.
+ *   It is not: an estimate of PIM exposure among Korean older adults. MIMIC holds US intensive care
+ *          admissions for 100 patients. These rates must not be read as Korean epidemiology.
  *
- * 남은 한계
- *   - 약물명 매핑은 문자열 정규화 기반이며 RxNorm 등 표준 코드를 거치지 않았다.
- *   - ICD→조건 매핑은 우리가 정한 조작적 정의이며 임상 검토를 받지 않았다.
- *   - 입원 처방이라 외래 다제약물 양상과 다르다.
+ * Remaining limits
+ *   - Drug name mapping is string normalisation and does not pass through RxNorm or any standard
+ *     code system.
+ *   - The ICD-to-condition mapping is our operational definition and has had no clinical review.
+ *   - These are inpatient prescriptions, which differ from outpatient polypharmacy.
  */
 'use strict';
 const fs = require('fs');
@@ -34,7 +35,7 @@ function readCsvGz(file) {
   const lines = text.split('\n').filter((l) => l.length);
   const head = lines[0].split(',');
   return lines.slice(1).map((l) => {
-    // 따옴표 안 쉼표 처리
+    // handle commas inside quoted fields
     const cells = []; let cur = '', q = false;
     for (const ch of l) {
       if (ch === '"') q = !q;
@@ -46,7 +47,7 @@ function readCsvGz(file) {
   });
 }
 
-// ── 약물명 정규화: MIMIC은 상품명·제형·염 표기가 섞여 있다 ──
+// ── Drug name normalisation: MIMIC mixes brand names, formulations, and salt forms ──
 const STRIP = /\b(iv|po|oral|inj|injection|tablet|tab|cap|capsule|solution|soln|syringe|flush|bag|premix|human|citrate|sulfate|hcl|hydrochloride|sodium|tartrate|succinate|maleate|besylate|mesylate|fumarate|bitartrate|acetate|conjugated|suspension|patch|buffered|disintegrating|protocol|ciwa|desensitization)\b/g;
 function normDrug(s) {
   return String(s || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(STRIP, ' ')

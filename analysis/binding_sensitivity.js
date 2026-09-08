@@ -1,28 +1,31 @@
-/* 결속을 다르게 그으면 판정이 얼마나 달라지는가
- *   node analysis/binding_sensitivity.js <MIMIC demo hosp 디렉터리>
+/* How much does a verdict move when the binding is drawn differently?
+ *   node analysis/binding_sensitivity.js <MIMIC demo hosp directory>
  *
- * ── 왜 재는가 ─────────────────────────────────────────────────────────────
- * 본 연구는 "학술 기준이 조건을 임상 용어로만 쓰므로 값집합을 저작해야 하고,
- * 저작 결과는 저작자마다 달라질 수 있다"고 주장한다. 그러나 주장만으로는 부족하다.
- * 같은 조건문을 서로 다르게, 그러나 **둘 다 방어 가능하게** 결속했을 때
- * 판정 건수가 얼마나 벌어지는지를 재야 그 주장이 측정이 된다.
+ * ── Why measure this ──────────────────────────────────────────────────────
+ * The study argues that academic criteria state their conditions in clinical prose, so a value set
+ * must be authored, and that different authors may produce different ones. An argument is not enough.
+ * It becomes a measurement only by binding the same condition statement two different ways, both
+ * defensible from the source, and measuring how far the counts separate.
  *
- * ── 설계 ──────────────────────────────────────────────────────────────────
- * 원문이 여러 개념을 한 조건에 묶어 둔 항목을 고른다. 예컨대 표2의 낙상 조건은
- * 「낙상·골절·실신·기립성 저혈압 병력」으로 네 개념을 묶는다. 이때
- *   좁은 결속 — 조건명의 핵심 개념만 (낙상 사건·낙상 병력)
- *   넓은 결속 — 원문이 열거한 개념 전부 (+ 골절·실신·기립성 저혈압)
- * 둘 다 원문에서 방어할 수 있다. 어느 쪽이 옳은지 원문은 말하지 않는다.
+ * ── Design ────────────────────────────────────────────────────────────────
+ * Pick items where the source bundles several concepts into one condition. Table 2's falls condition,
+ * for instance, bundles four: history of falls, fracture, syncope, and orthostatic hypotension.
+ *   Narrow binding: only the core concept named in the condition (fall events, history of falls).
+ *   Wide binding: every concept the source enumerates (adding fracture, syncope, orthostatic
+ *   hypotension).
+ * Both are defensible from the source, which does not say which is correct.
  *
- * ── 해석 ──────────────────────────────────────────────────────────────────
- * 두 결속의 판정 건수 차이가 크다면, 그 조건의 지표값은 결속 저작자의 선택에
- * 좌우된다. 이는 결속을 공개하지 않은 지표가 재현될 수 없음을 뜻한다.
- * 반대로 차이가 작다면 그 조건은 결속 선택에 둔감하다.
+ * ── Interpretation ────────────────────────────────────────────────────────
+ * A large gap between the two means that condition's indicator value depends on whoever authored the
+ * binding, which is to say an indicator that does not publish its binding cannot be reproduced. A
+ * small gap means the condition is insensitive to that choice.
  *
- * ── 한계 ──────────────────────────────────────────────────────────────────
- *  - 어느 결속이 옳은지 판정하지 않는다. 정답이 없기 때문이다. 벌어지는 폭만 잰다.
- *  - MIMIC-IV Demo 중환자실 44명이므로 절대 비율은 일반 노인 유병률이 아니다.
- *  - 두 변형은 저자가 만든 것이며 실제 다른 기관이 저작한 값집합이 아니다.
+ * ── Limits ────────────────────────────────────────────────────────────────
+ *  - No verdict is given on which binding is correct, because there is no correct answer. Only the
+ *    spread is measured.
+ *  - The MIMIC-IV demo holds 44 intensive care patients, so absolute rates are not the prevalence of
+ *    a general older population.
+ *  - Both variants are the author's. Neither is a value set authored by another institution.
  */
 'use strict';
 const fs = require('fs');
@@ -43,7 +46,8 @@ function readCsv(name) {
   });
 }
 
-/** 원문이 여러 개념을 묶어 둔 조건. 좁게/넓게 둘 다 원문에서 방어된다. */
+/** Conditions where the source bundles several concepts. Both narrow and wide readings are
+ * defensible from it. */
 const VARIANTS = {
   falls: {
     text: '낙상·골절·실신·기립성 저혈압 병력',
