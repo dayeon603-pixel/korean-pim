@@ -1,10 +1,12 @@
-/* 국가 기준 공백 측정 (대규모) — node test/measure_gap.js [건수] [반복]
+/* Measuring the gap left by the national standard, at scale — node test/measure_gap.js [n] [reps]
  *
- * 심평원 2022 국가 기준은 약물 단독 기준이라 기저질환 조건부 판정을 할 수 없다.
- * 같은 처방을 두 기준으로 판정해 "국가 기준으로는 판정되지 않고 표2로만 판정되는" 비율을 센다.
- * 시드를 바꿔 여러 번 돌려 추정치가 안정적인지 함께 본다.
+ * The 2022 HIRA national standard is drug-only, so it cannot make a condition-conditioned finding.
+ * The same prescriptions are run through both standards to count the share that the national
+ * standard does not flag and only Table 2 does. Several seeds are run to show whether the estimate
+ * is stable.
  *
- * 코호트 생성기는 test/cohort.js 로 분리했다. test_ncqa_correlation.js 가 같은 코호트를 써야 하기 때문이다.
+ * The cohort generator lives in test/cohort.js because test_ncqa_correlation.js must draw from the
+ * same cohort.
  */
 'use strict';
 const { run } = require('./cohort.js');
@@ -12,8 +14,8 @@ const { run } = require('./cohort.js');
 const N = parseInt(process.argv[2] || '1000000', 10);
 const REPS = parseInt(process.argv[3] || '5', 10);
 
-console.log(`국가 기준 공백 측정 — ${N.toLocaleString()}건 × 시드 ${REPS}개\n`);
-console.log('시드        국가기준     표2      둘다   국가만   표2만(공백)   표2 중 놓친 비율');
+console.log(`Gap left by the national standard — ${N.toLocaleString()} prescriptions x ${REPS} seeds\n`);
+console.log('seed        national   Table 2     both   nat only   T2 only (gap)   share of T2 missed');
 const gaps = [], shares = [];
 for (let r = 0; r < REPS; r++) {
   const seed = 20260902 + r * 7919;
@@ -25,6 +27,6 @@ for (let r = 0; r < REPS; r++) {
 }
 const mean = (a) => a.reduce((x,y)=>x+y,0)/a.length;
 const sd = (a) => { const m = mean(a); return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1)); };
-console.log(`\n공백 비율        평균 ${mean(gaps).toFixed(3)}%  표준편차 ${sd(gaps).toFixed(4)}  범위 ${Math.min(...gaps).toFixed(2)}~${Math.max(...gaps).toFixed(2)}`);
-console.log(`표2 중 놓친 비율 평균 ${mean(shares).toFixed(3)}%  표준편차 ${sd(shares).toFixed(4)}  범위 ${Math.min(...shares).toFixed(2)}~${Math.max(...shares).toFixed(2)}`);
-console.log(`\n총 ${(N * REPS).toLocaleString()}건 판정. 합성 데이터이며 실제 처방 분포가 아니다.`);
+console.log(`\ngap rate            mean ${mean(gaps).toFixed(3)}%  sd ${sd(gaps).toFixed(4)}  range ${Math.min(...gaps).toFixed(2)}-${Math.max(...gaps).toFixed(2)}`);
+console.log(`share of T2 missed  mean ${mean(shares).toFixed(3)}%  sd ${sd(shares).toFixed(4)}  range ${Math.min(...shares).toFixed(2)}-${Math.max(...shares).toFixed(2)}`);
+console.log(`\n${(N * REPS).toLocaleString()} prescriptions adjudicated. Synthetic data, not a real prescribing distribution.`);
