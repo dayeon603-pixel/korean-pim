@@ -307,19 +307,21 @@ check('결속 체계를 명시하고 KCD 연계를 밝힘',
   /ICD-10/.test(ob.system) && /KCD-8/.test(ob.note));
 
 section('12. 산문 왕복 실험의 계측 건전성');
-// 이 실험은 두 번 연속 계측 장치 결함으로 없는 발견을 만들 뻔했다.
-//   1차: ollama CLI 가 제어문자를 섞어 파싱 실패율 44%
-//   2차: CLI 가 터미널 폭에 맞춰 JSON 문자열 안에 줄바꿈을 삽입
-// 둘 다 모델 출력은 정상이었다. CLI 경로를 다시 쓰지 못하도록 시험으로 막는다.
+// This experiment twice came close to manufacturing a finding that does not exist, both times
+// through a fault in the instrument rather than the model.
+//   First: the ollama CLI mixed in control characters, giving a 44% parse failure rate.
+//   Second: the CLI inserted line breaks inside JSON strings to fit the terminal width.
+// The model output was fine in both cases. These checks stop anyone returning to the CLI path.
 const roundtripSrc = require('fs').readFileSync('./analysis/prose_roundtrip.js', 'utf8');
-check('산문 왕복 실험이 CLI 가 아니라 HTTP API 를 쓴다',
+check('prose round-trip uses the HTTP API, not the CLI',
   /localhost:11434\/api\/generate/.test(roundtripSrc) && !/execFileSync/.test(roundtripSrc));
-check('출력 형식을 json 으로 강제', /format:\s*'json'/.test(roundtripSrc));
-check('재현성을 위해 temperature 0 고정', /temperature:\s*0/.test(roundtripSrc));
-// 계측 결함으로 잘못된 결론에 갈 뻔한 경위를 코드에 남겨 둔다. 지우면 시험이 깨진다.
-check('계측 장치 결함 경위가 코드에 기록됨',
-  /없는 발견/.test(roundtripSrc) && /원출력을 확인/.test(roundtripSrc));
-check('정답이 원문 대조로 검증된 구조임을 명시', /197/.test(roundtripSrc));
+check('output format forced to json', /format:\s*'json'/.test(roundtripSrc));
+check('temperature pinned to 0 for reproducibility', /temperature:\s*0/.test(roundtripSrc));
+// The account of how an instrument fault nearly produced a false conclusion stays in the code.
+// Deleting it breaks this check.
+check('instrument-fault incident is recorded in the code',
+  /finding that does not exist/.test(roundtripSrc) && /raw output must be inspected/.test(roundtripSrc));
+check('ground truth is stated to be source-verified', /197/.test(roundtripSrc));
 
 section('11. 표1 밖 약물 사전 (실제 진료자료 적용용)');
 const dcm = require('../analysis/drug_class_map.js');
