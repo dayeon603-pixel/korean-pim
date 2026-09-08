@@ -7,7 +7,7 @@ cost real content. This script measures instead: it lays out each paragraph with
 metrics at the specification's point size, character scaling and tracking, then adds the paragraph
 spacing the specification prescribes.
 
-Limits, which matter. The submission font is 신명조, a Korean face; its Latin glyphs are not
+Limits, which matter. The submission font is 신명조 (Shinmyeongjo), a Korean face; its Latin glyphs are not
 measured here because the file is not available to this script, so Times New Roman is used as the
 proxy for Latin text. A wider Latin face would raise the count. Word remains the authority and this
 script is a way to stop trimming blind, not a substitute for opening the file.
@@ -30,8 +30,8 @@ PAGE_WIDTH_MM = 210.0
 USABLE_HEIGHT_MM = PAGE_HEIGHT_MM - MARGIN_TOP_MM - MARGIN_BOTTOM_MM
 LINE_WIDTH_MM = PAGE_WIDTH_MM - 2 * MARGIN_SIDE_MM
 
-CHAR_SCALE = 0.95      # 장평 95%
-CHAR_SPACING = -0.05   # 자간 -5%, applied per character as a fraction of the point size
+CHAR_SCALE = 0.95      # 장평 (horizontal glyph scale) 95%
+CHAR_SPACING = -0.05   # 자간 (letter spacing) -5%, applied per character as a fraction of the point size
 MEASURE_PT = 200       # measure large, then scale down, to keep rounding out of the result
 
 PROXY_FONT = "/System/Library/Fonts/Supplemental/Times New Roman.ttf"

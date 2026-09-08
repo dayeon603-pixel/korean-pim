@@ -1,8 +1,9 @@
-# analysis — 실제 진료기록 분석
+# analysis — running the engine on real records
 
-## 데이터는 저장소에 없다
+## The data is not in this repository
 
-MIMIC-IV Clinical Database Demo는 PhysioNet에서 직접 받아야 한다. 재배포하지 않는다.
+The MIMIC-IV Clinical Database Demo has to be downloaded from PhysioNet directly. It is not
+redistributed here.
 
 ```bash
 mkdir -p mimic/hosp && cd mimic/hosp
@@ -11,33 +12,35 @@ for f in prescriptions diagnoses_icd patients admissions; do
 done
 ```
 
-- 자격 심사 없이 접근 가능한 공개 배포본이다(ODC-BY 1.0). 환자 100명.
-- 인용: Johnson A, Bulgarelli L, Pollard T, Horng S, Celi LA, Mark R.
+- This is the open release, reachable without a credentialing review (ODC-BY 1.0). 100 patients.
+- Citation: Johnson A, Bulgarelli L, Pollard T, Horng S, Celi LA, Mark R.
   MIMIC-IV Clinical Database Demo (version 2.2). PhysioNet. 2023.
 
-## 실행
+## Running it
 
 ```bash
 node analysis/mimic_demo.js ./mimic/hosp
 ```
 
-## 이 분석이 무엇이고 무엇이 아닌가
+## What this analysis is, and what it is not
 
-**맞다** — 한국형 PIM 2018 판정 엔진이 실제 진료기록에서 동작함을 보이는 시연.
-합성 데이터가 아니라 실제 환자의 처방·진단 코드를 입력으로 쓴다.
+**It is** a demonstration that the 2018 Korean PIM adjudication engine runs on real clinical
+records. The input is real patients' prescription and diagnosis codes, not synthetic data.
 
-**아니다** — 한국 노인의 PIM 노출률 추정.
-MIMIC은 미국 중환자실 입원 기록이고 데모판은 100명이다. 한국 외래 다제약물 양상과 다르다.
+**It is not** an estimate of PIM exposure among older adults in Korea. MIMIC holds US intensive
+care admissions and the demo edition covers 100 people. The prescribing pattern differs from
+Korean outpatient polypharmacy.
 
-## 알려진 한계
+## Known limits
 
-| 항목 | 내용 |
+| Item | Detail |
 |---|---|
-| 규모 | 65세 이상 44명. 통계적 추정이 아니라 시연 규모 |
-| 진료 환경 | 미국 중환자실 입원. 한국 외래와 처방 양상이 다르다 |
-| 약물 매핑 | 문자열 정규화 기반. RxNorm 등 표준 코드를 거치지 않음 |
-| 조건 매핑 | `icd_map.js`의 ICD 범위는 **우리가 정한 조작적 정의**. 논문에 없다 |
-| 임상 검토 | 두 매핑 모두 약사·임상의 검토 전 |
+| Scale | 44 patients aged 65 and over. A demonstration, not a statistical estimate |
+| Care setting | US intensive care admissions. Prescribing differs from Korean outpatient care |
+| Drug mapping | Based on string normalisation. It does not go through RxNorm or any standard code |
+| Condition mapping | The ICD ranges in `icd_map.js` are an operational definition made here. They are not in the source article |
+| Clinical review | Neither mapping has been reviewed by a pharmacist or clinician |
 
-한계를 줄이려면 (1) MIMIC-IV 정식판(자격 심사 필요), (2) 심평원 환자표본자료,
-(3) RxNorm 매핑 도입, (4) ICD 범위의 임상 검토가 필요하다.
+Narrowing these limits would take (1) the full MIMIC-IV release, which requires a credentialing
+review, (2) the HIRA patient sample dataset, (3) an RxNorm mapping, and (4) clinical review of the
+ICD ranges.

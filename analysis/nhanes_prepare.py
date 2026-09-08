@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
-"""NHANES 2017-2018 자료를 판정 엔진 입력으로 변환한다.
+"""Converts the NHANES 2017-2018 files into input for the adjudication engine.
 
-왜 NHANES인가: 본 연구의 가장 큰 한계는 두 판정 축의 비교를 합성 코호트에서 수행했다는 점이다.
-NHANES는 자격 심사 없이 공개되며 처방·기저질환·사망이 한 사람 단위(SEQN)로 연결되므로,
-실제 사람에게 같은 비교를 다시 할 수 있다.
+Why NHANES: the largest limitation of this study is that the two axes were compared on a synthetic
+cohort. NHANES is released without a credentialing review, and it links prescriptions, comorbidity
+and mortality at the level of one person (SEQN), so the same comparison can be run again on real
+people.
 
-한계(결과 해석에 반드시 병기할 것)
-  1. 미국 자료다. 한국의 처방 분포가 아니다.
-  2. 처방은 자기보고 기반이며 지난 30일 사용분이다. 청구자료가 아니다.
-  3. 표2의 18개 조건 중 NHANES 문항으로 확인 가능한 것은 9개뿐이다.
-     따라서 조건부 축의 판정량은 **추정치가 아니라 하한**이다.
-  4. 표1 63항목 중 NHANES에 등장하는 것은 34개다. 미등장분은 대부분 미국 미시판이거나
-     처방 없이 살 수 있는 약이다.
-  5. 사망 추적기간이 중앙값 약 2년으로 짧다.
+Limits, which must be reported alongside any result
+  1. US data. It is not a Korean prescribing distribution.
+  2. Prescriptions are self-reported use over the past 30 days, not claims.
+  3. Only 9 of the 18 Table 2 conditions can be ascertained from NHANES questions, so the volume
+     the condition axis flags is a lower bound rather than an estimate.
+  4. 34 of the 63 Table 1 items appear in NHANES. Most of the rest are either not marketed in the
+     United States or available without a prescription.
+  5. Mortality follow-up is short, a median of about two years.
 
 Usage:
-    python3 analysis/nhanes_prepare.py [출력경로]
+    python3 analysis/nhanes_prepare.py [output path]
 """
 
 from __future__ import annotations
@@ -27,7 +28,8 @@ from pathlib import Path
 
 import pandas as pd
 
-# 주기를 인자로 받는다. 같은 규칙을 독립 표본에 다시 돌려 복제 여부를 본다.
+# The cycle is taken as an argument, so the same rules can be run again on an independent sample to
+# see whether the result replicates.
 CYCLES = {
     "2017": ("J", "2017-2018", "NHANES_2017_2018_MORT_2019_PUBLIC.dat"),
     "2015": ("I", "2015-2016", "NHANES_2015_2016_MORT_2019_PUBLIC.dat"),
@@ -42,31 +44,33 @@ FILES = ["DEMO", "RXQ_RX", "MCQ", "DIQ", "BPQ", "KIQ_U", "SLQ", "BIOPRO"]
 
 AGE_MIN = 65
 
-# NHANES 문항 → 표2 조건 id. 확인 가능한 것만 넣는다. 없는 조건은 억지로 만들지 않는다.
-# 설문 문항은 1=예, 2=아니오, 7=거부, 9=모름 코드를 쓴다.
+# NHANES question -> Table 2 condition id. Only what can actually be ascertained goes in; a
+# condition with no question behind it is not forced into existence.
+# The survey codes are 1=yes, 2=no, 7=refused, 9=don't know.
 CONDITION_MAP = {
-    "hf":               ("MCQ", "MCQ160B", lambda v: v == 1),      # 울혈성 심부전
-    "stroke_secondary": ("MCQ", "MCQ160F", lambda v: v == 1),      # 뇌졸중
-    "copd":             ("MCQ", "MCQ160O", lambda v: v == 1),      # 만성폐쇄성폐질환
-    "dm":               ("DIQ", "DIQ010", lambda v: v == 1),       # 당뇨
-    "htn":              ("BPQ", "BPQ020", lambda v: v == 1),       # 고혈압
-    "ckd":              ("KIQ_U", "KIQ022", lambda v: v == 1),     # 신장기능 저하
-    "insomnia":         ("SLQ", "SLQ050", lambda v: v == 1),       # 수면 문제로 의사 상담
-    "hyponatremia":     ("BIOPRO", "LBXSNASI", lambda v: v < 135), # 혈청 나트륨 135 mmol/L 미만
+    "hf":               ("MCQ", "MCQ160B", lambda v: v == 1),      # congestive heart failure
+    "stroke_secondary": ("MCQ", "MCQ160F", lambda v: v == 1),      # stroke
+    "copd":             ("MCQ", "MCQ160O", lambda v: v == 1),      # chronic obstructive pulmonary disease
+    "dm":               ("DIQ", "DIQ010", lambda v: v == 1),       # diabetes
+    "htn":              ("BPQ", "BPQ020", lambda v: v == 1),       # hypertension
+    "ckd":              ("KIQ_U", "KIQ022", lambda v: v == 1),     # impaired kidney function
+    "insomnia":         ("SLQ", "SLQ050", lambda v: v == 1),       # told a doctor about trouble sleeping
+    "hyponatremia":     ("BIOPRO", "LBXSNASI", lambda v: v < 135), # serum sodium below 135 mmol/L
 }
-# 매핑하지 않은 조건. NHANES에 해당 문항이 없거나, 있어도 조건의 핵심 요소를 확인할 수 없다.
-# age80_primary 는 연령(80세 이상)은 확인되나 "1차 예방 목적 복용"이라는 의도를 확인할 수 없어 제외한다.
-# 억지로 매핑하면 조건부 축이 과도하게 발화해 결론이 우리 쪽에 유리해진다.
+# Conditions left unmapped. Either NHANES carries no such question, or it carries one that cannot
+# establish the part of the condition that matters. age80_primary is excluded because age (80 and
+# over) is ascertainable but the intent, taking it for primary prevention, is not.
+# Forcing a mapping would over-fire the condition axis and tilt the conclusion in our own favour.
 UNMAPPED = ["dementia", "falls", "parkinson", "arrhythmia", "ulcer",
             "constipation", "bph", "bleeding", "glaucoma", "age80_primary"]
 
-# 사망연계 공개파일 고정폭 레이아웃(46자)
+# Fixed-width layout of the public mortality linkage file (46 characters)
 MORT_COLS = [(0, 6), (14, 15), (15, 16), (16, 19), (41, 44), (44, 47)]
 MORT_NAMES = ["SEQN", "ELIGSTAT", "MORTSTAT", "UCOD", "PERMTH_INT", "PERMTH_EXM"]
 
 
 def fetch(cache: Path) -> None:
-    """원자료를 내려받는다. 이미 있으면 건너뛴다."""
+    """Downloads the raw files, skipping any already present."""
     cache.mkdir(parents=True, exist_ok=True)
     for f in FILES:
         dst = cache / f"{f}_{SUFFIX}.xpt"
@@ -77,7 +81,7 @@ def fetch(cache: Path) -> None:
 
 
 def build(cache: Path) -> dict:
-    """65세 이상 코호트를 만든다."""
+    """Builds the cohort aged 65 and over."""
     load = lambda f: pd.read_sas(cache / f"{f}_{SUFFIX}.xpt", format="xport")
 
     demo = load("DEMO")[["SEQN", "RIDAGEYR", "RIAGENDR", "WTMEC2YR", "SDMVSTRA", "SDMVPSU"]]
@@ -107,7 +111,7 @@ def build(cache: Path) -> dict:
     for r in old.itertuples(index=False):
         d = drugs.get(r.SEQN, [])
         if not d:
-            continue          # 처방이 없으면 두 축 모두 판정할 것이 없다
+            continue          # with no prescription there is nothing for either axis to judge
         mo = mort.get(r.SEQN, {})
         people.append({
             "id": int(r.SEQN),
@@ -116,8 +120,9 @@ def build(cache: Path) -> dict:
             "conditions": sorted(conds.get(r.SEQN, [])),
             "died": None if pd.isna(mo.get("MORTSTAT")) else int(mo["MORTSTAT"]),
             "followupMonths": None if pd.isna(mo.get("PERMTH_EXM")) else int(mo["PERMTH_EXM"]),
-            # NHANES 는 층화 다단계 확률표본이다. 설계변수를 함께 실어 두면 개인 단위 재표집이
-            # 아니라 층 안에서 PSU 를 재표집하는 설계 기반 구간을 계산할 수 있다.
+            # NHANES is a stratified multistage probability sample. Carrying the design variables
+            # through allows a design-based interval that resamples PSUs within strata, rather than
+            # resampling individuals.
             "stratum": None if pd.isna(r.SDMVSTRA) else int(r.SDMVSTRA),
             "psu": None if pd.isna(r.SDMVPSU) else int(r.SDMVPSU),
             "weight": None if pd.isna(r.WTMEC2YR) else float(r.WTMEC2YR),
@@ -142,9 +147,9 @@ def main() -> None:
     out.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     n = data["n"]
     died = sum(1 for p in data["people"] if p["died"] == 1)
-    print(f"{out.name}: {n}명 (65세 이상, 처방 보유)")
-    print(f"  매핑된 조건 {len(data['mappedConditions'])}/18 · 미매핑 {len(data['unmappedConditions'])}개")
-    print(f"  사망 {died}명 · 1인 평균 약물 {sum(len(p['drugs']) for p in data['people']) / n:.1f}종")
+    print(f"{out.name}: {n} people (aged 65+, holding a prescription)")
+    print(f"  conditions mapped {len(data['mappedConditions'])}/18 · unmapped {len(data['unmappedConditions'])}")
+    print(f"  deaths {died} · mean drugs per person {sum(len(p['drugs']) for p in data['people']) / n:.1f}")
 
 
 if __name__ == "__main__":
