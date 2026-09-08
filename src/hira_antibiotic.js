@@ -1,7 +1,8 @@
 /* HIRA drug-benefit appropriateness assessment — the within-agency control.
  *
  * Source (read directly, 2026-09-01):
- *   건강보험심사평가원. 「2023년 약제급여 적정성 평가 결과」. 2024. 7.
+ *   Health Insurance Review and Assessment Service. 2023 Drug Benefit Appropriateness Assessment
+ *   Results (「2023년 약제급여 적정성 평가 결과」). July 2024.
  *   https://www.hira.or.kr/cms/open/04/04/12/2024_17.pdf
  *
  * Why this matters.
@@ -14,7 +15,7 @@
  *
  * Record locality.
  *   `sameClaimAsDrug` records whether the condition that defines the denominator appears on
- *   the same claim record (명세서) as the prescription being counted. Acute respiratory
+ *   the same claim record as the prescription being counted. Acute respiratory
  *   infection is coded as the principal diagnosis on the visit that generates the antibiotic
  *   prescription. A chronic comorbidity that makes a drug inappropriate for an older adult is
  *   generally established on other encounters. This field is the discriminating variable
@@ -35,7 +36,7 @@ const SOURCE = {
  * The indicator definition itself, from HIRA's own indicator page rather than from the annual
  * results narrative. Obtained after a reviewer objected that the annual report is a results
  * document and not a specification. The objection was fair and this is the answer to it: the
- * definition, the code range and the formula are published by 평가관리부 on the agency's open-data
+ * definition, the code range and the formula are published by the agency's assessment management division on its open-data
  * portal, dated 2023-08-11.
  */
 const OFFICIAL_DEFINITION = {
@@ -56,8 +57,9 @@ const OFFICIAL_DEFINITION = {
  *
  * What is read: HIRA states, in its own published annual report, that this indicator is in the
  *   clinic-level differential payment programme and that the adjustment was widened in 2017 from
- *   one percent to a maximum of five percent, applied to 2018 심사결정분. See HISTORY below.
- * What is not read: the 가감지급 세부시행계획 itself, which would give the formula by which the
+ *   one percent to a maximum of five percent, applied to claims adjudicated in 2018. See HISTORY below.
+ * What is not read: the differential payment implementation plan itself, which would give the
+ * formula by which the
  *   adjustment is computed. Attempts to reach it in this session failed. Nothing here depends on
  *   the formula, only on the fact of inclusion and the stated maximum rate.
  */
@@ -84,7 +86,7 @@ const INDICATORS = [
     codeSystem: 'KCD',
     conditionBound: true,
     sameClaimAsDrug: true,          // principal diagnosis on the prescribing visit
-    publiclyGraded: true,           // 1-5등급, absolute thresholds since 2023
+    publiclyGraded: true,           // five bands, absolute thresholds since 2023
     reachesPayment: true,
     quote: '가. 급성상기도감염(J00-J06) 항생제',
   },
@@ -98,7 +100,7 @@ const INDICATORS = [
     conditionBound: true,
     sameClaimAsDrug: true,
     publiclyGraded: true,
-    reachesPayment: false,          // graded, but not identified as a 가감지급 quality indicator
+    reachesPayment: false,          // graded, but not identified as a differential-payment quality indicator
     quote: '2020년: 급성하기도감염(J20-J22) 항생제 처방률 평가 지표 도입',
   },
   {

@@ -1,14 +1,15 @@
-/* 사전이 불완전하면 결과가 편향되는가 — node analysis/dict_sensitivity.js
+/* Does an incomplete dictionary bias the result — node analysis/dict_sensitivity.js
  *
- * 원고는 미해상 약물이 "검정력을 깎을 뿐 대비를 편향시키지 않는다"고 적었다. 그것은 결측이
- * 무작위라는 가정이고, 가정은 측정으로 대체할 수 있다.
+ * The manuscript states that an unresolved drug costs power rather than tilting the contrast. That
+ * is an assumption about missingness being random, and an assumption can be replaced by a measurement.
  *
- * 방법: 사전과 표1 성분키에서 항목을 무작위로 덜어내고 같은 절제 분석을 다시 돌린다.
- *   빠진 항목이 규칙의 약물 절반에 걸리면 그 사람은 두 팔 모두에서 사라진다. 그래서 |X| 와
- *   |X∩Y| 가 함께 줄고, 비율이 흔들리지 않아야 한다는 것이 원고의 주장이다. 흔들리면 주장이 틀렸다.
+ * Method: remove entries at random from the dictionary and from the Table 1 ingredient keys, then
+ *   rerun the same ablation. When a removed entry sits on the drug half of a rule, that person leaves
+ *   both arms at once, so |X| and |X and Y| fall together and the ratio should hold. If it moves, the
+ *   manuscript's claim is wrong.
  *
- * 이 검사는 "빠진 것이 무엇인지" 를 알 필요가 없다. 실제로 빠진 것을 알 수 없으므로,
- * 임의로 빼 보는 것이 확인할 수 있는 최선이다.
+ * The test does not need to know what is actually missing, which cannot be known. Removing entries
+ * at random is the strongest check available.
  */
 'use strict';
 const path = require('path');
@@ -26,7 +27,8 @@ function rng(seed) {
   return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
 }
 
-/** 사전 일부를 가린 채 성분명을 해석한다. hidden 에 든 이름은 없는 것처럼 취급한다. */
+/** Resolve ingredient names with part of the dictionary hidden. Names in `hidden` are treated as
+ * absent. */
 function makeToDrug(hidden) {
   return (ing) => {
     if (hidden.has(ing)) return null;
@@ -38,7 +40,7 @@ function makeToDrug(hidden) {
   };
 }
 
-/** 가린 사전으로 통합 비율을 다시 계산한다. */
+/** Recompute the pooled share against the reduced dictionary. */
 function shareNotNamed(hidden) {
   const toDrug = makeToDrug(hidden);
   let X = 0, XY = 0;
@@ -56,7 +58,8 @@ function shareNotNamed(hidden) {
   return X ? 1 - XY / X : NaN;
 }
 
-// 가릴 수 있는 이름: 보조 사전 전체와, 표1 성분 가운데 실제 코호트에 등장하는 것.
+// Names eligible to hide: the whole auxiliary dictionary, plus Table 1 ingredients that actually
+// appear in the cohort.
 const inCohort = new Set();
 data.people.forEach((p) => p.drugs.flatMap(split).forEach((i) => inCohort.add(i)));
 const hideable = [...new Set([...Object.keys(MAP), ...[...inCohort].filter((i) => pim.checkIngredient(i))])]

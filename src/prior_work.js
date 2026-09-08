@@ -168,13 +168,14 @@ function usable() {
   return REJECTED_CLAIMS.filter((c) => c.verdict !== 'not recoverable');
 }
 
-/** 인용 문헌에서 직접 읽어 원고에 옮긴 수치. 우리 자료가 아니므로 재계산할 수 없고,
- *  그래서 여기에 못 박아 두고 시험이 원고와 대조한다. 오타는 이 대조에서 걸린다. */
+/** Figures read directly out of cited papers and carried into the manuscript. They are not our data
+ *  and cannot be recomputed, so they are pinned here and the test suite compares them against the
+ *  manuscript. A typo is caught by that comparison. */
 const CITED_FIGURES = {
-  claimsDiagnosisKappa: [0.83, 0.84],   // Park & Choi 2016, 허혈성 뇌졸중·지주막하출혈 검증
-  hiraPrevalenceCohort: 1532000,        // 심평원 2022 보고서 <표 25>
+  claimsDiagnosisKappa: [0.83, 0.84],   // Park & Choi 2016, validation for ischaemic stroke and subarachnoid haemorrhage
+  hiraPrevalenceCohort: 1532000,        // HIRA 2022 report, Table 25
   koreanCdmPatients: 2070000,           // Yoon 2016, Healthc Inform Res 22(1):54-58
-  p4pUncoveredPatientPct: 47,           // Green 2020, 지표가 포함하지 않은 환자의 검진 시행률
+  p4pUncoveredPatientPct: 47,           // Green 2020, screening rate in the patient the measure did not cover
 };
 
 module.exports = { REJECTED_CLAIMS, REFERENCES, CITED_FIGURES, usable };

@@ -1,13 +1,15 @@
-/* 원문 대조 검증 — node test/verify_against_paper.js
+/* Source agreement check — node test/verify_against_paper.js
  *
- * 대조 출처: e-agmr.org 논문 본문 (DOI 10.4235/agmr.2018.22.3.121), 2026-08-26 확인.
- * 아래 REF_TABLE1 / REF_TABLE2는 원문에서 옮긴 참조본이며, 우리 JSON이 여기서 벗어나면 실패한다.
- * 데이터를 고칠 때 이 파일도 함께 고쳐야 하므로, 무심코 항목이 늘거나 줄어드는 것을 막는다.
+ * Source: article text at e-agmr.org (DOI 10.4235/agmr.2018.22.3.121), retrieved 2026-08-26.
+ * REF_TABLE1 and REF_TABLE2 below are the reference copy transcribed from the article. If our JSON
+ * departs from it, this fails.
+ * Changing the data means changing this file too, which is what prevents items from quietly
+ * appearing or disappearing.
  */
 'use strict';
 const pim = require('../src/index.js');
 
-// ── 원문 Table 1 (조건 무관 63항목, 논문 순서) ──
+// ── Table 1 as published: 63 drug-only items, in the article's order ──
 const REF_TABLE1 = [
   'Chlorpromazine', 'Haloperidol', 'Risperidone', 'Olanzapine', 'Clozapine', 'Quetiapine',
   'Amitriptyline', 'Amoxapine', 'Clomipramine', 'Doxepin (>6 mg/day)', 'Nortriptyline', 'Imipramine',
@@ -25,8 +27,9 @@ const REF_TABLE1 = [
   'Methocarbamol', 'Orphenadrine',
 ];
 
-// ── 원문 Table 2 (18개 조건). paperGroups = 논문이 표기한 약물군 그대로.
-//    expanded = 논문이 군으로만 적은 것을 우리가 개별 성분으로 펼친 부분(매핑 계층). ──
+// ── Table 2 as published: 18 conditions. paperGroups holds the drug groups exactly as the article
+//    names them. expanded holds the ingredients we enumerated where the article names only a group,
+//    which is our mapping layer, not the article's content. ──
 const REF_TABLE2 = [
   { id: 'dementia', paperGroups: ['Anticholinergics', 'Antipsychotics', 'Benzodiazepines', 'Zolpidem', 'H2 antagonists', 'Pethidine'] },
   { id: 'falls', paperGroups: ['Anticholinergics', 'Anticonvulsants', 'Antipsychotics', 'Benzodiazepines', 'Zolpidem', 'Opioids', 'Peripheral alpha-1 blockers'] },

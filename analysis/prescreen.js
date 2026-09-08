@@ -1,28 +1,30 @@
-/* 네 질문을 아직 지표가 되지 않은 규칙에 미리 돌린다 — node analysis/prescreen.js
+/* Running the four questions on rules that are not yet indicators — node analysis/prescreen.js
  *
- * 논문의 절차는 지금까지 사후 설명이었다. 여기서는 **아직 어디에서도 지표로 운영된 적이 없는**
- * 규칙 18개, 곧 Kim 2018 표2의 조건부 기준에 절차를 걸어 사전 판정을 낸다. 가정이 아니라
- * 실제 문서와 실제 자료만 쓴다.
+ * Until here the procedure has explained decisions already taken. This applies it to 18 rules that
+ * have never been fielded as indicators anywhere, the condition-dependent criteria of Kim 2018
+ * Table 2, and returns a verdict in advance. It uses real documents and real data, not assumptions.
  *
- *   Q1  의도한 기질이 그 임상상태를 담는가.
- *       심평원 2022 보고서 <표 22> 가 KCD 코드로 결속한 조건이면 담는다. 결속하지 않았으면
- *       청구자료를 그대로 두고는 계산할 수 없다. (src/hira_kcd.js, 1차 문서에서 읽음)
- *   Q3  조건을 지워도 규칙이 그 위해를 여전히 재는가.
- *       그 약물의 해당 조건에 대한 양성예측도가 답한다. 낮을수록 조건이 지지대이고,
- *       지우면 다른 규칙이 된다. (analysis/ablation.js, NHANES 실측)
- *   Q4  채점 대상 기관이 그 정보를 보유하는가.
- *       조건이 다른 진료 건에 기록되면 보유하지 않는다. 심평원 2021 연구가 위보호제 지표를
- *       바로 이 이유로 배제했다.
+ *   Q1  Does the intended substrate carry the clinical state?
+ *       It does where Table 22 of the 2022 HIRA report binds the condition to KCD codes. Where it
+ *       does not, the rule cannot be computed on claims as they stand.
+ *       (src/hira_kcd.js, read from the primary document)
+ *   Q3  With the condition deleted, does the rule still measure the harm it named?
+ *       The drug's predictive value for that condition answers it. The lower it is, the more
+ *       load-bearing the condition, and deleting it produces a different rule.
+ *       (analysis/ablation.js, measured on NHANES)
+ *   Q4  Does the entity being scored hold that information?
+ *       Not when the condition is recorded at a different encounter. The 2021 HIRA study excluded
+ *       its gastroprotection indicator for exactly this reason.
  *
- * 판정은 임의의 임계값을 두지 않는다. Q1 이 아니오면 청구자료 위에서는 만들 수 없고,
- * Q1 이 예이면 Q3 의 값이 조건을 지울 때 잃는 것의 크기를 그대로 말해 준다.
+ * No arbitrary threshold is imposed. If Q1 is no, the rule cannot be built on claims. If Q1 is yes,
+ * the value from Q3 states directly how much deleting the condition costs.
  */
 'use strict';
 const pim = require('../src/index.js');
 const kcd = require('../src/hira_kcd.js');
 const abl = require('./ablation_result.json');
 
-/** 논문이 영문이므로 18개 조건의 영문 라벨을 둔다. */
+/** English labels for the 18 conditions, since the manuscript is in English. */
 const EN = {
   dementia: 'Dementia or cognitive impairment', falls: 'History of falls or fracture',
   insomnia: 'Insomnia', parkinson: "Parkinson's disease", hf: 'Heart failure',
@@ -61,8 +63,9 @@ say(`    so they are computable on claims as they stand: ${buildable.map((r) => 
 say(`    ${blocked.length} are not bound and cannot be computed on claims without new work:`);
 say(`    ${blocked.map((r) => r.label).join(', ')}.\n`);
 
-// 결속되지 않은 9개가 왜 실패했는지 나눈다. 전부 같은 이유로 실패한 것이 아니다.
-// 원천 기준이 조건마다 유형을 적어 두었으므로(진단·병력·증상·연령·상태) 그것으로 가른다.
+// Separate why the nine unbound rules fail. They do not all fail for the same reason. The source
+// criteria record a type for each condition (diagnosis, history, symptom, age, state), so that is
+// what the split uses.
 const KIND_EN = { '진단': 'diagnosis', '병력': 'history', '증상': 'symptom', '연령': 'age', '상태': 'situation' };
 const unboundByKind = {};
 pim.table2.filter((t) => !bound.has(t.id)).forEach((t) => {
@@ -99,7 +102,8 @@ say(`  ${blocked.length} rules fail at Q1 and cannot be built on the claims subs
 const loadBearing = measured.filter((r) => r.ppv < 0.25);
 say(`  ${loadBearing.length} of the ${measured.length} measurable rules have a predictive value below 25 per cent,`);
 say(`  so for those the condition is load-bearing: ${loadBearing.map((r) => r.label).join(', ')}.`);
-// 두 질문에서 동시에 걸리는 규칙이 가장 위험하다. 기질이 담지 못하는데 조건이 지지대인 경우다.
+// The rules that fail both questions are the dangerous ones: the substrate cannot carry the state,
+// and the condition is load-bearing.
 const worst = rows.filter((r) => !r.q1 && r.ppv !== null && r.n >= 50).sort((a, b) => a.ppv - b.ppv);
 if (worst.length) {
   say(`  The highest-risk candidate fails both: ${worst[0].label}, unbound at Q1 and with a`);

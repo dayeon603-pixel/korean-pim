@@ -1,12 +1,14 @@
 /* HIRA 2021 indicator-development report — the deliberation record.
  *
  * Source (read directly, 2026-09-01):
- *   건강보험심사평가원. 「환자안전 중심 약제평가 지표 개발 연구」. 발간등록번호 G000F8Q-2021-15. 2021.
+ *   Health Insurance Review and Assessment Service. Study on the Development of
+ *   Patient-Safety-Centred Drug Assessment Indicators (「환자안전 중심 약제평가 지표 개발 연구」).
+ *   Publication number G000F8Q-2021-15. 2021.
  *   https://repository.hira.or.kr/bitstream/2019.oak/2998/2/환자안전 중심 약제평가 지표 개발 연구.pdf
  *
  * Why this document matters.
  *   It is the study that produced the elderly-medication indicator HIRA later fielded
- *   (노인주의 의약품 처방률, introduced 2023). It records nine candidate indicators, the
+ *   (the prescribing rate for drugs requiring caution in older adults, introduced 2023). It records nine candidate indicators, the
  *   feasibility tier assigned to each, and the verbatim expert-panel reasons. It therefore
  *   supplies what a cross-country tabulation cannot: the agency's own stated reasons for
  *   keeping or dropping a condition-dependent specification.
@@ -33,7 +35,7 @@ const SOURCE = {
   access: 'full text downloaded and read',
 };
 
-/** The nine candidate indicators, as listed in <요약표 9> and <요약표 10>. */
+/** The nine candidate indicators, as listed in summary tables 9 and 10 of the report. */
 const CANDIDATES = [
   {
     no: 1,
@@ -133,7 +135,8 @@ const CANDIDATES = [
   },
 ];
 
-/** Tier is the report's own feasibility grading (요약표 10). 단기 = implementable now. */
+/** Tier is the report's own feasibility grading (summary table 10). Short-term means implementable
+ * now. */
 const TIER_BASIS = '실행가능성이 높아 단기유형으로 분류된 지표는 5번 노인환자의 노인주의 의약품 처방률, 8번 노인환자의 항정신병 약물 처방률, 9번 75세 이상 환자 중 5개 이상 의약품 처방률임';
 
 /** Cross-tabulate feasibility tier against condition dependence. */

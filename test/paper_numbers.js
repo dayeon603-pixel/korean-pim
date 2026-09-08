@@ -153,10 +153,11 @@ check('P4P trial, screening rate in the uncovered patient', `${cited.p4pUncovere
 
 // The resolution rate is scope, not attrition: the dictionary was written only for the classes the
 // rules name, so what fails to resolve is overwhelmingly drugs no rule could have used.
-// 병용 정제를 성분으로 쪼개면 보호 목적 병용의 임상 의도가 지워진다는 지적이 있었다.
-// 그 구조가 이 규칙집합에 있는지는 세어 보면 알 수 있다. 없다. 병용을 요구하는 target 은
-// 하나뿐이고 그것은 병용 자체가 위해인 아스피린+클로피도그렐이라, 분해가 오탐을 만드는
-// 것이 아니라 분해해야 탐지된다.
+// An objection raised: splitting a combination tablet into ingredients strips the protective clinical
+// intent behind co-formulation. Whether that structure exists in this rule set is a matter of
+// counting, and it does not. Exactly one target requires a co-prescription, aspirin with clopidogrel,
+// and there the combination is itself the hazard, so splitting is needed to detect it rather than
+// being what fabricates it.
 {
   const t2 = require('../src/index.js').table2;
   const targets = t2.flatMap((r) => r.targets);
@@ -169,9 +170,9 @@ check('P4P trial, screening rate in the uncovered patient', `${cited.p4pUncovere
   check('  targets conditioned on a protective agent', guarded.length, 0);
 }
 
-// 통합값이 고혈압·당뇨의 유병률에서 나온 인공물이라는 지적이 있었다. 둘을 함께 빼고
-// 다시 계산하면 값이 무너지는 것이 아니라 올라간다. 그 둘이 예측도가 가장 높은 규칙이라
-// 통합값을 끌어내리고 있었기 때문이다.
+// An objection raised: the pooled figure is an artefact of how prevalent hypertension and diabetes
+// are. Removing both and recomputing raises the figure rather than collapsing it, because those two
+// rules have the highest predictive values and were pulling the pooled figure down.
 check('pair share without the two dominant rules', `${(100 * ci.withoutDominant.share).toFixed(1)}%`, '93.3%');
 check('  pairs remaining', ci.withoutDominant.pairs, 935);
 check('  which rules were dropped', ci.withoutDominant.dropped.join(', '), 'Hypertension, Diabetes');
