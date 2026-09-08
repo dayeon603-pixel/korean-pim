@@ -40,42 +40,44 @@ function atcSingleMapped() {
 
 const CRITERIA_BINDING = [
   {
-    id: 'kim2018-t1', name: '한국형 PIM 2018 표1', axis: '약물',
+    id: 'kim2018-t1', name: 'Korean PIM 2018, Table 1', axis: 'drug',
     total: pim.coverage.table1,
     sourceBound: null,          // the source names ingredients; it does not carry ATC codes
-    codeSystem: '성분명(코드 아님)',
+    codeSystem: 'ingredient names, not codes',
     mappable: atcSingleMapped(),
-    note: '원문은 코드를 싣지 않으나 성분명이 곧 결속 단서가 된다. WHO ATC 5단계로 옮기면 '
-        + `${atcSingleMapped()}/${pim.coverage.table1} 이 단일 매핑되고, 나머지 4항목은 `
-        + '복합제·염 형태 분기·성분군·투여 요법이라 단일 코드가 성립하지 않는다. '
-        + '즉 약물 축은 **기계적으로 결속 가능**하다.',
+    note: 'The source carries no codes, but an ingredient name is itself the clue to a binding. '
+        + `Carried onto WHO ATC level 5, ${atcSingleMapped()}/${pim.coverage.table1} map uniquely; the remaining 4 `
+        + 'are combinations, salt-form branches, ingredient groups or regimens, for which no single '
+        + 'code exists. The drug axis is therefore bindable mechanically.',
   },
   {
-    id: 'kim2018-t2', name: '한국형 PIM 2018 표2', axis: '조건',
+    id: 'kim2018-t2', name: 'Korean PIM 2018, Table 2', axis: 'condition',
     total: pim.coverage.table2Conditions,
     sourceBound: 0,
     codeSystem: null,
     mappable: null,
-    note: '원문은 조건을 임상 용어로만 기술한다(예: "낙상·골절·실신·기립성 저혈압 병력"). '
-        + '진단코드 범위를 지정하지 않으므로, 이 축을 지표로 쓰려면 값집합을 **직접 저작**해야 한다. '
-        + '저작 결과는 저작자마다 달라질 수 있고 판정 건수도 함께 달라진다.',
+    note: 'The source states its conditions in clinical language only, for example a history of '
+        + 'falls, fracture, syncope or orthostatic hypotension. It specifies no range of diagnosis '
+        + 'codes, so anyone turning this axis into an indicator has to author the value set. What '
+        + 'they author can differ from author to author, and the counts move with it.',
   },
   {
-    id: 'beers2023-t3', name: 'AGS Beers 2023 Table 3', axis: '조건',
+    id: 'beers2023-t3', name: 'AGS Beers 2023 Table 3', axis: 'condition',
     total: beers.conditionCount,
     sourceBound: 0,
     codeSystem: null,
     mappable: null,
-    note: '동일하다. 조건을 임상 용어로 기술하며 코드를 싣지 않는다. '
-        + '미국에서 이 축을 지표로 만든 NCQA 가 값집합을 별도로 저작한 것이 그 방증이다.',
+    note: 'The same. Conditions are stated in clinical language and no codes are carried. That NCQA, '
+        + 'which turned this axis into a measure in the United States, had to author its own value '
+        + 'sets is the evidence for it.',
   },
   {
-    id: 'hira2022', name: '심평원 2022 국가 기준', axis: '약물',
+    id: 'hira2022', name: 'HIRA 2022 national standard', axis: 'drug',
     total: hira.totalIngredients,
     sourceBound: null,
-    codeSystem: '성분명(최종 목록 미공개)',
+    codeSystem: 'ingredient names, final list unpublished',
     mappable: null,
-    note: '약물 축만 존재한다. 조건 축이 없으므로 조건 결속이 필요하지 않다.',
+    note: 'Only the drug axis exists. With no condition axis there is nothing to bind.',
   },
 ];
 
@@ -83,32 +85,34 @@ const CRITERIA_BINDING = [
  *  in the manuscript was confirmed against the primary document. */
 const AUTHORED_BINDINGS = [
   {
-    region: '잉글랜드', instrument: 'PINCER 처방안전 지표', authored: true,
+    region: 'England', instrument: 'PINCER prescribing safety indicators', authored: true,
     system: 'Read code',
     evidence: '"Patients aged ≥18 years with a Read code for peptic ulcer or ...", '
             + '"... with a Read code for asthma at least ..."',
   },
   {
-    region: '미국', instrument: 'NCQA HEDIS DDE', authored: true,
+    region: 'USA', instrument: 'NCQA HEDIS DDE', authored: true,
     system: 'value set',
-    evidence: 'Fractures Value Set, Dementia Value Set 등 조건마다 값집합을 별도로 정의한다.',
+    evidence: 'A separate value set is defined for each condition: Fractures Value Set, Dementia '
+            + 'Value Set and so on.',
   },
   {
-    region: '스코틀랜드', instrument: 'Polypharmacy Guidance 2026-2029', authored: true,
-    system: '조작적 정의',
+    region: 'Scotland', instrument: 'Polypharmacy Guidance 2026-2029', authored: true,
+    system: 'operational definition',
     evidence: '"Documented dementia (or on donepezil, rivastigmine, galantamine or memantine) '
-            + 'and HbA1c less than 53 mmol/mol" 처럼 진단·투약·검사치를 조합해 정의한다.',
+            + 'and HbA1c less than 53 mmol/mol": diagnosis, medication and laboratory value '
+            + 'combined into one definition.',
   },
   {
-    region: '일본', instrument: '厚生労働省 지침 별표2', authored: false,
+    region: 'Japan', instrument: '厚生労働省 guideline, Appendix Table 2', authored: false,
     system: null,
-    evidence: '조건이 「推奨される使用法」 산문 안에 남아 코드로 지정되지 않는다. '
-            + '「対象となる患者群」 열은 문서 전체에서 출현하지 않는다.',
+    evidence: 'The condition stays inside the prose of 「推奨される使用法」 and is never given a code. '
+            + 'A 「対象となる患者群」 column appears nowhere in the document.',
   },
   {
-    region: '한국', instrument: '심평원 2022 국가 기준', authored: false,
+    region: 'Korea', instrument: 'HIRA 2022 national standard', authored: false,
     system: null,
-    evidence: '조건 축 자체가 없어 결속 대상이 존재하지 않는다.',
+    evidence: 'There is no condition axis, so there is nothing to bind.',
   },
 ];
 
@@ -120,9 +124,9 @@ function ourBinding() {
     total: pim.coverage.table2Conditions,
     mapped,
     unmapped: pim.table2.filter((c) => !icd.MAP[c.id]).map((c) => c.id),
-    system: 'ICD-10-CM / ICD-9-CM 접두 일치',
-    note: 'KCD-8 은 ICD-10 의 한국 표준판이므로 상병코드 축으로 이어진다. '
-        + '연령 조건은 진단이 아니므로 결속 대상에서 제외한다.',
+    system: 'ICD-10-CM / ICD-9-CM prefix match',
+    note: 'KCD-8 is the Korean standard edition of ICD-10, so this carries over to the Korean '
+        + 'diagnosis-code axis. The age rule is not a diagnosis and is excluded from binding.',
   };
 }
 

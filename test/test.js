@@ -134,7 +134,7 @@ check('the measured HIRA claims figures are exposed', hira.CLAIMS.pimUsers === 6
 check('every HIRA class carries a matcher', hira.CLASSES.every((c) => c.match && (c.match.ing || c.match.cls || c.match.tag)));
 check('Beers 2023 Table 3 has 9 conditions', beers.conditionCount === 9 && beers.TABLE3.length === 9);
 check('every Beers condition carries target drugs', beers.TABLE3.every((c) => c.targets.length > 0));
-check('the Beers copyright notice is retained', /American Geriatrics Society/.test(beers.copyright) && /전문이 아니다/.test(beers.copyright));
+check('the Beers copyright notice is retained', /American Geriatrics Society/.test(beers.copyright) && /not the full text of the criteria/.test(beers.copyright));
 check('the Beers source states its DOI', /10\.1111\/jgs\.18372/.test(beers.source));
 check('condition axis sizes rank Kim 18 > Beers 9 > HIRA 0',
   pim.coverage.table2Conditions === 18 && beers.conditionCount === 9 && hira.NATIONAL_CRITERIA.conditionBased === false);
@@ -297,9 +297,9 @@ const bind = require('../src/binding.js');
 // The mechanism the manuscript argues for rests on this: academic criteria give the condition axis
 // no codes.
 check('academic criteria assign zero codes on the condition axis',
-  bind.CRITERIA_BINDING.filter((c) => c.axis === '조건').every((c) => c.sourceBound === 0));
+  bind.CRITERIA_BINDING.filter((c) => c.axis === 'condition').every((c) => c.sourceBound === 0));
 check('both condition-axis criteria are covered (Kim Table 2 and Beers Table 3)',
-  bind.CRITERIA_BINDING.filter((c) => c.axis === '조건').length === 2);
+  bind.CRITERIA_BINDING.filter((c) => c.axis === 'condition').length === 2);
 check('the drug axis maps 59 of 63 uniquely at ATC level 5', bind.atcSingleMapped() === 59);
 // The contrast at the heart of the mechanism: those that kept the axis authored a binding, and those
 // that lost it did not.

@@ -102,6 +102,8 @@ function check(conditionIds, drugs) {
 
 module.exports = {
   source: 'AGS 2023 Beers Criteria Update Expert Panel. J Am Geriatr Soc. 2023;71(7):2052-2081. DOI 10.1111/jgs.18372',
-  copyright: 'Beers Criteria®는 American Geriatrics Society의 저작물·등록상표. 이 파일은 비교 목적의 부분 구조화이며 기준 전문이 아니다.',
+  copyright: 'The Beers Criteria(R) are a copyrighted work and a registered trademark of the '
+    + 'American Geriatrics Society. This file is a partial structuring for comparison and is '
+    + 'not the full text of the criteria.',
   TABLE3, KIM_EQUIVALENT, check, conditionCount: TABLE3.length,
 };
