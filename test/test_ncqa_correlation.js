@@ -1,5 +1,5 @@
 /* Testing the reason NCQA gave for retiring its conditional measure, against the Korean criteria.
- *   node test/test_ncqa_correlation.js [건수] [반복]
+ *   node test/test_ncqa_correlation.js [n] [reps]
  *
  * ── the claim under test ──────────────────────────────────────────────────
  * In removing the conditional (drug-disease) measure DDE from Health Plan Ratings 2026, NCQA gave
