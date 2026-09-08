@@ -28,7 +28,7 @@ const hira = require('../src/hira2022.js');
 const { conditionsFromIcd } = require('./icd_map.js');
 
 const DIR = process.argv[2];
-if (!DIR) { console.error('사용법: node analysis/mimic_demo.js <MIMIC demo hosp 디렉터리>'); process.exit(1); }
+if (!DIR) { console.error('usage: node analysis/mimic_demo.js <MIMIC demo hosp directory>'); process.exit(1); }
 
 function readCsvGz(file) {
   const text = zlib.gunzipSync(fs.readFileSync(path.join(DIR, file))).toString('utf8');
@@ -59,15 +59,15 @@ function toIngredients(drugName) {
   return T1.filter((ing) => n.includes(ing));
 }
 
-console.log('실제 진료기록 조건부 판정 시연 — MIMIC-IV Demo v2.2\n');
+console.log('Conditional adjudication on real records — MIMIC-IV Demo v2.2\n');
 
 const patients = readCsvGz('patients.csv.gz');
 const dx = readCsvGz('diagnoses_icd.csv.gz');
 const rx = readCsvGz('prescriptions.csv.gz');
-console.log(`환자 ${patients.length}명 · 진단 ${dx.length.toLocaleString()}건 · 처방 ${rx.length.toLocaleString()}건`);
+console.log(`${patients.length} patients · ${dx.length.toLocaleString()} diagnoses · ${rx.length.toLocaleString()} prescriptions`);
 
 const elderly = patients.filter((p) => parseInt(p.anchor_age, 10) >= 65);
-console.log(`65세 이상 ${elderly.length}명 (연령 ${Math.min(...elderly.map((p) => +p.anchor_age))}~${Math.max(...elderly.map((p) => +p.anchor_age))}세)\n`);
+console.log(`${elderly.length} aged 65+ (ages ${Math.min(...elderly.map((p) => +p.anchor_age))}-${Math.max(...elderly.map((p) => +p.anchor_age))})\n`);
 
 const dxBy = {}, rxBy = {};
 dx.forEach((d) => { (dxBy[d.subject_id] = dxBy[d.subject_id] || []).push({ code: d.icd_code, version: d.icd_version }); });
@@ -105,30 +105,32 @@ elderly.forEach((p) => {
 });
 
 const pct = (n) => `${(n / elderly.length * 100).toFixed(1)}%`;
-console.log('── 판정 결과 (65세 이상 ' + elderly.length + '명) ──');
-console.log(`표1(조건 무관) 해당      ${anyT1}명 (${pct(anyT1)})`);
-console.log(`표2(조건부) 해당         ${anyT2}명 (${pct(anyT2)})`);
-console.log(`국가 기준(약물 단독) 해당 ${byHira}명 (${pct(byHira)})`);
-console.log(`**국가 기준 미해당 · 표2만 해당  ${onlyT2}명 (${pct(onlyT2)})**`);
-console.log(`진단코드 없는 환자        ${noDx}명`);
+console.log('── findings (' + elderly.length + ' patients aged 65+) ──');
+console.log(`Table 1 (regardless of condition)   ${anyT1} (${pct(anyT1)})`);
+console.log(`Table 2 (conditional)               ${anyT2} (${pct(anyT2)})`);
+console.log(`national standard (drug only)       ${byHira} (${pct(byHira)})`);
+console.log(`missed by the standard, caught by T2 ${onlyT2} (${pct(onlyT2)})`);
+console.log(`patients with no diagnosis code     ${noDx}`);
 
-console.log('\n── 표1 검출 상위 ──');
+console.log('\n── most frequent Table 1 findings ──');
 Object.entries(t1Counter).sort((a, b) => b[1] - a[1]).slice(0, 10)
-  .forEach(([k, v]) => console.log(`  ${String(v).padStart(3)}명  ${k}`));
+  .forEach(([k, v]) => console.log(`  ${String(v).padStart(3)}  ${k}`));
 
-console.log('\n── 표2 조건부 판정 상위 ──');
+console.log('\n── most frequent Table 2 findings ──');
 Object.entries(t2Counter).sort((a, b) => b[1] - a[1]).slice(0, 12)
-  .forEach(([k, v]) => console.log(`  ${String(v).padStart(3)}명  ${k}`));
+  .forEach(([k, v]) => console.log(`  ${String(v).padStart(3)}  ${k}`));
 
 if (examples.length) {
-  console.log('\n── 국가 기준이 놓친 사례 ──');
+  console.log('\n── cases the national standard misses ──');
   examples.forEach((e, i) => {
-    console.log(`  ${i + 1}. ${e.age}세 · 약물 ${e.ings.join(', ')}`);
-    console.log(`     조건 ${e.conds.join(', ')}`);
-    console.log(`     판정 ${e.hits.join(' / ')}`);
+    console.log(`  ${i + 1}. age ${e.age} · drugs ${e.ings.join(', ')}`);
+    console.log(`     conditions ${e.conds.join(', ')}`);
+    console.log(`     finding ${e.hits.join(' / ')}`);
   });
 }
 
-console.log('\n※ MIMIC-IV는 미국 중환자실 입원기록이며 데모판은 100명 규모다.');
-console.log('   위 비율은 엔진이 실제 기록에서 동작함을 보이는 것이지 한국 역학 추정치가 아니다.');
-console.log('   약물명 매핑은 문자열 정규화 기반이고 ICD→조건 매핑은 조작적 정의다. 둘 다 임상 검토 전이다.');
+console.log('\nNote: MIMIC-IV holds US intensive care admissions, and the demo edition covers 100');
+console.log('      patients. These rates show that the engine runs on real records. They are not');
+console.log('      epidemiological estimates for Korea.');
+console.log('Note: drug names are matched by string normalisation and the ICD-to-condition mapping is');
+console.log('      an operational definition. Neither has been reviewed clinically.');

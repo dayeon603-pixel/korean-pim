@@ -23,7 +23,7 @@ const pim = require('../src/index.js');
 const icd = require('./icd_map.js');
 
 const dir = process.argv[2];
-if (!dir) { console.error('사용법: node analysis/binding_validate.js <hosp 디렉터리>'); process.exit(1); }
+if (!dir) { console.error('usage: node analysis/binding_validate.js <hosp directory>'); process.exit(1); }
 
 /** Read a gzipped CSV and return an array of objects keyed by the header row. */
 function readCsv(name) {
@@ -63,9 +63,9 @@ Object.entries(byPt).forEach(([sid, codes]) => {
 });
 
 const label = Object.fromEntries(pim.table2.map((c) => [c.id, c.label]));
-console.log(`조건 결속 검증 — MIMIC-IV Clinical Database Demo v2.2\n`);
-console.log(`65세 이상 진단코드 보유 환자 ${N}명 · 결속 조건 ${Object.keys(icd.MAP).length}개\n`);
-console.log('조건'.padEnd(24) + '환자수   비율    실제로 걸린 코드 접두');
+console.log(`Validating the condition binding — MIMIC-IV Clinical Database Demo v2.2\n`);
+console.log(`${N} patients aged 65+ with a diagnosis code · ${Object.keys(icd.MAP).length} bound conditions\n`);
+console.log('condition'.padEnd(24) + 'patients  share   code prefixes actually matched');
 console.log('─'.repeat(78));
 
 const rows = Object.keys(icd.MAP).map((cid) => ({
@@ -74,20 +74,22 @@ const rows = Object.keys(icd.MAP).map((cid) => ({
 
 rows.forEach((r) => {
   console.log(`${(label[r.cid] || r.cid).padEnd(24)}${String(r.n).padStart(5)} ${((r.n / N) * 100).toFixed(1).padStart(6)}%   `
-    + (r.codes.length ? r.codes.slice(0, 6).join(' ') : '— 걸린 코드 없음'));
+    + (r.codes.length ? r.codes.slice(0, 6).join(' ') : '— nothing matched'));
 });
 
 const resolved = rows.filter((r) => r.n > 0).length;
 const dead = rows.filter((r) => r.n === 0);
 console.log('\n' + '─'.repeat(78));
-console.log(`해석된 조건 ${resolved}/${rows.length}`);
+console.log(`conditions resolved ${resolved}/${rows.length}`);
 if (dead.length) {
-  console.log(`걸리지 않은 조건 ${dead.length}개: ${dead.map((d) => label[d.cid] || d.cid).join(', ')}`);
-  console.log('  → 코드 범위가 틀렸을 수도 있고, ICU 100명 표본에 해당 환자가 없을 수도 있다.');
-  console.log('  → 이 표본만으로는 둘을 구별하지 못한다.');
+  console.log(`${dead.length} conditions matched nothing: ${dead.map((d) => label[d.cid] || d.cid).join(', ')}`);
+  console.log('  -> the code range may be wrong, or no such patient may exist in a 100-person ICU sample.');
+  console.log('  -> this sample cannot tell the two apart.');
 }
-console.log('\n※ 정확도 검증이 아니다. 정답 라벨이 없어 민감도·특이도를 잴 수 없다.');
-console.log('※ 미국 중환자실 100명이므로 위 비율을 일반 노인 유병률로 읽으면 안 된다.');
-console.log('※ ICU 코호트는 급성기 진단이 과대표되고 만성 경증 조건이 과소표된다.');
+console.log('\nNote: this is not an accuracy check. Without ground-truth labels, sensitivity and');
+console.log('      specificity cannot be measured.');
+console.log('Note: 100 patients in a US intensive care unit. These rates must not be read as the');
+console.log('      prevalence of a general older population.');
+console.log('Note: an ICU cohort over-represents acute diagnoses and under-represents mild chronic ones.');
 
 module.exports = { N, rows, resolved };
