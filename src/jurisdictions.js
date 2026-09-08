@@ -149,7 +149,7 @@ const JURISDICTIONS = [
   // ── England ─────────────────────────────────────────────────────────────
   {
     id: 'eng-pincer', region: '잉글랜드', layer: 'cds',
-    instrument: 'PINCER National Prescribing Safety Indicators (13개)',
+    instrument: 'PINCER National Prescribing Safety Indicators (13 indicators)',
     source: 'PRIMIS/Nottingham PINCER progress report (2020-07) · NHS England·AHSN Network 전국 확산',
     academicBasis: 'Beers/STOPP 파생 아님. Avery/Howard 계열 전연령 위험처방 지표',
     conditionCount: 5,
@@ -260,10 +260,24 @@ const NOT_ASSESSABLE = [
   { region: '아일랜드', reason: '비교 대상 자체가 없다. HSE MMP 2026 국가계획 KPI 3개가 전부 비용·전환율 지표이고 노인 PIM 국가 KPI가 0개다. 단 HSE-PCRS 전국 청구DB 연구가 "The lack of diagnostic information in the database limited the applicability of all of the STOPP criteria."라고 배제 사유를 명시한 것은 (i) 데이터 조건 가설의 직접 근거다.' },
 ];
 
+// English renderings of the region labels, for English-language output. The Korean labels stay on
+// the records themselves because the accompanying manuscript quotes them.
+const REGION_EN = {
+  '한국': 'Korea', '일본': 'Japan', '미국': 'USA', '잉글랜드': 'England', '스코틀랜드': 'Scotland',
+  '스웨덴': 'Sweden', '대만': 'Taiwan', '프랑스': 'France', '네덜란드': 'Netherlands',
+  '독일': 'Germany', '아일랜드': 'Ireland',
+};
+
 const LAYER_ORDER = ['guideline', 'cds', 'measure', 'rating', 'payment'];
 const LAYER_KO = {
   guideline: '국가 지침', cds: '임상의사결정지원', measure: '품질지표 사양',
   rating: '공개 등급평가', payment: '지불·재정 인센티브',
+};
+// The Korean labels above are kept because the accompanying manuscript is written in Korean and
+// quotes them. These are the same five layers for English-language output.
+const LAYER_EN = {
+  guideline: 'national guideline', cds: 'clinical decision support', measure: 'quality measure spec',
+  rating: 'public rating', payment: 'payment incentive',
 };
 
 /** Retention of the condition axis tallied by layer. Entries that could not be adjudicated (null)
@@ -282,6 +296,7 @@ function byLayer(opt) {
     return {
       layer,
       layerKo: LAYER_KO[layer],
+      layerEn: LAYER_EN[layer],
       total: rows.length,
       judged: judged.length,
       retained: judged.filter((j) => j.axisRetained).length,
@@ -297,7 +312,7 @@ function counterExamples() {
 }
 
 module.exports = {
-  JURISDICTIONS, NOT_ASSESSABLE, LAYER_ORDER, LAYER_KO,
+  JURISDICTIONS, NOT_ASSESSABLE, LAYER_ORDER, LAYER_KO, LAYER_EN, REGION_EN,
   byLayer, counterExamples,
   /** Number of adjudicable jurisdiction-layers, which is the sample size reported as N. */
   get assessableCount() { return JURISDICTIONS.filter((j) => j.axisRetained !== null).length; },
