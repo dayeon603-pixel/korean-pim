@@ -1,60 +1,67 @@
-# 데이터 고지 (Data Notice)
+# Data notice
 
-## 1. 원 저작물
+## 1. The original work
 
-이 패키지의 판정 목록은 다음 논문의 표 1과 표 2를 구조화한 것입니다.
+The lists in this package are a structured form of Table 1 and Table 2 of the following article.
 
 > Kim MY, Etherton-Beer C, Kim CB, Yoon JL, Ga H, Kim HC, Song JS, Kim KI, Won CW.
 > **Development of a Consensus List of Potentially Inappropriate Medications for Korean Older Adults.**
 > *Annals of Geriatric Medicine and Research* 2018;22(3):121-129.
 > DOI: [10.4235/agmr.2018.22.3.121](https://doi.org/10.4235/agmr.2018.22.3.121)
 
-**논문 본문과 표의 저작권은 원 저자와 저널에 있습니다.** 이용 조건은 원문의 라이선스를 따르십시오.
-이 저장소의 MIT 라이선스는 **코드와 매핑 계층에만** 적용되며 논문 내용 자체에는 적용되지 않습니다.
+**Copyright in the article text and tables belongs to the original authors and the journal.** Follow
+the article's own licence for permitted use. The MIT licence on this repository covers **the code and
+the mapping layer only**, not the content of the article.
 
-## 2. 우리가 추가한 것 (매핑 계층)
+## 2. What we added: the mapping layer
 
-논문에는 없고 이 패키지에서 새로 만든 필드입니다.
+Fields that are not in the article and were created for this package.
 
-| 필드 | 내용 |
+| Field | Contents |
 |---|---|
-| `kr` | 한글 성분명 |
-| `ing` | 성분키(소문자 영문) |
-| `cls` · `cat` | 엔진 판정용 효능군 키와 한글 표시명 |
-| `tags` | 표2의 계열 단위 기준(항콜린제·벤조디아제핀 등) 매칭용 분류 |
-| `match` | 표2 각 조건의 판정 대상 토큰을 성분·계열·태그 매처로 해석한 것 |
-| `id` · `label` · `kind` | 조건 식별자와 입력 화면용 라벨 |
-| `atc` · `atc_note` | WHO ATC 5단계 코드와 매핑 판단 근거 |
+| `kr` | Korean ingredient name |
+| `ing` | Ingredient key, lowercase Latin |
+| `cls` · `cat` | Drug-class key used by the engine, and its Korean display name |
+| `tags` | Classification used to match Table 2's class-level rules (anticholinergics, benzodiazepines, and so on) |
+| `match` | Each Table 2 target token resolved into an ingredient, class, or tag matcher |
+| `id` · `label` · `kind` | Condition identifier and form label |
+| `atc` · `atc_note` | WHO ATC five-level code and the reasoning behind the mapping |
 
-이 계층은 임상 합의가 아니라 **구현을 위한 해석**입니다. 예를 들어 "Anticholinergics"를 어떤 성분까지로 볼지는
-논문이 개별 성분을 열거하지 않은 곳에서 저희가 판단했습니다. 이견이 있을 수 있으며 이슈로 알려 주시면 반영합니다.
+This layer is **an interpretation made for implementation**, not a clinical consensus. Deciding which
+ingredients count as "anticholinergics", for instance, was our judgment in places where the article
+names a class without enumerating it. Reasonable people may disagree; open an issue and it gets changed.
 
-## 3. 검증 상태
+## 3. Verification status
 
-**2026-08-26 원문 대조 완료 (항목 구성 차원).** 자세한 것은 [VERIFICATION.md](VERIFICATION.md).
+**Agreement with the article at the level of item composition was completed on 2026-08-26.** Details in
+[VERIFICATION.md](VERIFICATION.md).
 
-- ✅ 표1 63항목: 원문과 집합·순서 완전일치. 임의 추가·누락 0건.
-- ✅ 표2 18개 조건: 구성·순서 완전일치, 원문 약물군 전부 존재.
-- ⚠️ 매핑 계층 확장분 2건(SIADH의 "기타 약물", 출혈 위험의 "DOAC")은 원문이 군으로만 적은 것을
-  우리가 성분으로 펼친 것입니다. 누락 가능성이 있는 방향입니다.
-- ⚠️ **ATC 코드는 논문에 없는 우리 매핑 계층입니다.** 63항목 중 59항목에 부여했고 4항목은 단일 매핑
-  불가 사유를 남겼습니다. 9항목을 WHO ATC 인덱스로 표본 대조해 오류 1건을 발견·수정했으며,
-  **전수 대조는 미완료**입니다.
-- ❌ 사유 문구의 자구 대조, 용량 임계값의 근거 문맥, 약사·임상의 검토는 **미완료**.
+- Table 1, 63 items: exact match with the article in set and order. Nothing added, nothing missing.
+- Table 2, 18 conditions: exact match in composition and order, with every drug group present.
+- Two mapping-layer expansions (the "other drugs" of SIADH, the DOACs of bleeding risk) turn a group
+  the article named openly into specific ingredients. The error runs toward under-detection.
+- **The ATC codes are our layer, absent from the article.** 59 of 63 items carry one; the other 4
+  record why no single code applies. Nine items were sample-checked against the WHO ATC index, which
+  found and corrected one error. **A full check has not been done.**
+- Not done: word-for-word comparison of the rationale text, the context behind the dose thresholds,
+  and review by a pharmacist or clinician.
 
-대조는 `npm run verify`로 언제든 재실행됩니다(197건). 데이터를 고치면 참조본도 함께 고쳐야 하므로
-무심코 항목이 늘거나 줄어드는 일을 막습니다.
+The comparison reruns at any time with `npm run verify` (197 checks). Because changing the data means
+also changing the reference copy, items cannot quietly appear or disappear.
 
-**임상 의사결정에 그대로 쓰지 마십시오.** 연구·프로토타입·교육용입니다.
+**Do not use this for clinical decisions.** It is for research, prototyping, and teaching.
 
-## 4. 판정 철학
+## 4. How the engine decides
 
-- **계열 추정을 하지 않습니다.** 표1은 성분키 완전일치로만 판정합니다. 논문에 글리벤클라미드만 있으면
-  글리메피리드는 걸리지 않습니다. 계열이 비슷하다는 이유로 경고를 만들면 거짓양성이 쌓이고,
-  거짓양성은 임의 중단이라는 실제 위해로 이어집니다.
-- **표2는 조건을 입력해야만 판정합니다.** 기저질환·병력을 모르면 아무것도 추정하지 않습니다.
-- **판정은 전부 결정론적입니다.** 생성형 모델을 쓰지 않으므로 같은 입력에는 항상 같은 결과가 나옵니다.
+- **No class inference.** Table 1 matches on exact ingredient keys only. If the article names
+  glibenclamide, glimepiride is not flagged. Warning on a drug because it resembles a listed one
+  accumulates false positives, and false positives cause unnecessary discontinuation, which is a
+  real harm.
+- **Table 2 evaluates only what it is given.** Without the patient's conditions, it infers nothing.
+- **Every verdict is deterministic.** No generative model is involved, so the same input always
+  produces the same output.
 
-## 5. 인용
+## 5. Citation
 
-이 패키지를 연구에 사용하셨다면 **원 논문을 인용해 주십시오.** 이 패키지는 원 논문의 구현체입니다.
+If you use this package in research, **cite the original article.** This package is an implementation
+of it.

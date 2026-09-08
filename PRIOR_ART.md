@@ -1,51 +1,58 @@
-# 선행 구현 검색 기록
+# Prior implementation search
 
-초록의 배경 문장("기계 가독형 공개 구현이 확인되지 않는다")은 근거가 필요하다.
-이 문서는 그 근거로서 **언제·무엇을·어떻게 찾았고 무엇을 찾았는지**를 남긴다.
+The background claim in the abstract, that no machine-readable public implementation could be found,
+needs evidence. This document records **when the search was run, what was searched, how, and what
+turned up.**
 
-## 검색 일자
+## Date
 2026-08-27
 
-## 검색식
+## Queries
 
-| # | 검색어 | 대상 |
+Queries are recorded verbatim, including the Korean ones, since they are part of the method.
+
+| # | Query | Scope |
 |---|---|---|
-| 1 | `Korean PIM 2018 potentially inappropriate medication open source implementation machine-readable` | 웹·학술 |
-| 2 | `한국형 노인 부적절 약물 목록 2022 PIM Korea updated criteria list` | 웹·국문 |
-| 3 | `github open source Korean PIM criteria implementation JSON deprescribing tool 한국형 노인부적절약물 오픈소스` | GitHub·웹 |
-| 4 | `심평원 2022 노인 부적절 다약제 사용 관리 기준 297개 약물 목록` | 국내 보고서 |
+| 1 | `Korean PIM 2018 potentially inappropriate medication open source implementation machine-readable` | Web and scholarly |
+| 2 | `한국형 노인 부적절 약물 목록 2022 PIM Korea updated criteria list` | Web, Korean |
+| 3 | `github open source Korean PIM criteria implementation JSON deprescribing tool 한국형 노인부적절약물 오픈소스` | GitHub and web |
+| 4 | `심평원 2022 노인 부적절 다약제 사용 관리 기준 297개 약물 목록` | Korean agency reports |
 
-## 확인된 것
+## What was found
 
-### 관련 국내 연구는 존재한다 (공백이 아니다)
+### Domestic work exists. This is not an empty field.
 
-- **Kim MY et al. (2018)** — 한국형 노인 부적절약물 합의 목록. 본 연구의 대상.
-  Ann Geriatr Med Res 2018;22(3):121-129.
-- **Ah YM et al. (2020)** — 국내 잠재적 부적절 약물 목록 리뷰. 심평원 2022 보고서가 후보 출처로
-  인용(138개 항목).
-- **Jun K, Lee S, Lee AY, Ah YM, Lee JY (2022)** — 국내 장기요양시설 입소자 대상 medication
-  review tool 개발. Delphi 합의 기반. Ther Adv Chronic Dis. DOI 10.1177/20406223221128444
-- **건강보험심사평가원 (2022)** — 노인의 부적절한 다약제 사용 관리 기준(안). 국가 운영 기준.
-- **김무영 등 (2015)** — 심평원 보고서가 "Korean PIMs"로 인용한 이전 판.
+- **Kim MY et al. (2018)** — the Korean consensus list of potentially inappropriate medications, and
+  the subject of this work. Ann Geriatr Med Res 2018;22(3):121-129.
+- **Ah YM et al. (2020)** — a review of domestic potentially inappropriate medication lists, cited as
+  a candidate source (138 items) by the 2022 HIRA report.
+- **Jun K, Lee S, Lee AY, Ah YM, Lee JY (2022)** — a medication review tool for residents of Korean
+  long-term care facilities, built on Delphi consensus. Ther Adv Chronic Dis. DOI 10.1177/20406223221128444
+- **Health Insurance Review and Assessment Service (2022)** — draft management criteria for
+  inappropriate polypharmacy in older adults. A national operating standard.
+- **Kim MY et al. (2015)** — an earlier edition, cited as "Korean PIMs" by the HIRA report.
 
-즉 **국내에 기준 자체는 여럿 있다.** 이 연구가 주장하는 공백은 "기준이 없다"가 아니라
-**"기계가 읽을 수 있는 형태로 공개된 구현이 없다"**는 것이다. 둘을 혼동하면 안 된다.
+So **several domestic criteria exist.** The gap this work claims is not that criteria are missing but
+that **no machine-readable public implementation of them exists.** The two must not be conflated.
 
-### 기계 가독형 공개 구현
+### Machine-readable public implementations
 
-위 검색에서 **한국형 PIM 기준을 구조화한 공개 저장소·패키지는 확인되지 않았다.**
-국제 기준은 사정이 다르다. Beers·STOPP/START는 상용 CDSS와 일부 연구용 구현이 존재한다.
+The searches above **did not surface any public repository or package that structures the Korean PIM
+criteria.** International criteria are a different case: Beers and STOPP/START have commercial CDSS
+implementations and some research code.
 
-## 이 검색의 한계 (초록에 반영할 것)
+## Limits of this search
 
-- 웹 검색 기반이며 **체계적 문헌고찰(PRISMA)이 아니다.**
-- 상용 CDSS 내부 구현은 비공개라 확인할 수 없다. "없다"가 아니라 **"공개된 것을 찾지 못했다"**가
-  정확한 표현이다.
-- 국문 검색어 조합이 제한적이었다. 학회 발표자료·석박사 논문은 색인이 약해 누락 가능성이 있다.
+- It is a web search, **not a systematic review.** No PRISMA protocol was followed.
+- Implementations inside commercial CDSS products are proprietary and cannot be inspected. The
+  accurate statement is **"none was found in public sources"**, not "none exists".
+- The Korean query set was limited. Conference materials and theses are poorly indexed and may have
+  been missed.
 
-## 초록에 쓸 표현
+## Wording for the abstract
 
-❌ `공개 구현이 없다`
-⭕ `문헌·저장소 검색에서 기계 가독형 공개 구현을 확인하지 못하였다`
+Not: `no public implementation exists`
+Instead: `no machine-readable public implementation was identified in a search of the literature and code repositories`
 
-단정하지 않는다. 검색 범위를 밝히고 그 안에서 못 찾았다고만 쓴다.
+The claim is not made absolutely. State the scope of the search, and claim only that nothing was found
+within it.

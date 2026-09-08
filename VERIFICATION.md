@@ -1,70 +1,75 @@
-# 원문 대조 기록
+# Source agreement record
 
-## 대조 일자 및 출처
+## Date and source
 
-- **일자:** 2026-08-26
-- **출처:** e-agmr.org 논문 본문 (Ann Geriatr Med Res 2018;22(3):121-129, DOI 10.4235/agmr.2018.22.3.121)
-- **방법:** 원문 Table 1·Table 2를 별도로 조회해 참조본을 만들고, 이 저장소의 데이터와 항목 단위로 비교.
-  참조본은 `test/verify_against_paper.js`에 코드로 고정돼 있어 **재실행 가능**하다.
+- **Date:** 2026-08-26
+- **Source:** Article text at e-agmr.org (Ann Geriatr Med Res 2018;22(3):121-129, DOI 10.4235/agmr.2018.22.3.121)
+- **Method:** Table 1 and Table 2 were retrieved separately from the article and transcribed into a
+  reference copy. The repository data was then compared against it item by item. The reference copy is
+  fixed in code in `test/verify_against_paper.js`, so the comparison is **rerunnable**.
 
 ```bash
-npm run verify   # 197건
+npm run verify   # 197 checks
 ```
 
-## 대조 결과
+## Result
 
-| 대상 | 결과 |
+| Checked | Result |
 |---|---|
-| Table 1 항목 수 | **63 = 63** ✅ |
-| Table 1 항목 집합·순서 | **완전일치** ✅ (원문에 없는 항목 0, 누락 0) |
-| Table 2 조건 수 | **18 = 18** ✅ |
-| Table 2 조건 구성·순서 | **완전일치** ✅ |
-| Table 2 약물군 | 원문에 표기된 약물군 **전부 존재** ✅ |
-| Table 2 추가 항목 | 아래 "매핑 계층 확장분" 2건 외에는 없음 ✅ |
+| Table 1 item count | **63 = 63** |
+| Table 1 item set and order | **Exact match.** Nothing present that the article lacks, nothing missing |
+| Table 2 condition count | **18 = 18** |
+| Table 2 condition set and order | **Exact match** |
+| Table 2 drug groups | Every group named in the article is present |
+| Table 2 additions | None beyond the two mapping-layer expansions recorded below |
 
-## 매핑 계층 확장분 (원문은 군으로만 표기, 우리가 개별 성분으로 펼침)
+## Mapping-layer expansions
 
-논문이 개별 성분을 열거하지 않고 군으로만 적은 자리에서, 판정 구현을 위해 성분을 명시한 부분입니다.
-**이것은 논문의 내용이 아니라 우리의 해석입니다.**
+In two places the article names a drug group without enumerating its ingredients. To make the rule
+executable we had to name them. **This is our interpretation, not the article's content.**
 
-| 조건 | 원문 표기 | 우리가 펼친 성분 |
+| Condition | As printed in the article | Ingredients we enumerated |
 |---|---|---|
-| SIADH·저나트륨혈증 | 이뇨제, 항정신병약, 항우울제 **및 기타 약물** | carbamazepine, oxcarbazepine, carboplatin, cyclophosphamide, cisplatin, vincristine |
-| 출혈 위험 상황 | Aspirin, Clopidogrel, Ticlopidine, NSAIDs, Warfarin, **직접 경구항응고제(DOAC)** | dabigatran, rivaroxaban, apixaban, edoxaban |
+| SIADH / hyponatremia | Diuretics, antipsychotics, antidepressants **and other drugs** | carbamazepine, oxcarbazepine, carboplatin, cyclophosphamide, cisplatin, vincristine |
+| Bleeding risk | Aspirin, clopidogrel, ticlopidine, NSAIDs, warfarin, **direct oral anticoagulants (DOACs)** | dabigatran, rivaroxaban, apixaban, edoxaban |
 
-두 경우 모두 **원문이 포괄적으로 지칭한 범위를 좁혀 구현한 것**이므로, 원문의 "기타 약물"에 해당하는
-성분이 더 있을 수 있습니다. 누락 가능성이 있는 방향이며 과잉 판정 방향은 아닙니다.
+In both cases we narrowed a deliberately open phrase, so ingredients the article would have counted as
+"other drugs" may be missing. The error runs toward under-detection, not over-detection.
 
-## ATC 표준 코드 매핑 (2026-08-26)
+## ATC code mapping (2026-08-26)
 
-논문에는 ATC 코드가 없습니다. 표준 코드를 쓰는 시스템과 연결하기 위해 저희가 부여한 계층입니다.
+The article carries no ATC codes. This layer is ours, added so the list can join systems that use
+standard codes.
 
-| 항목 | 결과 |
+| Checked | Result |
 |---|---|
-| ATC 5단계 코드 부여 | **59 / 63** |
-| 단일 매핑 불가 | 4 (복합제 1, 염 형태 분기 1, 성분군 1, 투여요법 1) — 사유 명시 |
-| 이중 분류 주석 | 3 (Aspirin, Ketorolac, Orphenadrine) |
-| WHO ATC 인덱스 표본 대조 | **9항목** — R06AA02, R06AA11, R06AB04, R06AX07, N04AC01, M01AE01, M01AE02, M01AE14, Orphenadrine 이중분류 |
-| 표본 대조에서 발견한 오류 | **1건.** Dimenhydrinate를 R06AA52(diphenhydramine, combinations)로 잘못 부여 → **R06AA11로 수정** |
-| 자동 검증 | 형식(5단계 정규식)·자리수·중복 |
+| Five-level ATC codes assigned | **59 of 63** |
+| No single code possible | 4 (one combination product, one salt-form split, one drug group, one dosing regimen) — reasons recorded |
+| Dual-classification notes | 3 (aspirin, ketorolac, orphenadrine) |
+| Sample check against the WHO ATC index | **9 items** — R06AA02, R06AA11, R06AB04, R06AX07, N04AC01, M01AE01, M01AE02, M01AE14, and the orphenadrine dual classification |
+| Errors found in the sample | **One.** Dimenhydrinate had been assigned R06AA52 (diphenhydramine, combinations) → **corrected to R06AA11** |
+| Automated checks | Format (five-level pattern), digit count, duplicates |
 
-표본 대조에서 오류가 하나 나왔다는 것은 **나머지 50항목에도 오류가 있을 수 있다**는 뜻입니다.
-전수 대조 전까지는 그렇게 취급해야 합니다.
+One error in a nine-item sample means **the remaining 50 items may also contain errors.** Until a
+full check is done, treat them that way.
 
-## 아직 대조하지 못한 것
+## Not yet checked
 
-- **사유(rationale) 문구의 자구 대조.** 항목별 사유는 뜻이 통하는 한국어 요약이며 원문 영문 표현과 1:1로 맞춰보지 않았습니다.
-- **용량 임계값의 근거 문맥.** `Aspirin >325 mg/day`, `Doxepin >6 mg/day`, `Insulin sliding scale`은
-  약물명에 포함된 조건만 반영했고, 원문이 그 임계값을 어떤 맥락으로 제시했는지는 확인하지 않았습니다.
-- **표1 약물의 원문 약효군 분류.** 논문은 장기 계통(중추신경계·심혈관계 등)으로 묶었고 우리는 약리학적
-  효능군으로 분류했습니다. 축이 다르며, 어느 쪽도 틀린 것은 아닙니다.
-- **ATC 코드 전수 대조.** 9항목만 표본 대조했습니다. 나머지 50항목은 형식 검증만 거쳤습니다.
-- **임상 타당성 검토.** 약사·임상의의 검토를 아직 받지 않았습니다.
+- **Word-for-word comparison of the rationale text.** The per-item rationale is a faithful Korean
+  summary; it has not been matched one to one against the article's English wording.
+- **The context behind the dose thresholds.** `Aspirin >325 mg/day`, `Doxepin >6 mg/day`, and
+  `Insulin sliding scale` carry only the condition embedded in the drug name. We did not verify the
+  reasoning the article gives for those thresholds.
+- **The article's own drug grouping for Table 1.** The article groups by organ system (central
+  nervous, cardiovascular, and so on); we group pharmacologically. These are different axes, and
+  neither is wrong.
+- **Full ATC verification.** Only 9 items were sample-checked. The other 50 passed format checks only.
+- **Clinical review.** No pharmacist or clinician has reviewed this.
 
-## 결론
+## Conclusion
 
-**항목 구성 차원의 대조는 완료**했습니다. 63항목과 18개 조건이 원문과 일치하며, 임의로 추가되거나
-누락된 항목이 없음을 자동 검증으로 고정했습니다.
+**Agreement at the level of item composition is complete.** The 63 items and 18 conditions match the
+article, and automated checks now fix that agreement so items cannot silently appear or disappear.
 
-다만 위 "아직 대조하지 못한 것"이 남아 있으므로, **임상 의사결정에 그대로 사용하지 마십시오.**
-연구·프로토타입·교육용으로 사용하고, 환자 적용 전에는 약사·임상의 검토를 거치십시오.
+Because the gaps above remain, **do not use this for clinical decisions.** Use it for research,
+prototyping, and teaching, and obtain pharmacist or clinician review before applying it to a patient.

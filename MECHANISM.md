@@ -22,6 +22,10 @@ upper respiratory infection antibiotic indicator is defined on a diagnosis-code 
 
 > 가. 급성상기도감염(J00-J06) 항생제
 > — 건강보험심사평가원, 「2023년 약제급여 적정성 평가 결과」, 2024.7
+>
+> *Antibiotics for acute upper respiratory infection (J00-J06).*
+> *— Health Insurance Review and Assessment Service, 2023 Drug Benefit Appropriateness*
+> *Assessment Results, July 2024.*
 
 It is publicly graded on five bands and has been in the clinic-level differential payment programme
 since 2013, widened in 2017 from one percent to a maximum of five percent. A condition denominator
@@ -109,7 +113,7 @@ cannot be separated from its own definition, and is reported rather than claimed
 
 ## Substrate does not explain the anchor case, and that is the interesting part
 
-Korea's polypharmacy criteria run on the same 명세서 claims that carry a mandatory KCD 상병 on every
+Korea's polypharmacy criteria run on the same claims (명세서) that carry a mandatory KCD diagnosis (상병) on every
 line, and the agency demonstrably could use them: the 2022 report authored KCD code sets for
 thirteen comorbidity groups and applied them to describe the cohort and to adjust an outcome model.
 The substrate was there. The condition axis was still dropped in full, 0 of 18.
@@ -120,7 +124,7 @@ Two candidates are visible in the data and one of them is documented in Korean.
 **Severability.** An avoidance rule keeps producing a number when its condition is deleted: strike
 the dementia from "anticholinergics in dementia" and "anticholinergic prescribing rate in older
 adults" remains, and that is exactly the indicator HIRA fielded in 2023, on a denominator it states
-as 전체상병. An undertreatment rule does not survive the same deletion, because its numerator event
+as 전체상병, meaning every diagnosis. An undertreatment rule does not survive the same deletion, because its numerator event
 is the absence of a drug and an absence has no population. Across the instruments, conditions in a
 load-bearing role are retained at 80.8 percent and conditions in a severable role at 47.3 percent.
 
@@ -130,6 +134,12 @@ excluding a gastroprotection criterion that it calls clinically uncontroversial:
 > 임상적으로 논란의 여지가 없는 좋은 지표이나 환자단위 지표이며 개별 의료기관 평가는 불가능함
 > 국가단위 지표로는 산출 가능하지만, 병원 평가로는 적절하지 않음
 > — 「환자안전 중심 약제평가 지표 개발 연구」, G000F8Q-2021-15, 2021
+>
+> *A clinically uncontroversial and sound indicator, but a patient-level one, so assessment of an*
+> *individual institution is not possible. It can be computed as a national indicator, but it is*
+> *not appropriate for hospital assessment.*
+> *— Study on the Development of Patient-Safety-Centred Drug Assessment Indicators,*
+> *G000F8Q-2021-15, 2021.*
 
 The rule is computable nationally and no single institution can be held to it. That is not a data
 problem, it is an accountability problem, and it is stated by the agency rather than inferred by us.
@@ -139,7 +149,11 @@ adopted:
 
 > 대상 환자는 치매치료제를 처방받은 환자가 아닌, 치매 상병으로 진단받고 치매치료제를 처방받은
 > 환자(진성 치매환자)로 분모를 제한하는 방안의 타당성 및 내부 심사위원 등의 자문이 필요하다.
-> — same report, 전문가 자문회의 2021-07-24
+> — same report, expert advisory meeting, 2021-07-24
+>
+> *The target patients should not be those prescribed an anti-dementia drug, but those carrying a*
+> *dementia diagnosis who are also prescribed one (true dementia patients). The feasibility of*
+> *restricting the denominator this way requires advice from internal reviewers and others.*
 
 The panel had noticed that using anti-dementia drugs as a stand-in for dementia misclassifies
 patients, because ginkgo appears in that ingredient list. The candidate was placed in the long-term
@@ -147,24 +161,25 @@ tier and left out of the final set.
 
 ## The case that would most damage the substrate account
 
-Korea's national DUR was reported by one analyst to transmit 주상병코드 and 임부여부 in the same
+Korea's national DUR was reported by one analyst to transmit the principal diagnosis code (주상병코드) and pregnancy status (임부여부) in the same
 message it screens prescriptions with, and to apply neither. If the condition is in the feed and the
 rule drops it anyway, the feed account is not sufficient.
 
 Half of this is now settled and half is not.
 
 **Settled.** The categories DUR checks were read in full from 「환자안전 중심 약제평가 지표 개발
-연구」 (2021), p. 38. Within a prescription it checks 병용·연령·임부금기 의약품, 안전성 관련
-사용중지·사용주의 의약품, 용량·투여 기간·분할주의 의약품, 노인주의 의약품, 비용효과적인 함량 사용
-대상 의약품, and 약제 허가사항 관련 주의 의약품. Between prescriptions it checks 병용금기 의약품,
-안전성 관련 사용중지 의약품, 동일성분 중복 의약품, and 효능군 중복 의약품. Not one of those ten
+연구」 (2021), p. 38. Within a prescription it checks contraindicated combinations, age contraindications, and pregnancy
+contraindications (병용·연령·임부금기); drugs under safety suspension or caution; dose, duration, and
+splitting cautions; drugs requiring caution in older adults (노인주의); cost-effective strength
+selection; and label-related cautions. Between prescriptions it checks contraindicated combinations,
+safety suspensions, duplicate ingredients, and duplicate therapeutic classes. Not one of those ten
 categories is defined by a patient diagnosis. They are drug-drug, drug-age, drug-pregnancy, dose,
 duration and duplication. Korea's national real-time prescribing check has no drug-disease category
-at all. The same page fixes the 노인주의 list at 61 ingredients under 식품의약품안전처 공고
-제2020-423호, which is the figure the 2021 study compares its own indicator against when it notes
+at all. The same page fixes the 노인주의 list, drugs requiring caution in older adults, at 61 ingredients
+under Ministry of Food and Drug Safety notice 제2020-423호, which is the figure the 2021 study compares its own indicator against when it notes
 that only 37 of the 61 are covered.
 
-**Not settled.** Whether the DUR request message itself carries 주상병코드. That would decide whether
+**Not settled.** Whether the DUR request message itself carries the principal diagnosis code (주상병코드). That would decide whether
 the absence of a drug-disease category is a data limit or a design choice, and it is exactly the
 distinction this section turns on. The session's web-search budget was exhausted before the message
 specification could be reached. Until it is read, no claim rests on it.
