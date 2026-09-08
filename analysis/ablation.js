@@ -1,18 +1,21 @@
-/* 조건축을 지우면 규칙이 어떻게 달라지는가 — node analysis/ablation.js
+/* What deleting the condition axis does to a rule — node analysis/ablation.js
  *
- * 논문은 조건 Y를 지우면 |X∩Y|/|X| 가 |X|/|N| 이 되고, 이는 같은 규칙의 약한 판이 아니라
- * 다른 규칙이라고 대수로 주장한다. 그 주장을 실제 사람에서 측정한다.
+ * The manuscript argues algebraically that deleting condition Y turns |X and Y| / |X| into |X| / |N|,
+ * which is a different rule rather than a weaker version of the same one. This measures that claim
+ * on actual people.
  *
- * 자료: NHANES 2017-2018 (미국 공중보건 공개자료, 공용 도메인). 65세 이상 처방 보유자.
- *   이 자료는 국가 지표가 계산되는 기질(substrate)이 아니다. 두 축을 모두 담은 환자 단위
- *   자료라서 쓰는 것이며, 결과는 대수적 성질의 실측 시연이지 어떤 기관의 행위에 대한 증거가 아니다.
+ * Data: NHANES 2017-2018, US public health survey, public domain. Respondents aged 65 and over with
+ *   a prescription record. This is not a substrate any national indicator runs on. It is used because
+ *   it is patient-level data carrying both axes. The result demonstrates an algebraic property; it is
+ *   not evidence about any agency's conduct.
  *
- * 반드시 병기할 한계
- *   - 18개 조건 중 8개만 관측된다. 조건축 판정량은 추정치가 아니라 **하한**이다.
- *   - 처방은 자기보고 30일 사용분이며 청구자료가 아니다.
- *   - NHANES 는 복합표본이지만 여기서는 가중치를 적용하지 않았다. 따라서 아래 비율은
- *     이 코호트를 기술할 뿐 미국 인구 추정치가 아니다. 두 규칙의 비교는 사람 내부 비교라
- *     가중치에 크게 좌우되지 않지만, 유병률로 읽어서는 안 된다.
+ * Limits that must be reported alongside any figure
+ *   - Only 8 of the 18 conditions are observable, so the condition-axis count is a lower bound,
+ *     not an estimate.
+ *   - Prescriptions are self-reported 30-day use, not claims.
+ *   - NHANES is a complex sample, but these figures are unweighted. They describe this cohort and
+ *     are not United States estimates. The comparison between the two rules is within-person and so
+ *     is not highly sensitive to weighting, but the figures must not be read as prevalences.
  */
 'use strict';
 const path = require('path');
@@ -21,13 +24,14 @@ const bm = require('../src/bitmask.js');
 const hira = require('../src/hira2022.js');
 const { MAP } = require('./drug_class_map.js');
 
-// 코호트 파일을 인자로 받는다. 같은 규칙을 독립 주기에 다시 돌려 복제 여부를 본다.
+// The cohort file is taken as an argument, so the same rules can be rerun on an independent cycle
+// to test replication.
 //   node analysis/ablation.js                              (2017-2018)
 //   node analysis/ablation.js nhanes_cohort_2015.json      (2015-2016)
 const COHORT = process.argv[2] || 'nhanes_cohort.json';
 const data = require(path.join(__dirname, COHORT));
 
-/** 논문이 영문이므로 관측 가능한 8개 조건에만 영문 라벨을 붙인다. */
+/** English labels for the 8 observable conditions, since the manuscript is in English. */
 const EN = {
   insomnia: 'Insomnia', hf: 'Heart failure', htn: 'Hypertension',
   stroke_secondary: 'Stroke, secondary prevention', ckd: 'Chronic kidney disease',
@@ -53,19 +57,20 @@ function wilson(k, n, z = 1.96) {
   return [(c - s) / d, (c + s) / d];
 }
 const pc = (x) => (100 * x).toFixed(1);
-/** 이 파일은 하네스에서 require 되기도 한다. 직접 실행할 때만 보고서를 찍는다. */
+/** The harness requires this file, so the report prints only on direct execution. */
 
-/** 재현 가능한 난수. 시드를 고정해 부트스트랩이 실행마다 같은 값을 내게 한다. */
+/** Reproducible randomness. A fixed seed makes the bootstrap return the same value every run. */
 function rng(seed) {
   let x = seed >>> 0;
   return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
 }
 
-/** 사람 단위 클러스터 부트스트랩.
+/** Person-level cluster bootstrap.
  *
- * 규칙-사람 쌍 1,392건은 사람 1,345명에서 나오므로 서로 독립이 아니다. 한 사람이 여러 규칙에
- * 걸리면 그 사람의 특성이 여러 쌍에 함께 실린다. 쌍을 독립으로 두고 Wilson 구간을 쓰면
- * 구간이 실제보다 좁아진다. 사람을 복원추출해 통계량을 다시 계산한다.
+ * Rule-person pairs come from 1,345 people, so they are not independent of one another. When one
+ * person matches several rules, that person's characteristics ride along in every one of those pairs.
+ * Treating pairs as independent and applying a Wilson interval would make the interval too narrow.
+ * People are resampled with replacement and the statistic recomputed.
  */
 function clusterBootstrap(units, stat, B = 2000, seed = 20260906) {
   const rand = rng(seed);
@@ -81,9 +86,10 @@ function clusterBootstrap(units, stat, B = 2000, seed = 20260906) {
   return [out[Math.floor(0.025 * out.length)], out[Math.floor(0.975 * out.length)], out.length];
 }
 
-// 해상되지 않은 성분명이 무엇인지 감사한다. "33.8% 만 해상됐다"는 소모(attrition)처럼 들리지만,
-// 사전은 규칙이 지목하는 계열만 담도록 의도적으로 좁게 만들었다. 남은 것이 어느 규칙도 지목하지
-// 않는 약이라면 그것은 소모가 아니라 범위다. 규칙이 지목하는 성분명 토큰을 미해상 목록에서 찾아 센다.
+// Audit what failed to resolve. A resolution rate near a third sounds like attrition, but the
+// dictionary was deliberately built to cover only the classes the rules name. If what remains is
+// drugs no rule could have matched, that is scope rather than attrition. Search the unresolved list
+// for ingredient tokens the rules do name, and count them.
 const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxicam', 'ketorolac',
   'sulindac', 'oxaprozin', 'diflunisal', 'alprazolam', 'lorazepam', 'clonazepam', 'diazepam',
   'temazepam', 'triazolam', 'zolpidem', 'zaleplon', 'eszopiclone', 'oxycodone', 'hydrocodone',
@@ -94,16 +100,17 @@ const RULE_TOKENS = ['meloxicam', 'celecoxib', 'etodolac', 'nabumetone', 'piroxi
   'hydrocortisone', 'furosemide', 'hydrochlorothiazide', 'chlorthalidone', 'torsemide', 'bumetanide',
   'spironolactone', 'metoprolol', 'atenolol', 'carvedilol', 'propranolol', 'bisoprolol', 'nebivolol',
   'nadolol', 'sotalol',
-  // 2026-09-06: 계열 구성원 보강과 함께 감사 목록도 넓힌다. 좁은 목록으로 감사하면
-  // 사전에 없는 구성원을 감사도 놓친다.
+  // 2026-09-06: widened alongside the class membership lists. Auditing against a narrow list would
+  // miss exactly the members the dictionary is missing.
   'metolazone', 'indapamide', 'labetalol', 'acebutolol', 'etoricoxib', 'desipramine',
   'imipramine', 'iloperidone', 'prochlorperazine', 'fludrocortisone', 'betamethasone',
   'triamcinolone', 'desvenlafaxine', 'vilazodone', 'vortioxetine', 'milnacipran',
   'duloxetine', 'venlafaxine', 'mirtazapine', 'trazodone', 'sertraline', 'citalopram',
   'escitalopram', 'fluoxetine', 'quetiapine', 'olanzapine', 'risperidone', 'haloperidone',
   'theophylline', 'pioglitazone', 'verapamil', 'diltiazem', 'clopidogrel', 'aspirin'];
-// 복합제가 통째로 미해상 처리되면 두 축 모두에서 사라지고, 그러면 결과가 과소추정된다.
-// NHANES 는 복합제를 "성분A; 성분B" 로 적는다. 그 가정이 맞는지 다른 구분자를 찾아 확인한다.
+// If a combination product fails to resolve as a whole it disappears from both axes, which biases
+// the result downward. NHANES writes combinations as "ingredient A; ingredient B". Check that
+// assumption by searching for other separators.
 const combo = { rawStrings: 0, distinct: 0, semicolon: 0, otherSeparator: 0, constituents: 0 };
 {
   const seen = new Set();
@@ -111,15 +118,16 @@ const combo = { rawStrings: 0, distinct: 0, semicolon: 0, otherSeparator: 0, con
     combo.rawStrings += 1;
     seen.add(d);
     if (d.includes(';')) { combo.semicolon += 1; combo.constituents += split(d).length; }
-    // 세미콜론 외의 구분자 후보. 성분명 내부의 하이픈(omega-3)과 "… - unspecified" 분류 라벨은
-    // 복합제가 아니므로 제외한다.
+    // Candidate separators other than the semicolon. Hyphens inside an ingredient name (omega-3) and
+    // "... - unspecified" category labels are not combinations, so they are excluded.
     if (!/ - unspecified$/.test(d) && (/\/|\+/.test(d) || / and /.test(d))) combo.otherSeparator += 1;
   }));
   combo.distinct = seen.size;
 }
 
-// 복합제를 성분으로 쪼개면 한 사람이 한 규칙에 여러 번 걸릴 수 있다. 쌍은 (규칙, 사람) 단위로
-// 세므로 그런 사람도 한 번만 들어간다. 그 중복 제거가 실제로 얼마나 걷어내는지 센다.
+// Splitting combinations into ingredients can make one person match one rule more than once. A pair
+// is counted as (rule, person), so that person still enters once. Count how much that deduplication
+// actually removes.
 const dedup = { rawMatches: 0, pairs: 0, maxPerRule: 0, comboPeopleAffected: 0 };
 data.people.forEach((p) => {
   const hasCombo = p.drugs.some((d) => d.includes(';'));
@@ -144,8 +152,8 @@ data.people.forEach((p) => p.drugs.flatMap(split).forEach((i) => {
   if (RULE_TOKENS.some((t) => i.includes(t))) mentions.unresolvedRuleRelevant += 1;
   unresolvedStrings[i] = (unresolvedStrings[i] || 0) + 1;
 }));
-// 표본이 아니라 전수로 본다. 미해상 문자열 안에 해상 가능한 성분명이 토큰으로 들어 있으면
-// 염·복합제·상품명 파싱 실패이고, 그렇다면 비해상은 무작위가 아니다.
+// A census, not a sample. If an unresolved string contains a resolvable ingredient name as a token,
+// then a salt, combination, or brand name failed to parse, and non-resolution is not random.
 Object.keys(unresolvedStrings).forEach((str) => {
   mentions.distinctUnresolved += 1;
   const words = str.split(/[^a-z0-9]+/).filter((w) => w.length > 3);
@@ -158,8 +166,9 @@ Object.keys(unresolvedStrings).forEach((str) => {
 const say = require.main === module ? console.log : () => {};
 
 // ---------------------------------------------------------------------------------------------
-// 사람마다 두 축을 계산한다. 조건을 지운 팔은 모든 조건이 있다고 두고 같은 규칙을 돌린다.
-// 그러면 남는 것은 규칙의 약물 절반뿐이며, 그것이 조건 없는 기질이 계산할 수 있는 전부다.
+// Compute both axes per person. The condition-deleted arm runs the same rules while treating every
+// condition as present. What remains is the drug half of the rule, which is all a condition-blind
+// substrate can compute.
 // ---------------------------------------------------------------------------------------------
 const people = data.people.map((p) => {
   const drugs = p.drugs.flatMap(split).map(toDrug).filter(Boolean);
@@ -180,7 +189,7 @@ const N = people.length;
 say(`SUBSTRATE ABLATION — ${data.source}`);
 say(`${N} adults aged ${data.ageMin}+, unweighted\n`);
 
-// --- 1. 규칙 단위: 조건을 지운 규칙이 겨냥하게 되는 사람은 누구인가 -----------------------------
+// --- 1. Per rule: who does the rule name once its condition is deleted ------------------------
 say('1. Avoidance rules, per rule: whom the rule names once the condition is deleted');
 say('   X = on the target drug; X and Y = on it with the condition the criterion names.\n');
 say('   Counted as rule-person pairs, so a person on drugs matching two rules counts twice.\n');
@@ -197,7 +206,7 @@ pim.table2.filter((t) => OBSERVABLE.has(t.id)).forEach((t) => {
   say(`   ${(EN[t.id] || t.label).padEnd(30)} ${String(X.length).padStart(8)} ${String(XY.length).padStart(10)}`
     + `   ${pc(XY.length / X.length).padStart(6)}%  (${pc(lo)}-${pc(hi)})`);
 });
-// 부트스트랩용 단위: 사람 한 명이 만든 (규칙, 조건보유) 쌍 전체를 한 덩어리로 묶는다.
+// Bootstrap unit: every (rule, has-condition) pair a single person produces, held together.
 const units = people.map((p) => {
   const pairs = [];
   pim.table2.filter((t) => OBSERVABLE.has(t.id)).forEach((t) => {
@@ -224,10 +233,13 @@ const phiOf = (us) => {
 const gapShare = (us) => us.filter((u) => u.byB && !u.byA).length / us.length;
 const [bsLo, bsHi, bsB] = clusterBootstrap(units, shareNotNamed);
 
-/** 설계 기반 재표집: 층 안에서 PSU 를 복원추출하고, 뽑힌 PSU 의 사람을 전부 가져온다.
+/** Design-based resampling: draw PSUs with replacement within strata, taking every person in a
  *
- * NHANES 는 층화 다단계 확률표본이라 사람을 독립으로 재표집하면 설계 효과를 무시한다.
- * 층당 PSU 가 2개뿐이라 변동폭이 제한되지만, 이것이 이 설계에서 표준적인 방식이다.
+ * drawn PSU.
+ *
+ * NHANES is a stratified multistage probability sample, so resampling people independently would
+ * ignore the design effect. With only two PSUs per stratum the variation is limited, but this is the
+ * standard approach for this design.
  */
 function designBootstrap(us, stat, B = 2000, seed = 20260906) {
   const byStratum = new Map();
@@ -253,7 +265,8 @@ function designBootstrap(us, stat, B = 2000, seed = 20260906) {
   return [out[Math.floor(0.025 * out.length)], out[Math.floor(0.975 * out.length)]];
 }
 
-/** 표본가중치를 적용한 점추정. 구간이 아니라 점추정이 설계에 얼마나 좌우되는지만 본다. */
+/** Survey-weighted point estimate. Not an interval; this only shows how design-sensitive the point
+ * estimate is. */
 function weightedShareNotNamed(us) {
   let X = 0, XY = 0;
   us.forEach((u) => u.pairs.forEach((q) => {
@@ -263,11 +276,12 @@ function weightedShareNotNamed(us) {
   return X ? 1 - XY / X : NaN;
 }
 
-// 사람 단위. 쌍 단위 4.8배는 20.8% 의 역수라 같은 값을 두 번 말하는 것이고, "지목된 인구"는
-// 쌍이 아니라 사람이다. 두 단위를 모두 계산해 어느 쪽을 말하는지 분명히 한다.
+// Person-level. A pair-level multiple is the reciprocal of the pair share and so states the same
+// value twice, and the population a rule names is people, not pairs. Both units are computed so it
+// is always clear which one is being reported.
 const personShareNotNamed = (us) => {
-  const w = us.filter((u) => u.pairs.length).length;                 // 조건 삭제 시 지목되는 사람
-  const a = us.filter((u) => u.pairs.some((q) => q.hasCondition)).length; // 원문 규칙이 지목하는 사람
+  const w = us.filter((u) => u.pairs.length).length;                 // named once the condition is deleted
+  const a = us.filter((u) => u.pairs.some((q) => q.hasCondition)).length; // named by the rule as written
   return w ? 1 - a / w : NaN;
 };
 const personNamedDeleted = units.filter((u) => u.pairs.length).length;
@@ -277,24 +291,26 @@ const [pLo, pHi] = clusterBootstrap(units, personShareNotNamed);
 const [dLo, dHi] = designBootstrap(units, shareNotNamed);
 const wShare = weightedShareNotNamed(units);
 
-// 삭제 비용은 상수가 아니다. |X and Y| / |X| 는 그 약물이 그 조건에 대해 갖는 양성예측도이고,
-// 조건을 지우는 비용은 1 에서 그것을 뺀 값이다. 약이 그 조건에 특이적이면 삭제가 싸고,
-// 여러 적응증에 두루 쓰이면 비싸다. 이것이 "적응증에 의한 교란"에 대한 답이다:
-// 두 축을 독립으로 가정하지 않고, 규칙마다 의존도를 측정해 보고한다.
+// The cost of deletion is not constant. |X and Y| / |X| is the drug's predictive value for that
+// condition, and the cost of deleting the condition is one minus it. Deletion is cheap where a drug
+// is specific to its condition and expensive where the drug serves several indications. This is the
+// answer to confounding by indication: the two axes are not assumed independent, the dependence is
+// measured and reported per rule.
 const MIN_EXPOSED = 50;
 const ppv = perRule.filter((r) => r.x >= MIN_EXPOSED)
   .map((r) => ({ label: r.label, x: r.x, ppv: r.xy / r.x }))
   .sort((a, c) => a.ppv - c.ppv);
 const ppvLo = ppv[0], ppvHi = ppv[ppv.length - 1];
 
-/** 규칙 하나를 빼고 다시 계산한다. 두 규칙이 분모의 79%를 차지하므로 통합값만으로는 부족하다. */
+/** Recompute with one rule removed. Two rules hold most of the denominator, so the pooled figure
+ * alone is not enough. */
 const leaveOneOut = perRule.map((r) => ({
   drop: r.label,
   share: 1 - (sxy - r.xy) / (sx - r.x),
 }));
-/* 지적: 분모를 고혈압·당뇨 두 규칙이 지배하므로 통합값이 그 둘의 유병률에서 나온
- * 인공물일 수 있다는 것. 그러면 둘을 함께 빼고 다시 계산하면 된다. 나머지 규칙만으로
- * 남는 값이 무너지는지 아닌지는 세어 보면 알 수 있다. */
+/* An objection raised: hypertension and diabetes dominate the denominator, so the pooled figure may
+ * be an artefact of how prevalent those two conditions are. The way to settle it is to remove both
+ * and recompute. Whether the figure collapses on the remaining rules is something counting answers. */
 const DOMINANT = ['Hypertension', 'Diabetes'];
 const dropped = perRule.filter((r) => DOMINANT.includes(r.label));
 const restX = sx - dropped.reduce((a, r) => a + r.x, 0);
@@ -331,7 +347,7 @@ ppv.forEach((r) => say(`     ${r.label.padEnd(28)} n=${String(r.x).padStart(4)} 
 say('   Deletion is cheap where the drug is specific to the condition and ruinous where it is');
 say('   not, so the pooled figure reflects which drugs the criteria happen to name.\n');
 
-// --- 2. 두 축의 겹침: 조건축 판정 중 약물 단독 축이 못 보는 몫 ---------------------------------
+// --- 2. Overlap: the share of condition-axis hits the drug-only axis cannot see ----------------
 const b = people.filter((p) => p.asWritten.length > 0);
 const a = people.filter((p) => p.drugOnly);
 const both = people.filter((p) => p.drugOnly && p.asWritten.length > 0).length;
@@ -350,7 +366,7 @@ say(`   condition axis only, bootstrap CI  ${pc(gapLo)}-${pc(gapHi)}%`);
 say(`   phi between the two axes    ${phiCoef.toFixed(3)}  (bootstrap CI ${phiLo.toFixed(3)}-${phiHi.toFixed(3)})`);
 say('   The axes are close to independent, so the drug-only rule is not a noisy proxy.\n');
 
-// --- 3. 지배 규칙 민감도: 결과가 한 규칙에 걸려 있는가 ------------------------------------------
+// --- 3. Dominant-rule sensitivity: does the result hang on a single rule -----------------------
 const gap = {};
 people.filter((p) => p.asWritten.length && !p.drugOnly).forEach((p) => {
   new Set(p.asWritten.map((h) => `${h.condition.label} + ${h.target.nameKo}`))
@@ -367,7 +383,7 @@ say(`   largest single pair "${topKey}" accounts for ${topN} of ${onlyB} (${pc(t
 say(`   dropping it leaves ${survives} (${pc(survives / N)}%, 95% CI ${pc(slo)}-${pc(shi)})`);
 say('   The headline depends on one rule; the floor after removing it is the honest figure.\n');
 
-// --- 4. 미치료형 규칙의 포화 ------------------------------------------------------------------
+// --- 4. Saturation of the undertreatment rule --------------------------------------------------
 say('4. Undertreatment shape, same pairs: |Y not X| / |Y| against |N not X| / |N|');
 say('   An arithmetic demonstration on the same condition-drug pairs, not a clinical rule.\n');
 say('   pair                             as written   condition deleted');
@@ -408,7 +424,7 @@ say('Limits: 8 of 18 conditions observable, so the condition-axis counts are a l
 say('self-reported 30-day use, not claims; unweighted, so these describe this cohort and are');
 say('not United States estimates; NHANES is not a substrate any national indicator runs on.');
 
-// 표의 숫자를 사람이 옮겨 적지 않도록, 원고 생성기가 읽는 JSON 을 여기서 쓴다.
+// Write the JSON the manuscript generator reads, so no figure is ever transcribed by hand.
 const result = {
   source: data.source, n: N, ageMin: data.ageMin,
   observable: data.mappedConditions.length, total: pim.table2.length,
