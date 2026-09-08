@@ -360,7 +360,8 @@ check('유해사례가 한 범주에 쏠리지 않음 (3개 이상 범주에 분
   Object.keys(harm.tally).filter((k) => harm.tally[k].n >= 3).length >= 3);
 // 경고와 위해는 다른 것이다. 스크립트가 그 구분을 반드시 출력하게 한다.
 check('경고와 위해의 구분이 문서에 명시됨',
-  /겨냥한.{0,4}위해의 분류이지 위해가 (발생|실제)/.test(require('fs').readFileSync('./test/missed_harm.js', 'utf8')));
+  /classifies the harm each rule targets\. It is not evidence that harm occurred/
+    .test(require('fs').readFileSync('./test/missed_harm.js', 'utf8')));
 
 section('9. φ의 가정 의존성 (민감도)');
 const { probe, THRESHOLD } = require('./sensitivity.js');

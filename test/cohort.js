@@ -1,19 +1,21 @@
-/* 합성 고령 처방 코호트 생성기 — 판정 축 비교 실험의 공용 입력.
+/* Synthetic older-adult prescribing cohort generator — shared input for the axis comparisons.
  *
- * measure_gap.js 에 있던 생성기를 그대로 떼어냈다. 여러 실험이 **같은 코호트**를 봐야
- * 결과를 서로 비교할 수 있기 때문이다. 분리 후 기존 측정치(4.54%)가 그대로 재현되는지로
- * 리팩터의 안전성을 확인했다.
+ * Lifted unchanged out of measure_gap.js, because several experiments have to see the same cohort
+ * for their results to be comparable. The refactor was checked by confirming that the previous
+ * measurement (4.54%) still reproduces exactly.
  *
- * run(seed, N) 은 처방 N건을 만들어 두 판정 축의 2x2 분할표를 돌려준다.
- *   hiraFlag  국가 기준(약물 단독 축)이 판정한 건수
- *   t2Flag    Kim 2018 표2(조건부 축)가 판정한 건수
+ * run(seed, N) generates N prescriptions and returns the 2x2 table of the two axes.
+ *   hiraFlag  count flagged by the national standard (drug-only axis)
+ *   t2Flag    count flagged by Kim 2018 Table 2 (condition axis)
  *   both / onlyHira / onlyT2 / neither
  *
- * 중요: 생성기는 판정 규칙을 참조하지 않는다. 규칙으로 만든 데이터를 그 규칙으로 재판정하면
- *   순환논증이 된다. 약물 선택 가중치는 국가 청구 실측 유병률에서, 동반질환은 공개 통계와
- *   **가정한** 조건부 상승률(LIFT)에서 온다. LIFT 는 측정치가 아니라 가정이다.
+ * Important: the generator never consults the adjudication rules. Generating data from a rule and
+ *   then adjudicating it with that same rule would be circular. Drug selection weights come from
+ *   measured national claims prevalence; comorbidities come from published statistics and an
+ *   ASSUMED conditional lift (LIFT). LIFT is an assumption, not a measurement.
  *
- * 한계: 합성 데이터다. 실제 처방 분포가 아니므로 여기서 나온 비율을 임상 알람 감소율로 읽으면 안 된다.
+ * Limit: this is synthetic data. It is not a real prescribing distribution, so no rate produced
+ * here may be read as a reduction in clinical alerts.
  */
 'use strict';
 const pim = require('../src/index.js');
@@ -21,22 +23,22 @@ const bm = require('../src/bitmask.js');
 const hira = require('../src/hira2022.js');
 
 const POOL = {
-  혈압: ['amlodipine','losartan','valsartan','lisinopril','telmisartan','bisoprolol','carvedilol','verapamil','diltiazem','doxazosin','terazosin','prazosin'],
-  이뇨: ['furosemide','hydrochlorothiazide','spironolactone'],
-  당뇨: ['metformin','glimepiride','glibenclamide','sitagliptin','linagliptin','pioglitazone','dapagliflozin'],
-  고지혈: ['simvastatin','atorvastatin','rosuvastatin'],
-  진통: ['acetaminophen','ibuprofen','naproxen','diclofenac','aceclofenac','meloxicam','celecoxib','piroxicam','mefenamic','indomethacin','tramadol','codeine','pethidine','pentazocine'],
-  위장: ['omeprazole','esomeprazole','rabeprazole','pantoprazole','cimetidine','metoclopramide'],
-  수면진정: ['zolpidem','diazepam','lorazepam','alprazolam','clonazepam','triazolam','bromazepam'],
-  정신: ['escitalopram','paroxetine','amitriptyline','nortriptyline','imipramine','haloperidol','risperidone','quetiapine','olanzapine'],
-  항히스타민: ['chlorpheniramine','diphenhydramine','hydroxyzine','dimenhydrinate','cetirizine','levocetirizine','loratadine'],
-  근이완: ['eperisone','baclofen','methocarbamol','orphenadrine'],
-  항혈전: ['aspirin','clopidogrel','warfarin','apixaban','rivaroxaban','edoxaban','cilostazol','ticlopidine'],
-  심장: ['digoxin','amiodarone','dronedarone','flecainide'],
-  비뇨: ['oxybutynin','tamsulosin','desmopressin'],
-  호흡: ['theophylline','pseudoephedrine','phenylephrine'],
-  신경: ['donepezil','rivastigmine','gabapentin','pregabalin','carbamazepine','oxcarbazepine','cholinealfoscerate'],
-  기타: ['levothyroxine','alendronate','prednisolone','methylphenidate','caffeine'],
+  bp: ['amlodipine','losartan','valsartan','lisinopril','telmisartan','bisoprolol','carvedilol','verapamil','diltiazem','doxazosin','terazosin','prazosin'],
+  diuretic: ['furosemide','hydrochlorothiazide','spironolactone'],
+  diabetes: ['metformin','glimepiride','glibenclamide','sitagliptin','linagliptin','pioglitazone','dapagliflozin'],
+  lipid: ['simvastatin','atorvastatin','rosuvastatin'],
+  analgesic: ['acetaminophen','ibuprofen','naproxen','diclofenac','aceclofenac','meloxicam','celecoxib','piroxicam','mefenamic','indomethacin','tramadol','codeine','pethidine','pentazocine'],
+  gi: ['omeprazole','esomeprazole','rabeprazole','pantoprazole','cimetidine','metoclopramide'],
+  sedative: ['zolpidem','diazepam','lorazepam','alprazolam','clonazepam','triazolam','bromazepam'],
+  psych: ['escitalopram','paroxetine','amitriptyline','nortriptyline','imipramine','haloperidol','risperidone','quetiapine','olanzapine'],
+  antihistamine: ['chlorpheniramine','diphenhydramine','hydroxyzine','dimenhydrinate','cetirizine','levocetirizine','loratadine'],
+  muscle_relaxant: ['eperisone','baclofen','methocarbamol','orphenadrine'],
+  antithrombotic: ['aspirin','clopidogrel','warfarin','apixaban','rivaroxaban','edoxaban','cilostazol','ticlopidine'],
+  cardiac: ['digoxin','amiodarone','dronedarone','flecainide'],
+  urologic: ['oxybutynin','tamsulosin','desmopressin'],
+  respiratory: ['theophylline','pseudoephedrine','phenylephrine'],
+  neuro: ['donepezil','rivastigmine','gabapentin','pregabalin','carbamazepine','oxcarbazepine','cholinealfoscerate'],
+  other: ['levothyroxine','alendronate','prednisolone','methylphenidate','caffeine'],
 };
 const EXTRA = { losartan:'arb', valsartan:'arb', telmisartan:'arb', lisinopril:'acei', amlodipine:'bp', bisoprolol:'bb',
   carvedilol:'bb', verapamil:'ccbnd', diltiazem:'ccbnd', furosemide:['diuretic','diuretic'], hydrochlorothiazide:['diuretic','diuretic'],
@@ -51,19 +53,22 @@ const EXTRA = { losartan:'arb', valsartan:'arb', telmisartan:'arb', lisinopril:'
   prednisolone:['cortico','corticosteroid'], theophylline:'xanthine', pseudoephedrine:'decongest', phenylephrine:'decongest',
   methylphenidate:'stimulant', caffeine:'stimulant' };
 const AREAS = Object.keys(POOL);
-// 기본 유병률. **국내 실측치가 있는 항목은 실측치를 쓴다.**
-// 심평원 2022 <표 25> 2017년 다약제 사용 노인 코호트(153만명)의 동반질환 현황에서 가져왔다.
-// 청구 상병코드 기반이므로 설문 기반 유병률과 다르며, 진단·코딩된 것만 잡힌다.
-// 예: 만성 신질환 2.1%는 국민건강영양조사 추정치보다 크게 낮은데, 코딩된 N18만 세기 때문이다.
-// 실측치가 없는 항목(불면·파킨슨·부정맥 등)은 가정치이며 그 사실을 KOREA_SOURCE 로 구분한다.
+// Baseline prevalences. Where a measured Korean figure exists, the measured figure is used.
+// Taken from HIRA 2022 Table 25, comorbidity in the 2017 polypharmacy cohort of 1.53 million
+// older adults. It is built on claims diagnosis codes, so it differs from survey-based prevalence
+// and captures only what was diagnosed and coded. Chronic kidney disease at 2.1%, for instance,
+// sits far below the national health survey estimate because only coded N18 is counted.
+// Items with no measured figure (insomnia, Parkinson's, arrhythmia and so on) are assumptions,
+// and KOREA_SOURCE marks which is which.
 const COND_BASE = { htn:0.676, dementia:0.120, stroke_secondary:0.052, dm:0.384, hf:0.052, ckd:0.021,
   arrhythmia:0.08, falls:0.069, insomnia:0.22, ulcer:0.151, constipation:0.20, bph:0.16, glaucoma:0.05,
   copd:0.047, parkinson:0.03, hyponatremia:0.04, bleeding:0.06, age80_primary:0.20 };
 
-/** 각 유병률의 출처. 'hira' = 심평원 <표 25> 실측, 'assumed' = 본 연구의 가정.
- *  심뇌혈관질환 15.5%는 허혈성심장질환·심부전·뇌졸중 합산이므로 세 질환에 균등 배분하였고,
- *  호흡기계질환 14.2%는 COPD·폐렴·천식 합산이므로 COPD 몫을 1/3로 잡았다.
- *  이 배분은 본 연구의 조작이며 원문이 세부 값을 제시하지는 않는다. */
+/** Where each prevalence comes from. 'hira' = measured in HIRA Table 25, 'assumed' = assumed here.
+ *  The cardiovascular figure of 15.5% aggregates ischaemic heart disease, heart failure and stroke,
+ *  so it was divided equally across the three. The respiratory figure of 14.2% aggregates COPD,
+ *  pneumonia and asthma, so COPD was given a third. Both splits are operational decisions made
+ *  here; the source does not break the figures down. */
 const KOREA_SOURCE = { htn:'hira', dementia:'hira', dm:'hira', ulcer:'hira', ckd:'hira', falls:'hira',
   stroke_secondary:'hira-split', hf:'hira-split', copd:'hira-split',
   arrhythmia:'assumed', insomnia:'assumed', constipation:'assumed', bph:'assumed', glaucoma:'assumed',
@@ -78,7 +83,7 @@ function toDrug(ing) {
   const e = EXTRA[ing];
   return Array.isArray(e) ? { ing, cls: e[0], tags: [e[1]], cat: '' } : { ing, cls: e || 'other', tags: [], cat: '' };
 }
-/** 국가 기준 14계열에 포괄되는 약물인지. pimWeight 보정 대상을 고르는 데 쓴다. */
+/** Whether a drug falls in one of the 14 national classes. Used to pick what pimWeight adjusts. */
 const COVERED = {};
 const W = {}; Object.values(POOL).flat().forEach((i) => {
   const d = toDrug(i); const c = hira.classify(d, d.cat);
@@ -86,8 +91,8 @@ const W = {}; Object.values(POOL).flat().forEach((i) => {
   COVERED[i] = !!hira.isCovered({ ing: d.ing, cls: d.cls, tags: d.tags }, d.cat);
 });
 
-// mulberry32 — 시드를 충분히 섞는다.
-// 앞서 쓰던 LCG는 시드를 조금 바꿔도 같은 궤적으로 붕괴해 서로 다른 시드가 같은 결과를 냈다.
+// mulberry32, which mixes the seed properly. The LCG used before collapsed onto the same
+// trajectory under a small change of seed, so different seeds produced identical results.
 function mulberry32(a) {
   return function () {
     a |= 0; a = (a + 0x6D2B79F5) | 0;
@@ -97,20 +102,24 @@ function mulberry32(a) {
   };
 }
 
-/** 코호트를 만들고 두 판정 축의 2x2 분할표를 돌려준다.
+/** Builds a cohort and returns the 2x2 table of the two axes.
  *
- * @param {number} seedInit 난수 시드
- * @param {number} N 처방 건수
+ * @param {number} seedInit random seed
+ * @param {number} N number of prescriptions
  * @param {{liftScale?:number, condScale?:number, sizeShift?:number}} [opt]
- *   민감도 분석용 파라미터. 기본값(1,1,0)이 본 측정에 쓴 설정이다.
- *   liftScale 동반질환 조건부 상승률(LIFT)의 배율. **LIFT 는 측정치가 아니라 가정이므로**
- *     결론이 이 값에 얼마나 의존하는지 반드시 확인해야 한다. 0 이면 질환 간 상관을 없앤다.
- *   condScale 전체 기저질환 유병률의 배율.
- *   sizeShift 처방 약물 수 분포를 큰 쪽/작은 쪽으로 미는 정도(-1~+1).
- *   pimWeight 국가 기준에 포괄되는 약물의 선택 가중치 배율. 1 미만이면 PIM 약물이 덜 뽑힌다.
- *     **이게 분할표를 가장 크게 움직이는 손잡이다.** 기본 코호트는 약물 단독 축 발화율이 81.8%인데
- *     심평원 보고서의 실측(다약제 노인의 44.7%가 목록 약물 1종 이상)보다 1.83배 높다.
- *     외부 실측에 맞춰 보정했을 때 결론이 유지되는지 반드시 확인해야 한다.
+ *   Sensitivity-analysis parameters. The defaults (1, 1, 0) are the setting used for the headline
+ *   measurement.
+ *   liftScale multiplier on the conditional lift between comorbidities. LIFT is an assumption
+ *     rather than a measurement, so how far the conclusion depends on it must be checked. At 0 the
+ *     correlation between conditions is removed entirely.
+ *   condScale multiplier on overall comorbidity prevalence.
+ *   sizeShift pushes the distribution of drugs per prescription up or down (-1 to +1).
+ *   pimWeight multiplier on the selection weight of drugs covered by the national standard. Below
+ *     1, PIM drugs are drawn less often. This is the handle that moves the table furthest. The
+ *     default cohort fires the drug-only axis on 81.8% of prescriptions, 1.83 times the measured
+ *     rate in the HIRA report, where 44.7% of older adults on polypharmacy carry at least one
+ *     listed drug. Whether the conclusion survives calibration to that external measurement must
+ *     be checked.
  */
 function run(seedInit, N, opt) {
   const o = opt || {};
@@ -122,7 +131,7 @@ function run(seedInit, N, opt) {
   const pickW = (a, w) => { const t = w.reduce((x,y)=>x+y,0); let r = rnd()*t; for (let i=0;i<a.length;i++){ r-=w[i]; if(r<=0) return a[i]; } return a[a.length-1]; };
   let hiraFlag=0, t2Flag=0, onlyT2=0, both=0, neither=0, onlyHira=0;
   for (let n = 0; n < N; n++) {
-    // sizeShift>0 이면 다제약물 쪽으로, <0 이면 소수 처방 쪽으로 가중치를 기울인다.
+    // Above 0, sizeShift tilts the weights toward polypharmacy; below 0, toward small prescriptions.
     const bw = BW.map((w, i) => Math.max(0.01, w * (1 + sizeShift * (i - (BW.length - 1) / 2) / 2)));
     const [lo, hi] = pickW(BUCKETS, bw);
     const cnt = lo + Math.floor(rnd() * (hi - lo + 1));
@@ -134,20 +143,21 @@ function run(seedInit, N, opt) {
     const conds = [];
     for (const [id, base] of Object.entries(COND_BASE)) {
       let p = Math.min(0.95, base * condScale); const lf = LIFT[id];
-      // 상승률을 1 쪽으로 당기거나(liftScale<1) 밀어서(>1) 질환 간 상관의 세기를 조절한다.
+      // Pulls the lift toward 1 (liftScale<1) or away from it (>1), tuning how strongly the
+      // conditions correlate.
       if (lf) for (const [pre, m] of Object.entries(lf)) {
         if (conds.includes(pre)) p = Math.min(0.95, p * (1 + (m - 1) * liftScale));
       }
       if (rnd() < p) conds.push(id);
     }
     let drugs = [...chosen].map(toDrug);
-    // simulate.js와 동일 조건을 위해 노이즈를 같은 비율로 주입한다.
+    // Noise is injected at the same rate as simulate.js so the two run under identical conditions.
     if (rnd() < 0.15) {
       const k = Math.floor(rnd() * 4);
       if (k === 0) drugs.push({ ing: 'not_a_real_' + Math.floor(rnd() * 999), cls: 'other', tags: [], cat: '' });
       else if (k === 1) drugs.push({ ing: '', cls: '', tags: [], cat: '' });
       else if (k === 2 && drugs.length) drugs.push({ ...drugs[0] });
-      else conds.push('존재하지_않는_조건');
+      else conds.push('nonexistent_condition');
     }
     const byHira = drugs.some((d) => hira.isCovered(d, d.cat));
     const byT2 = bm.check({ drugs, conditions: conds }).table2.length > 0;
