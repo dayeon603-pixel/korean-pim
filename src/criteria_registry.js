@@ -1,12 +1,15 @@
 /**
- * 노인 부적절약물 기준 레지스트리 — 조건부 판정 축의 유무를 기준 간 비교하기 위한 표.
+ * Registry of potentially inappropriate medication criteria, for comparing whether each carries a
+ * condition-dependent axis.
  *
- * 목적: "환자 상태를 함께 봐야 성립하는 판정 축"이 각 기준에 있는지, 있다면 규모가 어떤지를
- *   한 자리에서 비교한다. 이 축이 국가 운영 기준에서 사라지는지를 보기 위한 것이다.
+ * Purpose: to compare, in one place, whether each criteria set has an axis that requires the
+ *   patient's state, and how large it is. The question behind it is whether that axis survives into
+ *   national operating standards.
  *
- * 원칙: **확인한 것만 숫자로 적고, 확인하지 못한 것은 null로 두고 이유를 남긴다.**
- *   전문이 저작권·유료 장벽 뒤에 있는 기준은 총량만 적고 조건부 항목 수는 미확인으로 둔다.
- *   추정치를 넣으면 비교표 전체의 신뢰가 사라지므로 넣지 않는다.
+ * Rule: record a number only where it was verified. Anything unverified stays null with a reason.
+ *   Where the full text sits behind copyright or a paywall, only the total is recorded and the
+ *   condition count is left unverified.
+ *   Estimates are not entered, because one would cost the whole table its credibility.
  */
 'use strict';
 const pim = require('./index.js');
@@ -18,17 +21,17 @@ const CRITERIA = [
     id: 'kim2018', region: '한국', kind: '학술 합의',
     name: '한국형 노인 부적절약물 목록 (Kim et al., 2018)',
     source: 'Ann Geriatr Med Res 2018;22(3):121-129. DOI 10.4235/agmr.2018.22.3.121',
-    drugOnlyItems: pim.coverage.table1,          // 표1
-    conditionCount: pim.coverage.table2Conditions, // 표2
+    drugOnlyItems: pim.coverage.table1,          // Table 1
+    conditionCount: pim.coverage.table2Conditions, // Table 2
     conditionAxis: true,
-    implemented: 'full',                          // 이 저장소에 전량 구현
+    implemented: 'full',                          // implemented in full in this repository
     note: '표1 63항목 + 표2 18개 조건. 오픈액세스라 전량 구조화 가능했다.',
   },
   {
     id: 'beers2023', region: '미국', kind: '학술 합의',
     name: 'AGS Beers Criteria 2023',
     source: 'J Am Geriatr Soc 2023;71(7):2052-2081. DOI 10.1111/jgs.18372',
-    drugOnlyItems: null,                          // Table 2. 본 연구 범위 밖이라 세지 않음
+    drugOnlyItems: null,                          // Table 2; outside this study's scope and not counted
     conditionCount: beers.conditionCount,         // Table 3
     conditionAxis: true,
     implemented: 'table3-only',
@@ -39,10 +42,10 @@ const CRITERIA = [
     name: 'STOPP/START version 3 (2023)',
     source: 'Eur Geriatr Med 2023. DOI 10.1007/s41999-023-00777-y',
     drugOnlyItems: null,
-    conditionCount: null,                         // ← 미확인
-    conditionAxis: true,                          // 구조적으로 조건 서술형이나 개수는 미확인
+    conditionCount: null,                         // unverified
+    conditionAxis: true,                          // structurally condition-stated, but the count is unverified
     implemented: 'none',
-    totalCriteria: 133,                           // STOPP 기준 총수(확인됨)
+    totalCriteria: 133,                           // total STOPP criteria, verified
     note: 'STOPP 133개 기준이 생리계통별로 조직되고 임상 맥락과 함께 서술된다. '
         + '다만 전체 기준 목록 접근이 제한되어 **조건부 항목 수를 세지 못했다.** 미확인으로 둔다.',
   },
@@ -50,7 +53,7 @@ const CRITERIA = [
     id: 'hira2022', region: '한국', kind: '국가 운영 기준',
     name: '심평원 노인 부적절 다약제 기준(안) (2022)',
     source: '건강보험심사평가원 G000F8Q-2022-170',
-    drugOnlyItems: hira.totalIngredients,         // 77개 성분
+    drugOnlyItems: hira.totalIngredients,         // 77 ingredients
     conditionCount: 0,
     conditionAxis: false,
     implemented: 'class-level',
@@ -59,7 +62,7 @@ const CRITERIA = [
   },
 ];
 
-/** 조건부 축을 가진 기준 / 갖지 않은 기준 */
+/** Criteria sets with a condition axis, and those without. */
 function split() {
   return {
     withAxis: CRITERIA.filter((c) => c.conditionAxis),

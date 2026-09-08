@@ -1,26 +1,31 @@
 /**
- * AGS Beers Criteria 2023 — Table 3 (약물-질환/증후군 상호작용) 비교용 구조화.
+ * AGS Beers Criteria 2023, Table 3, drug-disease and drug-syndrome interactions, structured for
+ * comparison.
  *
  * 출처: 2023 American Geriatrics Society Beers Criteria® Update Expert Panel.
  *   American Geriatrics Society 2023 updated AGS Beers Criteria for potentially
  *   inappropriate medication use in older adults.
  *   J Am Geriatr Soc. 2023;71(7):2052-2081. DOI: 10.1111/jgs.18372
  *
- * ⚠ 저작권: Beers Criteria®는 미국노인병학회(AGS)의 저작물이며 등록상표다.
- *   이 파일은 **기준 전문을 재배포하지 않는다.** 조건부 기준의 존재 여부와 대상 약물군을
- *   비교하기 위해 필요한 최소한만 구조화했고, 근거(rationale)·권고문·근거수준은 옮기지 않았다.
- *   실제 임상 사용은 반드시 AGS 원문을 확인해야 한다. https://doi.org/10.1111/jgs.18372
+ * Copyright: the Beers Criteria are a work of the American Geriatrics Society and a registered
+ *   trademark.
+ *   This file does not redistribute the criteria. It structures the minimum needed to compare
+ *   whether a condition-dependent criterion exists and which drug groups it names. Rationale,
+ *   recommendations, and evidence grades are not reproduced.
+ *   For clinical use, consult the AGS source. https://doi.org/10.1111/jgs.18372
  *
- * 왜 필요한가:
- *   "국가 기준이 조건부 축을 뺀다"는 관찰이 한국만의 현상인지 확인하려면 비교 대상이 필요하다.
- *   Beers는 세계에서 가장 널리 쓰이는 노인 부적절약물 기준이고, Table 3이 조건부 축이다.
- *   조건 수를 비교하면 이렇게 된다.
- *     Kim 2018 표2   18개 조건
- *     Beers 2023 T3   9개 조건
- *     심평원 2022     0개 조건  ← 국가 운영화 단계에서 축 자체가 사라진다
+ * Why this is needed:
+ *   Testing whether the observation that national criteria drop the condition axis is peculiar to
+ *   Korea requires something to compare against.
+ *   Beers is the most widely used such criteria set, and Table 3 is its condition axis.
+ *   Comparing condition counts gives:
+ *     Kim 2018 Table 2   18 conditions
+ *     Beers 2023 Table 3  9 conditions
+ *     HIRA 2022           0 conditions  — the axis disappears at the national operating stage
  *
- * 주의: Beers 2023 개정에서 일부 기준이 Table 3에서 Table 4(신중 사용)·Table 6(신기능)으로
- *   이동했다(원문 변경 요약에 명시). 여기서는 2023판 Table 3에 남아 있는 조건만 담는다.
+ * Note: the 2023 update moved some criteria out of Table 3 into Table 4 (use with caution) and
+ *   Table 6 (renal function), as its own change summary states. Only conditions remaining in the
+ *   2023 Table 3 are held here.
  */
 'use strict';
 
@@ -65,23 +70,23 @@ const TABLE3 = [
     targets: [{ kr: '강한 항콜린제(요실금용 항무스카린제 제외)', tag: 'anticholinergic' }] },
 ];
 
-// Kim 2018 표2 조건 id와의 대응. 양쪽에 다 있는 조건을 세기 위한 것.
+// Correspondence with Kim 2018 Table 2 condition ids, used to count conditions present in both.
 const KIM_EQUIVALENT = {
   hf: 'hf', dementia: 'dementia', falls: 'falls', parkinson: 'parkinson', ulcer: 'ulcer', bph: 'bph',
-  // Beers에만 있는 조건
+  // conditions unique to Beers
   syncope: null, delirium: 'dementia', incontinence_women: null,
-  // 참고: Kim 표2의 'dementia'는 "섬망·치매·인지장애"를 한 항목으로 묶는다.
-  //       Beers는 Delirium과 Dementia를 따로 둔다. 여기서는 Kim 쪽 1개에 Beers 2개가 대응한다.
+  // Note: Kim's 'dementia' bundles delirium, dementia, and cognitive impairment into one item,
+  //       whereas Beers keeps delirium and dementia apart. One Kim item maps to two Beers items.
 };
 
 function targetHits(t, drug) {
   if (t.ing) return drug.ing === t.ing;
   if (t.cls) return drug.cls === t.cls;
   if (t.tag) return [drug.cls, ...(drug.tags || [])].includes(t.tag);
-  return false;  // 매핑 대상 밖(덱스트로메토르판-퀴니딘 등 국내 미유통 조합)
+  return false;  // outside the mapping, such as dextromethorphan-quinidine, not marketed in Korea
 }
 
-/** 조건 id 배열 × 약물 배열 → Beers Table 3 판정 */
+/** Condition ids and drugs to Beers Table 3 hits. */
 function check(conditionIds, drugs) {
   const on = new Set(conditionIds || []);
   const out = [];

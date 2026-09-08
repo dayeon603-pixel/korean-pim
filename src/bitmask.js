@@ -1,29 +1,29 @@
 /**
- * 비트마스크 조건 매칭 — 표2(기저질환 조건부) 판정의 상수시간 구현.
+ * Bitmask condition matching — a constant-time implementation of Table 2 evaluation.
  *
- * 문제: 표2는 18개 조건 × 조건당 여러 판정 대상이라, 약 하나를 볼 때마다
- *       조건과 대상을 모두 순회하면 약물 수 × 조건 수 × 대상 수만큼 비교가 생긴다.
+ * Problem: Table 2 holds 18 conditions, each with several targets. Walking conditions and targets
+ *       for every drug costs drugs x conditions x targets comparisons.
  *
- * 구현: 조건 18개를 비트 위치 0..17에 고정하고, 약물마다 "이 약이 걸리는 조건"을
- *       18비트 마스크로 미리 계산해 캐시한다. 판정은 환자 조건 마스크와 AND 한 번이다.
+ * Approach: fix the 18 conditions at bit positions 0 to 17 and precompute, per drug, an 18-bit mask
+ *       of the conditions it matches. Evaluation is then a single AND against the patient's mask.
  *
  *   drugMask & patientMask  →  0이 아니면 판정, 켜진 비트가 곧 성립한 조건
  *
- * 마스크 계산은 약물당 1회이고 캐시되므로, 같은 약이 반복 등장하는 대규모 처방
- * 스크리닝에서 조건 순회가 사라진다. 병용 조건(아스피린+클로피도그렐)은 약 하나로
- * 결정되지 않으므로 마스크에 넣지 않고 별도 처리한다.
+ * A mask is computed once per drug and cached, so screening large prescription sets, where the same
+ * drug recurs, no longer walks the conditions at all. Co-prescription rules such as aspirin with
+ * clopidogrel are not decided by a single drug, so they stay out of the mask and are handled apart.
  *
- * 결과는 src/index.js의 check()와 항상 일치해야 한다. test/test_bitmask.js가 이를 검증한다.
+ * The result must always agree with check() in src/index.js. test/test_bitmask.js enforces that.
  */
 'use strict';
 const pim = require('./index.js');
 
-// 조건 id → 비트 위치 (18개, 순서 고정)
+// condition id to bit position; 18 of them, order fixed
 const BIT = new Map(pim.table2.map((c, i) => [c.id, i]));
 const CONDITION_COUNT = pim.table2.length;
 if (CONDITION_COUNT > 30) throw new Error('조건이 30개를 넘으면 32비트 정수 마스크를 쓸 수 없다');
 
-// 마스크에 넣을 수 있는 대상(단일 약물로 판정되는 것)만 추린다. 병용 조건은 제외.
+// Keep only targets a single drug can decide. Co-prescription rules are excluded.
 const SINGLE_TARGETS = [];
 pim.table2.forEach((c) => c.targets.forEach((t) => {
   if (!t.all) SINGLE_TARGETS.push({ bit: BIT.get(c.id), cond: c, target: t });
@@ -31,7 +31,7 @@ pim.table2.forEach((c) => c.targets.forEach((t) => {
 const COMBO_TARGETS = [];
 pim.table2.forEach((c) => c.targets.forEach((t) => { if (t.all) COMBO_TARGETS.push({ cond: c, target: t }); }));
 
-// 비트 위치별 대상 목록. 켜진 비트만 펼치면 되므로 전체 대상(59개) 순회를 없앤다.
+// Targets indexed by bit position. Only set bits are expanded, so all 59 targets are never walked.
 const TARGETS_BY_BIT = Array.from({ length: CONDITION_COUNT }, () => []);
 SINGLE_TARGETS.forEach((s) => TARGETS_BY_BIT[s.bit].push(s));
 
@@ -42,7 +42,7 @@ function targetHits(target, drug) {
   return false;
 }
 
-/** 약물 하나가 어떤 조건들에 걸리는지 18비트 마스크로 계산한다. */
+/** Compute the 18-bit mask of conditions a single drug matches. */
 function computeDrugMask(drug) {
   let mask = 0;
   for (let i = 0; i < SINGLE_TARGETS.length; i++) {
@@ -52,7 +52,7 @@ function computeDrugMask(drug) {
   return mask;
 }
 
-// 약물 캐시. 키는 성분키 + 효능군 + 태그(호출자가 분류를 다르게 줄 수 있으므로).
+// Drug cache, keyed on ingredient plus class plus tags, since a caller may classify differently.
 const maskCache = new Map();
 function drugMask(drug) {
   const key = `${drug.ing}|${drug.cls || ''}|${(drug.tags || []).join(',')}`;
@@ -61,14 +61,14 @@ function drugMask(drug) {
   return m;
 }
 
-/** 환자의 기저질환 id 배열 → 18비트 마스크 */
+/** Patient condition ids to an 18-bit mask. */
 function conditionMask(conditionIds) {
   let mask = 0;
   (conditionIds || []).forEach((id) => { const b = BIT.get(id); if (b !== undefined) mask |= (1 << b); });
   return mask;
 }
 
-/** 정규화: 문자열이면 성분키로 보고, 표1 등재 성분이면 효능군·태그를 자동 보완 */
+/** Normalise: read a string as an ingredient key, and fill in class and tags for Table 1 items. */
 function normalize(d) {
   const base = typeof d === 'string' ? { ing: d.toLowerCase() } : { ...d, ing: String(d.ing || '').toLowerCase() };
   const known = pim.checkIngredient(base.ing);
@@ -82,7 +82,7 @@ function normalize(d) {
 }
 
 /**
- * 비트마스크 기반 통합 판정. src/index.js의 check()와 동일한 결과를 낸다.
+ * Bitmask-based combined evaluation. Produces the same result as check() in src/index.js.
  * @returns {{table1: Array, table2: Array}}
  */
 function check({ drugs = [], conditions = [] } = {}) {
@@ -100,28 +100,28 @@ function check({ drugs = [], conditions = [] } = {}) {
 
   const t2 = [];
   if (pMask !== 0) {
-    // 약물별 마스크 AND 한 번으로 "걸리는 조건이 있는가"를 판단한다.
+    // One AND per drug answers whether any condition matches.
     const active = [];
     for (let i = 0; i < list.length; i++) {
       const m = drugMask(list[i]) & pMask;
       if (m !== 0) active.push({ drug: list[i], mask: m });
     }
-    // 켜진 비트만 펼친다. 비트를 하나씩 떼어내며(m &= m-1) 해당 비트의 대상만 확인한다.
+    // Expand only the set bits, clearing one at a time with m &= m-1 and checking that bit's targets.
     for (let i = 0; i < active.length; i++) {
       let m = active[i].mask;
       const drug = active[i].drug;
       while (m !== 0) {
-        const bit = 31 - Math.clz32(m & -m);          // 가장 낮은 켜진 비트 위치
+        const bit = 31 - Math.clz32(m & -m);          // position of the lowest set bit
         const targets = TARGETS_BY_BIT[bit];
         for (let j = 0; j < targets.length; j++) {
           if (targetHits(targets[j].target, drug)) {
             t2.push({ condition: targets[j].cond, target: targets[j].target, drugs: [drug] });
           }
         }
-        m &= m - 1;                                    // 처리한 비트 제거
+        m &= m - 1;                                    // clear the bit just handled
       }
     }
-    // 병용 조건은 약 하나로 결정되지 않으므로 따로 본다.
+    // Co-prescription rules are not decided by a single drug, so they are checked separately.
     const onIds = new Set(conditions || []);
     COMBO_TARGETS.forEach((c) => {
       if (!onIds.has(c.cond.id)) return;
@@ -132,7 +132,7 @@ function check({ drugs = [], conditions = [] } = {}) {
   return { table1: t1, table2: t2 };
 }
 
-/** 같은 조건·약물이 여러 번 나오는 판정 결과를 index.js 형식과 비교 가능하게 합친다. */
+/** Collapse repeated condition-drug hits so the result can be compared against the index.js form. */
 function mergeByTarget(t2) {
   const out = new Map();
   t2.forEach((h) => {

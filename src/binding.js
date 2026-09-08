@@ -1,34 +1,39 @@
 /**
- * 용어 결속(terminology binding) 측정 — 판정 규칙이 사람의 해석 없이 실행될 수 있는가.
+ * Terminology binding — whether a rule can execute without human interpretation.
  *
- * ── 왜 이 측정인가 ────────────────────────────────────────────────────────
- * 본 연구는 조건부 판정 축이 지불에 가까운 계층에서 사라진다는 것을 관찰했다.
- * 그러나 관찰만으로는 왜 그런지 알 수 없다. 이 모듈은 그 기전을 재기 위한 것이다.
+ * ── Why measure this ──────────────────────────────────────────────────────
+ * The study observed that the condition axis disappears at layers close to payment. Observation
+ * alone does not say why. This module measures the mechanism.
  *
- * 판정 규칙이 지표로 산출되려면 두 가지가 코드로 지정돼야 한다.
- *   약물 축 — 어떤 약인가. ATC·주성분코드·제품코드
- *   조건 축 — 어떤 환자 상태인가. ICD/KCD·Read code·값집합(value set)
+ * For a rule to be computed as an indicator, two things must be given as codes.
+ *   The drug axis: which drug. ATC, main ingredient code, product code.
+ *   The condition axis: which patient state. ICD or KCD, Read codes, a value set.
  *
- * 핵심은 **두 축의 결속 비용이 다르다**는 점이다.
- *   약물은 조제·청구 과정에서 이미 코드가 붙어 나온다. 결속이 부산물로 따라온다.
- *   환자 상태는 그렇지 않다. 학술 기준이 임상 용어로만 조건을 쓰면,
- *   그 축을 쓰려는 쪽이 값집합을 **직접 저작**해야 한다.
+ * The point is that binding the two axes costs different amounts.
+ *   A drug arrives already coded by dispensing and billing. The binding is a by-product.
+ *   A patient state does not. When an academic criterion states its condition in clinical prose,
+ *   whoever wants to use that axis has to author the value set themselves.
  *
- * ── 무엇을 세는가 ─────────────────────────────────────────────────────────
- * sourceBound: **원문 자체가** 표준 코드를 지정한 항목 수. 우리가 나중에 붙인 것은 세지 않는다.
- * authoredBy : 그 축을 운영한 관할이 결속을 직접 저작했는지, 저작했다면 어떤 체계로.
+ * ── What is counted ───────────────────────────────────────────────────────
+ * sourceBound: items for which the source document itself gives a standard code. Codes we added
+ *              later are not counted.
+ * authoredBy : whether the jurisdiction operating that axis authored the binding itself, and in
+ *              which terminology.
  *
- * ── 한계 ──────────────────────────────────────────────────────────────────
- *  - 결속 여부는 이분법으로 셌다. 부분 결속(예: 일부 조건만 코드 지정)은 관측되지 않았다.
- *  - 저작 비용을 금액으로 재지 않았다. 저작 여부만 기록한다.
- *  - Beers Table 2/4/6 은 구조화하지 않아 조건 축(Table 3)만 대상으로 한다.
+ * ── Limits ────────────────────────────────────────────────────────────────
+ *  - Binding was counted as a binary. Partial binding, where only some conditions carry codes, was
+ *    not observed.
+ *  - The cost of authoring was not measured in money. Only whether it happened is recorded.
+ *  - Beers Tables 2, 4, and 6 are not structured here, so only the condition axis, Table 3, is in
+ *    scope.
  */
 'use strict';
 const pim = require('./index.js');
 const beers = require('./beers2023.js');
 const hira = require('./hira2022.js');
 
-/** 표1 항목 중 ATC 5단계 코드가 단일 매핑된 수. 복합제·염 분기·성분군·투여요법은 제외된다. */
+/** Table 1 items with a single five-level ATC code. Combination products, salt-form splits, drug
+ * groups, and dosing regimens are excluded. */
 function atcSingleMapped() {
   return pim.table1.filter((x) => x.atc && typeof x.atc === 'string').length;
 }
@@ -37,7 +42,7 @@ const CRITERIA_BINDING = [
   {
     id: 'kim2018-t1', name: '한국형 PIM 2018 표1', axis: '약물',
     total: pim.coverage.table1,
-    sourceBound: null,          // 원문은 성분명으로 지정한다. ATC 코드를 싣지는 않는다.
+    sourceBound: null,          // the source names ingredients; it does not carry ATC codes
     codeSystem: '성분명(코드 아님)',
     mappable: atcSingleMapped(),
     note: '원문은 코드를 싣지 않으나 성분명이 곧 결속 단서가 된다. WHO ATC 5단계로 옮기면 '
@@ -74,8 +79,8 @@ const CRITERIA_BINDING = [
   },
 ];
 
-/** 조건부 축을 운영한 관할이 결속을 어떻게 마련했는가.
- *  본문에서 이름으로 인용하는 건은 모두 1차 원문에서 해당 표기를 직접 확인했다. */
+/** How each jurisdiction operating a condition axis obtained its binding. Every entry cited by name
+ *  in the manuscript was confirmed against the primary document. */
 const AUTHORED_BINDINGS = [
   {
     region: '잉글랜드', instrument: 'PINCER 처방안전 지표', authored: true,
@@ -107,7 +112,7 @@ const AUTHORED_BINDINGS = [
   },
 ];
 
-/** 본 연구가 저작한 결속. 이것이 이 논문의 산출물이다. */
+/** Bindings authored by this study. This is the manuscript's own output. */
 function ourBinding() {
   const icd = require('../analysis/icd_map.js');
   const mapped = pim.table2.filter((c) => icd.MAP[c.id]).length;
@@ -123,7 +128,7 @@ function ourBinding() {
 
 module.exports = {
   CRITERIA_BINDING, AUTHORED_BINDINGS, atcSingleMapped, ourBinding,
-  /** 축을 유지한 관할 중 결속을 저작한 비율 */
+  /** Share of axis-retaining jurisdictions that authored the binding themselves. */
   get authoredAmongRetained() {
     const r = AUTHORED_BINDINGS.filter((x) => x.authored);
     const lost = AUTHORED_BINDINGS.filter((x) => !x.authored);
