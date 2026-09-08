@@ -21,7 +21,7 @@ const pim = require('./index.js');
 // condition id to bit position; 18 of them, order fixed
 const BIT = new Map(pim.table2.map((c, i) => [c.id, i]));
 const CONDITION_COUNT = pim.table2.length;
-if (CONDITION_COUNT > 30) throw new Error('조건이 30개를 넘으면 32비트 정수 마스크를 쓸 수 없다');
+if (CONDITION_COUNT > 30) throw new Error('a 32-bit integer mask cannot hold more than 30 conditions');
 
 // Keep only targets a single drug can decide. Co-prescription rules are excluded.
 const SINGLE_TARGETS = [];

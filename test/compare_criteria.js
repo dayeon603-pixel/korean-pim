@@ -115,10 +115,10 @@ console.log(`\nNote: Beers 2023 moved some criteria out of Table 3 into Tables 4
 console.log(`      2023 edition is counted here.`);
 
 line('9. Criteria registry — presence of the condition axis');
-console.log('region · kind        criteria                              cond. axis  count    implemented');
+console.log('region · kind'.padEnd(36) + 'criteria'.padEnd(40) + 'axis  count    implemented');
 reg.CRITERIA.forEach((c) => {
   const cnt = c.conditionCount === null ? 'unknown' : `${c.conditionCount}`;
-  console.log(`${(c.region + ' · ' + c.kind).padEnd(20)} ${c.name.slice(0, 36).padEnd(38)} ${(c.conditionAxis ? 'yes' : 'no').padEnd(11)} ${cnt.padEnd(8)} ${c.implemented}`);
+  console.log(`${(c.region + ' · ' + c.kind).padEnd(35)} ${c.name.slice(0, 38).padEnd(40)} ${(c.conditionAxis ? 'yes' : 'no').padEnd(6)} ${cnt.padEnd(8)} ${c.implemented}`);
 });
 const sp = reg.split();
 console.log(`\nwith a condition axis  ${sp.withAxis.length}/${reg.CRITERIA.length}`);

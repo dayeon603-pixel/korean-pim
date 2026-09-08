@@ -146,12 +146,12 @@ check('a Kim Table 1 drug classifies into a HIRA class (zolpidem -> Z-drugs)',
 const reg = require('../src/criteria_registry.js');
 check('the registry lists 4 criteria', reg.CRITERIA.length === 4);
 check('all 3 academic-consensus criteria carry a condition axis',
-  reg.CRITERIA.filter((c) => c.kind === '학술 합의').every((c) => c.conditionAxis));
+  reg.CRITERIA.filter((c) => c.kind === 'academic consensus').every((c) => c.conditionAxis));
 check('only the national operating standard lacks the condition axis',
   reg.split().withoutAxis.length === 1 && reg.split().withoutAxis[0].id === 'hira2022');
 check('unknown counts are left null rather than filled with an estimate',
   reg.CRITERIA.find((c) => c.id === 'stopp3').conditionCount === null);
-check('unknown counts state why', /세지 못했다/.test(reg.CRITERIA.find((c) => c.id === 'stopp3').note));
+check('unknown counts state why', /could not be counted/.test(reg.CRITERIA.find((c) => c.id === 'stopp3').note));
 check('every entry cites a source', reg.CRITERIA.every((c) => c.source && c.source.length > 10));
 check('an item outside HIRA coverage exists (digoxin)', !hira.isCovered({ ing: 'digoxin', cls: 'digoxin', tags: [] }, '강심제'));
 
