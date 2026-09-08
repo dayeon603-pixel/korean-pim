@@ -252,7 +252,7 @@ check('the mapping uses only variables that appear in the adjustment list',
   Object.keys(hko.ADJUSTED_MATCHING_TABLE2)
     .every((k) => hko.OUTCOMES.adjustedComorbidities.includes(k)));
 check('the note records that the binding was used outside the criteria',
-  /판정 기준에서는 후보에도 오르지 않았다/.test(hko.OUTCOMES.note));
+  /never reached the candidate pool/.test(hko.OUTCOMES.note));
 
 section('15. The KCD binding in the HIRA source (primary-source comparison)');
 const hk = require('../src/hira_kcd.js');
@@ -266,7 +266,7 @@ check('the 9 unbound plus the bound make 18', hk.boundCount + hk.NOT_BOUND.lengt
 check('cohort size agrees with 684,538 / 44.7% to within 1,000 people',
   Math.abs(hk.TABLE25.cohortSize - hk.DRUG_AXIS_FLAGGED.n / hk.DRUG_AXIS_FLAGGED.share) < 1000);
 check('Table 25 prevalence is transcribed as 67.6% for hypertension', hk.TABLE25.prevalence['고혈압'] === 0.676);
-check('the note records the difference between claims-based and survey-based prevalence', /설문 기반 유병률과 다르다/.test(hk.TABLE25.note));
+check('the note records the difference between claims-based and survey-based prevalence', /differs from survey-based prevalence/.test(hk.TABLE25.note));
 check('the source cites table number and page', /표 22/.test(hk.source) && /59쪽/.test(hk.source));
 // Whether the cohort uses measured Korean prevalence, and whether any assumption is passed off as a
 // measurement.

@@ -57,9 +57,10 @@ const TABLE25 = {
     근골격계질환: 0.470, 골절: 0.069, 치매: 0.120, 우울증: 0.110,
   },
   comorbidCount: { '0개': 0.020, '1개': 0.126, '2개': 0.295, '3개 이상': 0.559 },
-  note: '심평원이 <표 22>의 KCD 코드로 직접 산출한 값이다. 청구 상병코드 기반이므로 '
-      + '설문 기반 유병률과 다르다. 예컨대 만성 신질환은 본 표에서 2.1%이나 '
-      + '국민건강영양조사의 65세 이상 추정치는 이보다 크게 높다. 진단·코딩된 것만 잡히기 때문이다.',
+  note: 'Computed by HIRA itself from the KCD codes of Table 22. Being built on claims diagnosis '
+      + 'codes, it differs from survey-based prevalence. Chronic kidney disease stands at 2.1% '
+      + 'here, well below the national health survey estimate for people aged 65 and over, '
+      + 'because only what was diagnosed and coded is counted.',
 };
 
 /** Patients in the polypharmacy cohort matched by the drug-only axis of 77 ingredients. Report
@@ -107,9 +108,11 @@ const OUTCOMES = {
     사망: { est: 1.35, ci: [1.30, 1.39] },
   },
   adjustedComorbidities: ['암', '심뇌혈관질환', '만성 신질환', '호흡기계질환', '치매', '우울증'],
-  note: 'Model3 은 동반질환을 보정변수로 사용한다. 보정에 쓴 6개 중 4개(심뇌혈관질환·만성 신질환·'
-      + '호흡기계질환·치매)가 한국형 PIM 2018 표2의 조건과 대응한다. 건강결과 예측에 유의한 변수로 '
-      + '인정한 동반질환이, 판정 기준에서는 후보에도 오르지 않았다.',
+  note: 'Model 3 uses comorbidity as an adjustment variable. Four of the six it adjusts for (cardio- '
+      + 'and cerebrovascular disease, chronic kidney disease, respiratory disease and dementia) '
+      + 'correspond to conditions in Table 2 of the 2018 Korean PIM criteria. The same comorbidities '
+      + 'accepted as significant predictors of health outcomes never reached the candidate pool '
+      + 'for the criteria themselves.',
 };
 
 /** Those of the six covariates that correspond to a Table 2 condition. */

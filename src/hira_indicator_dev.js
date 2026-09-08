@@ -20,7 +20,8 @@
  *             itself (a diagnosis, a risk state, or the absence of a protective drug).
  *
  * `statedReason` quotes are verbatim Korean from the report. They are the primary evidence and
- * must not be paraphrased in code. Translations are provided separately and are ours.
+ * must not be paraphrased in code. Each carries a `statedReasonEn` alongside it: that rendering is
+ * ours, not the report's, and the Korean is what any claim should be checked against.
  */
 'use strict';
 
@@ -45,6 +46,7 @@ const CANDIDATES = [
     conditionDependence: 'combo',
     fielded: false,
     statedReason: '임상적 중요성에 대한 논란의 여지가 없음',
+    statedReasonEn: 'Its clinical importance is not in dispute.',
   },
   {
     no: 2,
@@ -58,8 +60,16 @@ const CANDIDATES = [
     // The proposal was not adopted and the indicator was tiered out.
     statedReason:
       '치매치료제 성분에 대한 해당 진료과의 임상자문이 필요하며, Gingko 성분이 포함되어 있으나 해당 약물을 사용한다고 해서 치매 환자라고 보기 어렵다.',
+    statedReasonEn:
+      'Clinical advice from the relevant specialty is needed on which ingredients count as '
+      + 'anti-dementia drugs. Ginkgo is among them, and taking it is poor grounds for calling '
+      + 'someone a dementia patient.',
     bindingProposal:
       '대상 환자는 치매치료제를 처방받은 환자가 아닌, 치매 상병으로 진단받고 치매치료제를 처방받은 환자(진성 치매환자)로 분모를 제한하는 방안의 타당성 및 내부 심사위원 등의 자문이 필요하다.',
+    bindingProposalEn:
+      'The denominator should be restricted not to patients prescribed an anti-dementia drug but '
+      + 'to those carrying a dementia diagnosis and prescribed one (true dementia patients). The '
+      + 'feasibility of this needs advice from internal reviewers and others.',
     bindingProposalDate: '2021-07-24',
     bindingProposalAdopted: false,
   },
@@ -71,6 +81,7 @@ const CANDIDATES = [
     conditionDependence: 'combo',
     fielded: false,
     statedReason: '해당지표는 특정과에만 집중되어 있는 경향성이 있음',
+    statedReasonEn: 'The indicator tends to concentrate in a few specialties.',
   },
   {
     no: 4,
@@ -81,6 +92,10 @@ const CANDIDATES = [
     fielded: false,
     statedReason:
       '현재 지표는 외국의 종합병원에서 장기간 사용으로 인한 골절위험을 나타내는 지표이나, 국내의 경우 의원의 오남용 문제가 제기되고 있어 국내의 문제점을 대변하는 지표로 부적절함',
+    statedReasonEn:
+      'As it stands the indicator captures fracture risk from long-term use in overseas general '
+      + 'hospitals. In Korea the problem raised is misuse in clinics, so it does not represent '
+      + 'the domestic issue.',
   },
   {
     no: 5,
@@ -90,6 +105,9 @@ const CANDIDATES = [
     conditionDependence: 'none',
     fielded: true,                    // fielded 2023 as a monitoring indicator
     statedReason: 'DUR 기준 노인주의 의약품(61개)과 비교 검토 필요함 - 현재 61개 중 37개만 포함되어 있음',
+    statedReasonEn:
+      'It needs to be reviewed against the 61 drugs on the DUR elderly-caution list. Only 37 of '
+      + 'the 61 are currently included.',
   },
   {
     no: 6,
@@ -99,6 +117,9 @@ const CANDIDATES = [
     conditionDependence: 'combo',
     fielded: false,
     statedReason: '해당 영역 범위가 다른 지표에 비해 너무 세밀하고 협소한 지표이므로 평가지표로 적절하지 않음',
+    statedReasonEn:
+      'Its scope is finer and narrower than the other indicators, which makes it unsuitable as '
+      + 'an assessment measure.',
   },
   {
     no: 7,
@@ -110,7 +131,12 @@ const CANDIDATES = [
     // The stated obstacle is the unit of analysis, not the availability of codes.
     statedReason:
       '임상적으로 논란의 여지가 없는 좋은 지표이나 환자단위 지표이며 개별 의료기관 평가는 불가능함',
+    statedReasonEn:
+      'Clinically this is a good indicator and not in dispute, but it works at the level of the '
+      + 'patient, so assessing an individual institution with it is impossible.',
     statedReason2: '국가단위 지표로는 산출 가능하지만, 병원 평가로는 적절하지 않음',
+    statedReason2En:
+      'It can be computed as a national indicator, but it is not suitable for assessing hospitals.',
   },
   {
     no: 8,
@@ -122,6 +148,8 @@ const CANDIDATES = [
     // Internationally this criterion is stated as antipsychotics IN DEMENTIA. Here the
     // condition qualifier is absent and the indicator is a plain drug-class rate.
     statedReason: '국가단위 지표로는 산출 가능하지만, 병원 평가로는 적절하지 않음',
+    statedReasonEn:
+      'It can be computed as a national indicator, but it is not suitable for assessing hospitals.',
   },
   {
     no: 9,
@@ -132,12 +160,19 @@ const CANDIDATES = [
     fielded: false,
     // A direct statement that the comorbidity-driven subset could not be readily defined.
     statedReason: '만성질환 약제 처방개수를 고려해야 하나, 이를 제외하는 방법이 쉽지 않음',
+    statedReasonEn:
+      'The number of chronic-disease drugs ought to be taken into account, but excluding them is '
+      + 'not straightforward.',
   },
 ];
 
 /** Tier is the report's own feasibility grading (summary table 10). Short-term means implementable
  * now. */
 const TIER_BASIS = '실행가능성이 높아 단기유형으로 분류된 지표는 5번 노인환자의 노인주의 의약품 처방률, 8번 노인환자의 항정신병 약물 처방률, 9번 75세 이상 환자 중 5개 이상 의약품 처방률임';
+const TIER_BASIS_EN = 'The indicators classified as short-term on grounds of high feasibility are '
+  + 'no. 5, the prescribing rate for drugs requiring caution in older adults; no. 8, the '
+  + 'antipsychotic prescribing rate in older adults; and no. 9, the rate of five or more drugs '
+  + 'in patients aged 75 and over.';
 
 /** Cross-tabulate feasibility tier against condition dependence. */
 function tierByDependence() {
@@ -160,4 +195,5 @@ function contextTieredOut() {
   return contextDependent().filter((c) => c.tier !== '단기');
 }
 
-module.exports = { SOURCE, CANDIDATES, TIER_BASIS, tierByDependence, contextDependent, contextTieredOut };
+module.exports = {
+  TIER_BASIS_EN, SOURCE, CANDIDATES, TIER_BASIS, tierByDependence, contextDependent, contextTieredOut };

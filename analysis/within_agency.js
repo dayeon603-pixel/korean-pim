@@ -59,12 +59,14 @@ console.log('identify. "context" means a clinical state established by something
 console.log('the drug list itself.\n');
 
 const tab = dev.tierByDependence();
-console.log(['tier', 'none', 'combo', 'context', 'indicators'].map((s, i) => s.padEnd([10, 8, 8, 10, 0][i])).join(''));
+console.log(['tier', 'none', 'combo', 'context', 'indicators'].map((s, i) => s.padEnd([12, 8, 8, 10, 0][i])).join(''));
+// The tier names are the report's own categories, so they stay in Korean with a gloss.
+const TIER_EN = { '단기': 'short-term', '중기': 'medium-term', '장기': 'long-term' };
 ['단기', '중기', '장기'].forEach((t) => {
   const r = tab[t];
   if (!r) return;
   console.log(
-    t.padEnd(8) + String(r.none).padEnd(8) + String(r.combo).padEnd(8) + String(r.context).padEnd(10) + r.ids.join(', ')
+    TIER_EN[t].padEnd(12) + String(r.none).padEnd(8) + String(r.combo).padEnd(8) + String(r.context).padEnd(10) + r.ids.join(', ')
   );
 });
 
@@ -82,9 +84,11 @@ console.log(line());
 console.log(`Candidate ${d2.no} used anti-dementia drug prescription as a stand-in for dementia.`);
 console.log(`The panel recorded the misclassification this causes (${d2.bindingProposalDate}):`);
 console.log(`  "${d2.statedReason}"`);
+console.log(`   -> ${d2.statedReasonEn}`);
 console.log('and proposed binding the denominator to a diagnosis instead:');
 console.log(`  "${d2.bindingProposal}"`);
-console.log(`Adopted: ${d2.bindingProposalAdopted ? 'yes' : 'no'}. Tier: ${d2.tier}. Fielded: ${d2.fielded ? 'yes' : 'no'}.`);
+console.log(`   -> ${d2.bindingProposalEn}`);
+console.log(`Adopted: ${d2.bindingProposalAdopted ? 'yes' : 'no'}. Tier: ${d2.tier} (long-term). Fielded: ${d2.fielded ? 'yes' : 'no'}.`);
 
 // --------------------------------------------------------- competing explanations, verbatim
 console.log(`\n\n4. REASONS THE DOCUMENTS THEMSELVES GIVE`);
@@ -94,11 +98,16 @@ console.log('two strongest ones concern the unit of analysis rather than code av
 dev.CANDIDATES.filter((c) => c.tier === '장기').forEach((c) => {
   console.log(`  [${c.no}] ${c.nameEn}`);
   console.log(`      "${c.statedReason}"`);
-  if (c.statedReason2) console.log(`      "${c.statedReason2}"`);
+  console.log(`       -> ${c.statedReasonEn}`);
+  if (c.statedReason2) {
+    console.log(`      "${c.statedReason2}"`);
+    console.log(`       -> ${c.statedReason2En}`);
+  }
 });
 const d9 = dev.CANDIDATES.find((c) => c.no === 9);
 console.log(`  [${d9.no}] ${d9.nameEn}`);
 console.log(`      "${d9.statedReason}"`);
+console.log(`       -> ${d9.statedReasonEn}`);
 
 console.log('\nNotes and limits');
 console.log('  - Tier assignment is the agency\'s own judgement, recorded once. It is not an');
