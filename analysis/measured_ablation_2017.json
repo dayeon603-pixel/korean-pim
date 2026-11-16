@@ -1,0 +1,305 @@
+{
+ "cycle": "2017",
+ "n": 1345,
+ "thresholds": {
+  "sbp": 140,
+  "dbp": 90,
+  "hba1c": 6.5,
+  "egfr": 60,
+  "acr": 30,
+  "crcl": 30
+ },
+ "self": {
+  "def": "self",
+  "perRule": [
+   {
+    "id": "insomnia",
+    "label": "Insomnia",
+    "x": 10,
+    "xy": 8,
+    "ppv": 0.8,
+    "lo": 0.49015684672072346,
+    "hi": 0.9433190520193067
+   },
+   {
+    "id": "hf",
+    "label": "Heart failure",
+    "x": 189,
+    "xy": 22,
+    "ppv": 0.1164021164021164,
+    "lo": 0.07813817401172804,
+    "hi": 0.16994937556263764
+   },
+   {
+    "id": "htn",
+    "label": "Hypertension",
+    "x": 100,
+    "xy": 73,
+    "ppv": 0.73,
+    "lo": 0.6356769977376873,
+    "hi": 0.8073053908233518
+   },
+   {
+    "id": "stroke_secondary",
+    "label": "Stroke, 2nd prevention",
+    "x": 4,
+    "xy": 1,
+    "ppv": 0.25,
+    "lo": 0.045586062644636216,
+    "hi": 0.6993639475573634
+   },
+   {
+    "id": "ckd",
+    "label": "Chronic kidney disease",
+    "x": 116,
+    "xy": 9,
+    "ppv": 0.07758620689655173,
+    "lo": 0.04135281350922512,
+    "hi": 0.14090109498331838
+   },
+   {
+    "id": "hyponatremia",
+    "label": "Hyponatraemia",
+    "x": 613,
+    "xy": 20,
+    "ppv": 0.03262642740619902,
+    "lo": 0.021218098577369237,
+    "hi": 0.049856225852111524
+   },
+   {
+    "id": "copd",
+    "label": "COPD",
+    "x": 3,
+    "xy": 3,
+    "ppv": 1,
+    "lo": 0.4384939195509822,
+    "hi": 1
+   },
+   {
+    "id": "dm",
+    "label": "Diabetes",
+    "x": 510,
+    "xy": 196,
+    "ppv": 0.3843137254901961,
+    "lo": 0.3431102295254782,
+    "hi": 0.42724701675430926
+   }
+  ],
+  "pairs": 1545,
+  "pairsWithCondition": 332,
+  "pairShare": 0.7851132686084142,
+  "pairCI": [
+   0.7641693811074919,
+   0.8048624440179143
+  ],
+  "flagged": 892,
+  "namedAsWritten": 285,
+  "personShare": 0.6804932735426009,
+  "personCI": [
+   0.6487119437939111,
+   0.7136612021857923
+  ]
+ },
+ "measured": {
+  "def": "measured",
+  "perRule": [
+   {
+    "id": "insomnia",
+    "label": "Insomnia",
+    "x": 10,
+    "xy": 8,
+    "ppv": 0.8,
+    "lo": 0.49015684672072346,
+    "hi": 0.9433190520193067
+   },
+   {
+    "id": "hf",
+    "label": "Heart failure",
+    "x": 189,
+    "xy": 22,
+    "ppv": 0.1164021164021164,
+    "lo": 0.07813817401172804,
+    "hi": 0.16994937556263764
+   },
+   {
+    "id": "htn",
+    "label": "Hypertension",
+    "x": 100,
+    "xy": 82,
+    "ppv": 0.82,
+    "lo": 0.7333246397578691,
+    "hi": 0.8829986834574897
+   },
+   {
+    "id": "stroke_secondary",
+    "label": "Stroke, 2nd prevention",
+    "x": 4,
+    "xy": 1,
+    "ppv": 0.25,
+    "lo": 0.045586062644636216,
+    "hi": 0.6993639475573634
+   },
+   {
+    "id": "ckd",
+    "label": "Chronic kidney disease",
+    "x": 116,
+    "xy": 48,
+    "ppv": 0.41379310344827586,
+    "lo": 0.3283333808853891,
+    "hi": 0.5047796616641096
+   },
+   {
+    "id": "hyponatremia",
+    "label": "Hyponatraemia",
+    "x": 613,
+    "xy": 20,
+    "ppv": 0.03262642740619902,
+    "lo": 0.021218098577369237,
+    "hi": 0.049856225852111524
+   },
+   {
+    "id": "copd",
+    "label": "COPD",
+    "x": 3,
+    "xy": 3,
+    "ppv": 1,
+    "lo": 0.4384939195509822,
+    "hi": 1
+   },
+   {
+    "id": "dm",
+    "label": "Diabetes",
+    "x": 510,
+    "xy": 214,
+    "ppv": 0.4196078431372549,
+    "lo": 0.37753450699677077,
+    "hi": 0.4628832404179968
+   }
+  ],
+  "pairs": 1545,
+  "pairsWithCondition": 398,
+  "pairShare": 0.7423948220064724,
+  "pairCI": [
+   0.7205882352941176,
+   0.7644295302013423
+  ],
+  "flagged": 892,
+  "namedAsWritten": 313,
+  "personShare": 0.649103139013453,
+  "personCI": [
+   0.6164079822616408,
+   0.6818700114025086
+  ]
+ },
+ "criterion": {
+  "def": "criterion",
+  "perRule": [
+   {
+    "id": "insomnia",
+    "label": "Insomnia",
+    "x": 10,
+    "xy": 8,
+    "ppv": 0.8,
+    "lo": 0.49015684672072346,
+    "hi": 0.9433190520193067
+   },
+   {
+    "id": "hf",
+    "label": "Heart failure",
+    "x": 189,
+    "xy": 22,
+    "ppv": 0.1164021164021164,
+    "lo": 0.07813817401172804,
+    "hi": 0.16994937556263764
+   },
+   {
+    "id": "htn",
+    "label": "Hypertension",
+    "x": 100,
+    "xy": 82,
+    "ppv": 0.82,
+    "lo": 0.7333246397578691,
+    "hi": 0.8829986834574897
+   },
+   {
+    "id": "stroke_secondary",
+    "label": "Stroke, 2nd prevention",
+    "x": 4,
+    "xy": 1,
+    "ppv": 0.25,
+    "lo": 0.045586062644636216,
+    "hi": 0.6993639475573634
+   },
+   {
+    "id": "ckd",
+    "label": "Chronic kidney disease",
+    "x": 100,
+    "xy": 2,
+    "ppv": 0.02,
+    "lo": 0.005501852234968184,
+    "hi": 0.07001316294199364
+   },
+   {
+    "id": "hyponatremia",
+    "label": "Hyponatraemia",
+    "x": 613,
+    "xy": 20,
+    "ppv": 0.03262642740619902,
+    "lo": 0.021218098577369237,
+    "hi": 0.049856225852111524
+   },
+   {
+    "id": "copd",
+    "label": "COPD",
+    "x": 3,
+    "xy": 3,
+    "ppv": 1,
+    "lo": 0.4384939195509822,
+    "hi": 1
+   },
+   {
+    "id": "dm",
+    "label": "Diabetes",
+    "x": 510,
+    "xy": 214,
+    "ppv": 0.4196078431372549,
+    "lo": 0.37753450699677077,
+    "hi": 0.4628832404179968
+   }
+  ],
+  "pairs": 1529,
+  "pairsWithCondition": 352,
+  "pairShare": 0.7697841726618705,
+  "pairCI": [
+   0.7498367080339647,
+   0.7892347600518806
+  ],
+  "flagged": 892,
+  "namedAsWritten": 308,
+  "personShare": 0.6547085201793722,
+  "personCI": [
+   0.6219512195121951,
+   0.6877113866967306
+  ]
+ },
+ "underAscertainment": [
+  {
+   "id": "htn",
+   "exposed": 100,
+   "measuredPositive": 80,
+   "selfReportMissed": 9
+  },
+  {
+   "id": "dm",
+   "exposed": 510,
+   "measuredPositive": 138,
+   "selfReportMissed": 18
+  },
+  {
+   "id": "ckd",
+   "exposed": 116,
+   "measuredPositive": 46,
+   "selfReportMissed": 39
+  }
+ ]
+}
